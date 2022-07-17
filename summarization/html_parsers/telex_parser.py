@@ -1,8 +1,8 @@
 from bs4 import BeautifulSoup
 
 from summarization.html_parsers.parser_base import ParserBase
-from summarization.utils.article import Article
-from summarization.utils.page import Page
+from summarization.models.article import Article
+from summarization.models.page import Page
 
 
 class TelexParser(ParserBase):

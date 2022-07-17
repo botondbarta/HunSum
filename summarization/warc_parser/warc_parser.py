@@ -3,7 +3,7 @@ import warc
 import tldextract
 from datetime import datetime
 
-from summarization.utils.page import Page
+from summarization.models.page import Page
 
 
 class WarcParser:
