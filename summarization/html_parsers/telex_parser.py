@@ -7,7 +7,7 @@ from summarization.utils.page import Page
 
 class TelexParser(ParserBase):
     @staticmethod
-    def get_article(page: Page):
+    def get_article(page: Page) -> Article:
         html_soup = BeautifulSoup(page.html, 'html.parser')
         title = html_soup.title
         leads = html_soup.findAll('p', attrs={"class": "article__lead"})
