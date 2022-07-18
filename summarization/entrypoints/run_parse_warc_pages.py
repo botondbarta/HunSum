@@ -29,8 +29,8 @@ def main(src_directory, out_directory):
                 try:
                     article = parser.get_article(page)
                     articles.append(article)
-                except:
-                    continue
+                except Exception as e:
+                    logger.warning(e)
 
         ArticleSerializer.serialize_articles(out_directory, news_page, articles)
 
