@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from summarization.models.page import Page
-from models.article import Article
+from summarization.models.article import Article
 
 
 class ParserBase(ABC):
