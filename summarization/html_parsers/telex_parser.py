@@ -1,22 +1,27 @@
-from bs4 import BeautifulSoup
+from typing import Set, Optional
 
 from summarization.html_parsers.parser_base import ParserBase
-from summarization.models.article import Article
-from summarization.models.page import Page
+from summarization.utils.assertion import assert_has_article, assert_has_title
 
 
 class TelexParser(ParserBase):
-    @staticmethod
-    def get_article(page: Page) -> Article:
-        html_soup = BeautifulSoup(page.html, 'html.parser')
-        title = html_soup.title
-        leads = html_soup.findAll('p', attrs={"class": "article__lead"})
-        if len(leads) != 1:
-            # TODO
-            return None
-        articles = html_soup.findAll('div', attrs={"class": "article-html-content"})
-        if len(articles) != 1:
-            # TODO
-            return None
-        return Article(title, leads[0], articles[0], page.domain, page.url, page.date)
+    def get_title(self, url: str, soup) -> str:
+        title = soup.find('div', class_="title-section__top")
+        assert_has_title(title, url)
+        return title.text.strip()
+
+    def get_lead(self, soup) -> Optional[str]:
+        lead = soup.find('p', class_="article__lead")
+        return "" if lead is None else lead.text.strip()
+
+    def get_article_text(self, url, soup) -> str:
+        article = soup.find('div', class_="article-html-content")
+        assert_has_article(article, url)
+        return article.text
+
+    def get_tags(self, soup) -> Set[str]:
+        tags1 = soup.findAll('a', class_="tag--meta")
+        tags2 = soup.findAll('meta', {"name": "article:tag"})
+        return set(map(lambda t: t.text.strip(), tags1)).union(set(map(lambda t: t['content'], tags2)))
+
 

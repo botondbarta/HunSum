@@ -3,7 +3,7 @@ import os.path
 from abc import ABC
 from typing import List
 
-from models.article import Article
+from summarization.models.article import Article
 
 
 class ArticleSerializer(ABC):
