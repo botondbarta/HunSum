@@ -3,10 +3,10 @@ from os import listdir, path
 from tqdm import tqdm
 import click
 
-from html_parsers.parser_factory import HtmlParserFactory
-from serializers.article_serializer import ArticleSerializer
-from utils.logger import get_logger
-from warc_parser.warc_parser import WarcParser
+from summarization.html_parsers.parser_factory import HtmlParserFactory
+from summarization.serializers.article_serializer import ArticleSerializer
+from summarization.utils.logger import get_logger
+from summarization.warc_parser.warc_parser import WarcParser
 
 logger = get_logger(__name__)
 
