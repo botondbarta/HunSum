@@ -1,26 +1,27 @@
-from bs4 import BeautifulSoup
+from typing import Set, Optional
 
-from summarization.errors.missing_article_error import MissingArticleError
-from summarization.errors.missing_title_error import MissingTitleError
 from summarization.html_parsers.parser_base import ParserBase
-from summarization.models.article import Article
-from summarization.models.page import Page
+from summarization.utils.assertion import assert_has_article, assert_has_title
 
 
 class TelexParser(ParserBase):
-    @staticmethod
-    def get_article(page: Page) -> Article:
-        html_soup = BeautifulSoup(page.html, 'html.parser')
-        title = html_soup.find('div', class_="title-section__top")
-        if title is None:
-            raise MissingTitleError(page.url)
-        lead = html_soup.find('p', class_="article__lead")
-        lead = "" if lead is None else lead.text.strip()
-        article = html_soup.find('div', class_="article-html-content")
-        tags1 = html_soup.findAll('a', class_="tag--meta")
-        tags2 = html_soup.findAll('meta', {"name": "article:tag"})
-        tags = set(map(lambda t: t.text.strip(), tags1)).union(set(map(lambda t: t['content'], tags2)))
-        if article is None:
-            raise MissingArticleError(page.url)
-        return Article(title.text.strip(), lead, article.text, page.domain, page.url, page.date, tags)
+    def get_title(self, url: str, soup) -> str:
+        title = soup.find('div', class_="title-section__top")
+        assert_has_title(title, url)
+        return title.text.strip()
+
+    def get_lead(self, soup) -> Optional[str]:
+        lead = soup.find('p', class_="article__lead")
+        return "" if lead is None else lead.text.strip()
+
+    def get_article_text(self, url, soup) -> str:
+        article = soup.find('div', class_="article-html-content")
+        assert_has_article(article, url)
+        return article.text
+
+    def get_tags(self, soup) -> Set[str]:
+        tags1 = soup.findAll('a', class_="tag--meta")
+        tags2 = soup.findAll('meta', {"name": "article:tag"})
+        return set(map(lambda t: t.text.strip(), tags1)).union(set(map(lambda t: t['content'], tags2)))
+
 
