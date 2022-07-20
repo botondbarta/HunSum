@@ -1,0 +1,6 @@
+https://telex.hu/cimke/.*
+https://telex.hu/szerzo/.*
+https://telex.hu/rss/.*
+https://telex.hu/rovat/.*
+https://telex.hu/dokumentum/.*
+https://telex.hu/archivum/.*

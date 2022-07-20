@@ -28,7 +28,7 @@ class TelexParser(ParserBase):
         tags1 = soup.findAll('a', class_="tag--meta")
         tags2 = soup.findAll('meta', {"name": "article:tag"})
         tags3 = soup.findAll('a', class_="meta tag")
-        return set(map(lambda t: t.text.strip() ,tags1 + tags2 + tags3))
+        return set(map(lambda t: t.text.strip(), tags1 + tags2 + tags3))
 
 
 
