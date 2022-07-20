@@ -12,7 +12,7 @@ class ParserBase(ABC):
         pass
 
     def get_article(self, page: Page) -> Article:
-        html_soup = BeautifulSoup(page.html, 'html.parser')
+        html_soup = self.remove_captions(BeautifulSoup(page.html, 'html.parser'))
         title = self.get_title(page.url, html_soup)
         lead = self.get_lead(html_soup)
         article = self.get_article_text(page.url, html_soup)
@@ -35,4 +35,7 @@ class ParserBase(ABC):
     def get_tags(self, soup) -> Set[str]:
         raise NotImplementedError
 
+    @abstractmethod
+    def remove_captions(self, soup) -> BeautifulSoup:
+        raise NotImplementedError
 
