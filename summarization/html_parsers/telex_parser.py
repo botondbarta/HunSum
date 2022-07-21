@@ -1,5 +1,7 @@
 from typing import Set, Optional
 
+from bs4 import BeautifulSoup
+
 from summarization.html_parsers.parser_base import ParserBase
 from summarization.utils.assertion import assert_has_article, assert_has_title
 
@@ -29,6 +31,10 @@ class TelexParser(ParserBase):
         tags2 = soup.findAll('meta', {"name": "article:tag"})
         tags3 = soup.findAll('a', class_="meta tag")
         return set(map(lambda t: t.text.strip(), tags1 + tags2 + tags3))
+
+    def remove_captions(self, soup) -> BeautifulSoup:
+        soup.find('div', class_='long-img').decompose()
+        return soup
 
 
 
