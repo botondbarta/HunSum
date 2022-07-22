@@ -3,10 +3,10 @@ from summarization.errors.missing_title_error import MissingTitleError
 
 
 def assert_has_article(article, url):
-    if article is None:
+    if not article:
         raise MissingArticleError(url)
 
 
 def assert_has_title(title, url):
-    if title is None:
+    if not title:
         raise MissingTitleError(url)
