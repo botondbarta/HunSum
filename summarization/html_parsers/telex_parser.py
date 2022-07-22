@@ -33,7 +33,11 @@ class TelexParser(ParserBase):
         return set(map(lambda t: t.text.strip(), tags1 + tags2 + tags3))
 
     def remove_captions(self, soup) -> BeautifulSoup:
-        soup.find('div', class_='long-img').decompose()
+        to_remove = []
+        to_remove.extend(soup.find_all('div', class_='long-img'))
+        to_remove.extend(soup.find_all('table'))
+        for r in to_remove:
+            r.decompose()
         return soup
 
 

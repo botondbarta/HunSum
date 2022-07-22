@@ -23,5 +23,5 @@ class WarcParser:
             ext = tldextract.extract(url)
             domain = f'{ext.domain}.{ext.suffix}'
             if not self.bad_index.match(url):
-                yield Page(url, domain, date, html_text)
+                yield Page(url, domain, date, html_text.decode('utf-8'))
 
