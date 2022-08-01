@@ -8,3 +8,4 @@ https://telex.hu/napirajz/.*
 https://telex.hu/video/.*
 http://24.hu/author/.*
 https://24.hu/author/.*
+https://24.hu/tag/.*
