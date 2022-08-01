@@ -1,7 +1,7 @@
 import json
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Set
+from typing import List
 
 from summarization.serializers.datetime_serializer import DateTimeEncoder
 
@@ -14,9 +14,7 @@ class Article:
     domain: str
     url: str
     date: datetime
-    tags: Set[str]
+    tags: List[str]
 
     def to_json(self) -> str:
         return json.dumps(self.__dict__, cls=DateTimeEncoder)
-
-

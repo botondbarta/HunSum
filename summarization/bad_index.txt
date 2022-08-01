@@ -6,6 +6,9 @@ https://telex.hu/dokumentum/.*
 https://telex.hu/archivum/.*
 https://telex.hu/napirajz/.*
 https://telex.hu/video/.*
+http://24.hu/author/.*
+https://24.hu/author/.*
+https://24.hu/tag/.*
 https://metropol.hu/kuponok/.*
 https://metropol.hu/hirlevel-feliratkozas/.*
 https://metropol.hu/tag/.*
