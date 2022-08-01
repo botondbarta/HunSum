@@ -1,7 +1,7 @@
-from os import listdir, path, mkdir
+from os import listdir, mkdir, path
 
-from tqdm import tqdm
 import click
+from tqdm import tqdm
 
 from summarization.html_parsers.parser_factory import HtmlParserFactory
 from summarization.serializers.article_serializer import ArticleSerializer
@@ -18,14 +18,15 @@ def main(src_directory, out_directory):
     warc_parser = WarcParser('bad_index.txt')
 
     for news_page in listdir(src_directory):
-        logger.info(f'Started processing news page: {news_page}')
+        logger.info(f'Started processing pages for: {news_page}')
         articles = []
         parser = HtmlParserFactory.get_parser(news_page)
 
         subdirectory = path.join(src_directory, f'{news_page}/cc_downloaded')
-        for file_name in tqdm(listdir(subdirectory)):
+        for file_name in listdir(subdirectory):
+            logger.info(f'Parsing file: {file_name}')
             file_path = path.join(subdirectory, file_name)
-            for page in warc_parser.iter_pages(file_path):
+            for page in tqdm(warc_parser.iter_pages(file_path)):
                 try:
                     article = parser.get_article(page)
                     articles.append(article)
