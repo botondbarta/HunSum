@@ -17,7 +17,7 @@ class ParserBase(ABC):
         lead = self.get_lead(html_soup)
         article = self.get_article_text(page.url, html_soup)
         tags = self.get_tags(html_soup)
-        return Article(title, lead, article, page.domain, page.url, page.date, tags)
+        return Article(title, lead, article, page.domain, page.url, page.date, list(tags))
 
     @abstractmethod
     def get_title(self, url, soup) -> str:
