@@ -31,7 +31,6 @@ def main(src_directory, out_directory):
                     article = parser.get_article(page)
                     articles.append(article)
                 except Exception as e:
-                    logger.error(page.url)
                     logger.error(e)
         if not path.exists(out_directory):
             mkdir(out_directory)
