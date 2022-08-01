@@ -27,8 +27,6 @@ class MetropolParser(ParserBase):
         if article is None:
             # old css class
             article = soup.find('div', class_="story")
-            # for stories that only contains pictures
-            article = None if article and article.text.strip() == '' else article
         assert_has_article(article, url)
         return article.text.strip()
 
@@ -37,4 +35,15 @@ class MetropolParser(ParserBase):
         return set(tags.text.strip().split('\n')) if tags else set()
 
     def remove_captions(self, soup) -> BeautifulSoup:
+        to_remove = []
+        to_remove.extend(soup.find_all('div', class_='wp-caption'))
+        to_remove.extend(soup.find_all('div', class_='endless-shared-area'))
+        to_remove.extend(soup.find_all('dl', class_='gallery-item'))
+
+        to_remove.extend(soup.find_all('blockquote', class_='instagram-media'))
+        to_remove.extend(soup.find_all('blockquote', class_='twitter-tweet'))
+        to_remove.extend(soup.find_all('blockquote', class_='tiktok-embed'))
+        to_remove.extend(soup.find_all('div', class_='fb-post'))
+        for r in to_remove:
+            r.decompose()
         return soup
