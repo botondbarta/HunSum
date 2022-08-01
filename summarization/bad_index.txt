@@ -9,3 +9,9 @@ https://telex.hu/video/.*
 http://24.hu/author/.*
 https://24.hu/author/.*
 https://24.hu/tag/.*
+https://metropol.hu/kuponok/.*
+https://metropol.hu/hirlevel-feliratkozas/.*
+https://metropol.hu/tag/.*
+https://metropol.hu/metropol-best/page/.*
+https://metropol.hu/author/.*
+https://metropol.hu/rejtvenyek/.*
