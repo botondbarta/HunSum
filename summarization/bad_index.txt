@@ -16,3 +16,7 @@ https://metropol.hu/tag/.*
 https://metropol.hu/metropol-best/page/.*
 https://metropol.hu/author/.*
 https://metropol.hu/rejtvenyek/.*
+https://hvg.hu/360/.*
+https://hvg.hu/cimke/.*
+http://hvg.hu/cimke/.*
+http://hvg.hu/hetilap/.*
