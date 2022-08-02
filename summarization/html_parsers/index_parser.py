@@ -1,9 +1,10 @@
-from typing import Set, Optional
+from datetime import datetime
+from typing import Optional, Set
 
 from bs4 import BeautifulSoup
 
 from summarization.html_parsers.parser_base import ParserBase
-from summarization.utils.assertion import assert_has_title, assert_has_article
+from summarization.utils.assertion import assert_has_article, assert_has_title
 
 
 class IndexParser(ParserBase):
@@ -20,6 +21,9 @@ class IndexParser(ParserBase):
         article = soup.find('div', class_="cikk-torzs")
         assert_has_article(article, url)
         return article.text.strip()
+
+    def get_date_of_creation(self, soup) -> datetime:
+        raise NotImplementedError
 
     def get_tags(self, soup) -> Set[str]:
         tags_ul = soup.find('ul', class_="cikk-cimkek")
