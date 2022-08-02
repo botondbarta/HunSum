@@ -1,5 +1,7 @@
+from datetime import datetime
 from typing import Optional, Set
 
+import dateparser
 from bs4 import BeautifulSoup
 
 from summarization.html_parsers.parser_base import ParserBase
@@ -24,6 +26,13 @@ class NLCParser(ParserBase):
         assert_has_article(article, url)
         return article.text.strip()
 
+    def get_date_of_creation(self, soup) -> datetime:
+        date = soup.find('div', class_='o-post__date')
+        try:
+            return dateparser.parse(date.text)
+        except:
+            return None
+
     def get_tags(self, soup) -> Set[str]:
         tags = soup.find('div', class_='single-post-tags')
         if tags:
@@ -41,6 +50,10 @@ class NLCParser(ParserBase):
         to_remove.extend(soup.find_all('div', class_='wp-caption'))
         to_remove.extend(soup.find_all('div', class_='m-relatedWidget'))
         to_remove.extend(soup.find_all('div', class_='o-cegPostCnt'))
+        to_remove.extend(soup.find_all('div', class_='m-embed'))
+        # pinterest
+        to_remove.extend(soup.find_all('blockquote', class_='embedly-card'))
+        # drop recipe parts
         to_remove.extend(soup.find_all('div', class_='recipe-wrapper'))
         for r in to_remove:
             r.decompose()
