@@ -13,7 +13,8 @@ class Article:
     article: str
     domain: str
     url: str
-    date: datetime
+    date_of_creation: datetime
+    cc_date: datetime
     tags: List[str]
 
     def to_json(self) -> str:
