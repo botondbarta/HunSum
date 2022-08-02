@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, Set
 
 from bs4 import BeautifulSoup
@@ -23,6 +24,9 @@ class Parser24(ParserBase):
         article = soup.find('div', class_="post-body")
         assert_has_article(article, url)
         return article.text.strip()
+
+    def get_date_of_writing(self, soup) -> datetime:
+        raise NotImplementedError
 
     def get_tags(self, soup) -> Set[str]:
         tag = soup.find('a', class_='o-articleHead__catWrap')

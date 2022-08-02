@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Set, Optional
 
 from bs4 import BeautifulSoup
@@ -25,6 +26,9 @@ class TelexParser(ParserBase):
         article = soup.find('div', class_="article-html-content")
         assert_has_article(article, url)
         return article.text
+
+    def get_date_of_writing(self, soup) -> datetime:
+        raise NotImplementedError
 
     def get_tags(self, soup) -> Set[str]:
         tags1 = soup.findAll('a', class_="tag--meta")
