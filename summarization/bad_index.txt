@@ -16,3 +16,5 @@ https://metropol.hu/tag/.*
 https://metropol.hu/metropol-best/page/.*
 https://metropol.hu/author/.*
 https://metropol.hu/rejtvenyek/.*
+https://nlc.hu/cimke/.*
+https://nlc.hu/alomszotar/.*
