@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Optional, Set
 
 from bs4 import BeautifulSoup
 
-from summarization.models.page import Page
 from summarization.models.article import Article
+from summarization.models.page import Page
 
 
 class ParserBase(ABC):
@@ -16,8 +17,9 @@ class ParserBase(ABC):
         title = self.get_title(page.url, html_soup)
         lead = self.get_lead(html_soup)
         article = self.get_article_text(page.url, html_soup)
+        date_of_creation = self.get_date_of_creation(html_soup)
         tags = self.get_tags(html_soup)
-        return Article(title, lead, article, page.domain, page.url, page.date, list(tags))
+        return Article(title, lead, article, page.domain, page.url, date_of_creation, page.date, list(tags))
 
     @abstractmethod
     def get_title(self, url, soup) -> str:
@@ -29,6 +31,10 @@ class ParserBase(ABC):
 
     @abstractmethod
     def get_article_text(self, url, soup) -> str:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_date_of_creation(self, soup) -> datetime:
         raise NotImplementedError
 
     @abstractmethod
