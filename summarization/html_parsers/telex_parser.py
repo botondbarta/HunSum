@@ -27,7 +27,7 @@ class TelexParser(ParserBase):
         assert_has_article(article, url)
         return article.text
 
-    def get_date_of_writing(self, soup) -> datetime:
+    def get_date_of_creation(self, soup) -> datetime:
         raise NotImplementedError
 
     def get_tags(self, soup) -> Set[str]:
