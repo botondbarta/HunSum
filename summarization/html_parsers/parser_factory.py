@@ -1,3 +1,4 @@
+from summarization.html_parsers.hvg_parser import HvgParser
 from summarization.html_parsers.index_parser import IndexParser
 from summarization.html_parsers.parser_24 import Parser24
 from summarization.html_parsers.metropol_parser import MetropolParser
@@ -11,6 +12,7 @@ class HtmlParserFactory:
         'index': IndexParser,
         '24': Parser24,
         'metropol': MetropolParser,
+        'hvg': HvgParser,
     }
 
     @classmethod
