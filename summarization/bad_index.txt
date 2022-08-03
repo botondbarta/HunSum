@@ -19,4 +19,10 @@ https://metropol.hu/rejtvenyek/.*
 https://hvg.hu/360/.*
 https://hvg.hu/cimke/.*
 http://hvg.hu/cimke/.*
+http://www.hvg.hu/cimke/.*
 http://hvg.hu/hetilap/.*
+http://hvg.hu/velemeny.nyuzsog/.*
+http://hvg.hu/video/.*
+https://hvg.hu/nagyitas/.*
+http://hvg.hu/nagyitas/.*
+http://hvg.hu/videotag/.*
