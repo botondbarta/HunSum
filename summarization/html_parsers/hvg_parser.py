@@ -14,33 +14,33 @@ class HvgParser(ParserBase):
     def get_date_of_creation(self, soup) -> datetime:
         # new date
         date_tag = soup.find('time', class_='article-datetime')
-        date = dateparser.parse(date_tag.text if date_tag is not None else "")
-        if date is not None:
+        date = dateparser.parse(date_tag.text if date_tag else "")
+        if date:
             return date
 
         # older date
-        date_tag = soup.select('article.article > p.time > time')
-        date = dateparser.parse(date_tag[0].text if date_tag else "")
-        if date is not None:
+        date_tags = soup.select('article.article > p.time > time')
+        date = dateparser.parse(date_tags[0].text if date_tag else "")
+        if date:
             return date
 
         # older date
         titles = soup.find_all('h1')
         tab_title = soup.title
         title = next((x for x in titles if x.text in tab_title.text), None)
-        if title is not None:
+        if title:
             p = title.find_next_sibling('p')
             date = dateparser.parse(p.text.strip().split('\n')[0].strip())
-            if date is not None:
+            if date:
                 return date
 
         # oldest date
         time_img = soup.find('img', alt='idő')
-        if time_img is not None:
+        if time_img:
             parent = time_img.parent
             if parent.name == 'a':
                 date = dateparser.parse(parent.text)
-                if date is not None:
+                if date:
                     return date
 
         # gallery date
@@ -48,7 +48,7 @@ class HvgParser(ParserBase):
         for div in divs:
             date_string = div.text.strip().split('\n')[0]
             date = dateparser.parse(date_string)
-            if date is not None:
+            if date:
                 return date
         return None
 
@@ -69,14 +69,14 @@ class HvgParser(ParserBase):
     def get_lead(self, soup) -> Optional[str]:
         # new css
         lead = soup.find('div', class_='entry-summary')
-        if lead is not None:
+        if lead:
             return lead.get_text(' ').strip()
 
         # older css
         leads = soup.select('div.articlecontent > p > strong')
         if leads:
             lead = leads[0]
-            if lead is not None:
+            if lead:
                 return lead.get_text(' ').strip()
 
         # old css
@@ -85,7 +85,7 @@ class HvgParser(ParserBase):
         if lead_comment:
             lead_p = lead_comment[0].find_next_sibling('p')
             lead = lead_p.next
-            if lead is not None:
+            if lead:
                 return lead.get_text(' ').strip()
 
         return ""
@@ -93,12 +93,12 @@ class HvgParser(ParserBase):
     def get_article_text(self, url, soup) -> str:
         # new css
         article = soup.find('div', class_='entry-content')
-        if article is not None and article.get_text(" ").strip():
+        if article and article.get_text(" ").strip():
             return article.get_text(' ').strip()
 
         # older css
         article = next(iter(copy.copy(soup.select('div.articlecontent'))), None)
-        if article is not None:
+        if article:
             leads = copy.copy(article.select(' p > strong'))
             if leads:
                 leads[0].decompose()
