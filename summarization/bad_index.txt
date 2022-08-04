@@ -11,6 +11,13 @@ https://telex.hu/legfrissebb.*
 https://telex.hu/legfontosabb.*
 https://telex.hu/vesezo/.*
 https://index.hu/wanted/.*
+https://index.hu/24ora/\?cimke=.*
+http://index.hu/kultur/musor/.*
+https://index.hu/24ora/.*tol=.*&ig.*
+http://index.hu/video/.*
+http://index.hu/.*/cimkek/
+http://index.hu/napirajz/.*
+http://24.hu/bulvar/
 http://24.hu/author/.*
 https://24.hu/author/.*
 https://24.hu/tag/.*

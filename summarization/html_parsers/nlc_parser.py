@@ -26,12 +26,10 @@ class NLCParser(ParserBase):
         assert_has_article(article, url)
         return article.text.strip()
 
-    def get_date_of_creation(self, soup) -> datetime:
+    def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('div', class_='o-post__date')
-        try:
-            return dateparser.parse(date.text)
-        except:
-            return None
+
+        return dateparser.parse(date.text)
 
     def get_tags(self, soup) -> Set[str]:
         tags = soup.find('div', class_='single-post-tags')

@@ -34,7 +34,7 @@ class ParserBase(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_date_of_creation(self, soup) -> datetime:
+    def get_date_of_creation(self, soup) -> Optional[datetime]:
         raise NotImplementedError
 
     @abstractmethod
@@ -44,4 +44,3 @@ class ParserBase(ABC):
     @abstractmethod
     def remove_captions(self, soup) -> BeautifulSoup:
         raise NotImplementedError
-
