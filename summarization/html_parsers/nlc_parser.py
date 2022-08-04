@@ -15,26 +15,26 @@ class NLCParser(ParserBase):
             # old css class
             title = soup.find('h2', class_='o-post__title')
         assert_has_title(title, url)
-        return title.text.strip()
+        return title.get_text(' ').strip()
 
     def get_lead(self, soup) -> Optional[str]:
         lead = soup.find('div', class_='o-post__lead')
-        return "" if lead is None else lead.text.strip()
+        return "" if lead is None else lead.get_text(' ').strip()
 
     def get_article_text(self, url, soup) -> str:
         article = soup.find('div', class_='u-onlyArticlePages')
         assert_has_article(article, url)
-        return article.text.strip()
+        return article.get_text(' ').strip()
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('div', class_='o-post__date')
 
-        return dateparser.parse(date.text)
+        return dateparser.parse(date.get_text(' '))
 
     def get_tags(self, soup) -> Set[str]:
         tags = soup.find('div', class_='single-post-tags')
         if tags:
-            return set(t for t in tags.text.strip().split('\n'))
+            return set(t for t in tags.get_text(' ').strip().split('\n'))
         return set()
 
     def remove_captions(self, soup) -> BeautifulSoup:

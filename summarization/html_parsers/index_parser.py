@@ -25,11 +25,11 @@ class IndexParser(ParserBase):
             title = soup.find('h3', class_="title")
 
         assert_has_title(title, url)
-        return title.text.strip()
+        return title.get_text(' ').strip()
 
     def get_lead(self, soup) -> Optional[str]:
         lead = soup.find('div', class_="lead")
-        return "" if lead is None else lead.text.strip()
+        return "" if lead is None else lead.get_text(' ').strip()
 
     def get_article_text(self, url, soup) -> str:
         article = soup.find('div', class_="cikk-torzs")
@@ -43,7 +43,7 @@ class IndexParser(ParserBase):
             article = soup.find('div', class_="szoveg")
 
         assert_has_article(article, url)
-        return article.text.strip()
+        return article.get_text(' ').strip()
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('div', class_='datum')
@@ -56,7 +56,7 @@ class IndexParser(ParserBase):
         if not date:
             return None
 
-        date = date.text.strip()
+        date = date.get_text(' ').strip()
         if 'Módosítva' in date:
             date = date.split("Módosítva")[0].strip()
 
@@ -65,7 +65,7 @@ class IndexParser(ParserBase):
     def get_tags(self, soup) -> Set[str]:
         tags_ul = soup.find('ul', class_="cikk-cimkek")
         if tags_ul:
-            return set(c.text for c in tags_ul.children)
+            return set(c.get_text(' ') for c in tags_ul.children)
         return set()
 
     def remove_captions(self, soup) -> BeautifulSoup:

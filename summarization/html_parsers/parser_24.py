@@ -15,26 +15,26 @@ class Parser24(ParserBase):
             # old css class
             title = soup.find('h1', class_="post-title")
         assert_has_title(title, url)
-        return title.text.strip()
+        return title.get_text(' ').strip()
 
     def get_lead(self, soup) -> Optional[str]:
         lead = soup.find('div', class_="lead")
-        return "" if lead is None else lead.text.strip()
+        return "" if lead is None else lead.get_text(' ').strip()
 
     def get_article_text(self, url, soup) -> str:
         article = soup.find('div', class_="post-body")
         assert_has_article(article, url)
-        return article.text.strip()
+        return article.get_text(' ').strip()
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('div', class_='author-content')
         if date and date.p:
-            return dateparser.parse(date.p.text)
+            return dateparser.parse(date.p.get_text(' '))
 
         date = soup.find('span', class_='o-post__date')
         if date:
-            date_text = date.text
-            if 'FRISS' in date.text:
+            date_text = date.get_text(' ')
+            if 'FRISS' in date.get_text(' '):
                 date_text = date_text.split("FRISS")[0]
             return dateparser.parse(date_text)
 
@@ -47,7 +47,7 @@ class Parser24(ParserBase):
         if not date:
             return None
 
-        return dateparser.parse(date.text)
+        return dateparser.parse(date.get_text(' '))
 
     def get_tags(self, soup) -> Set[str]:
         tag = soup.find('a', class_='o-articleHead__catWrap')
