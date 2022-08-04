@@ -30,10 +30,8 @@ class TelexParser(ParserBase):
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('p', class_='history--original')
-        try:
-            return dateparser.parse(date.text)
-        except:
-            return None
+
+        return dateparser.parse(date.text)
 
     def get_tags(self, soup) -> Set[str]:
         tags1 = soup.findAll('a', class_="tag--meta")

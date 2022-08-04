@@ -38,10 +38,7 @@ class MetropolParser(ParserBase):
         if not date:
             date = soup.find('li', class_='date')
 
-        try:
-            return dateparser.parse(date.text)
-        except:
-            return None
+        return dateparser.parse(date.text)
 
     def get_tags(self, soup) -> Set[str]:
         tags = soup.find('div', class_="tags")

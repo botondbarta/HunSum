@@ -59,10 +59,8 @@ class IndexParser(ParserBase):
         date = date.text.strip()
         if 'Módosítva' in date:
             date = date.split("Módosítva")[0].strip()
-        try:
-            return dateparser.parse(date)
-        except:
-            return None
+
+        return dateparser.parse(date)
 
     def get_tags(self, soup) -> Set[str]:
         tags_ul = soup.find('ul', class_="cikk-cimkek")
