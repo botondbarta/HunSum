@@ -18,9 +18,9 @@ def main(src_directory, out_directory):
     warc_parser = WarcParser('bad_index.txt')
 
     for news_page in listdir(src_directory):
-        logger.info(f'Started processing pages for: {news_page}')
         articles = []
         parser = HtmlParserFactory.get_parser(news_page)
+        logger.info(f'Started processing pages for: {news_page} with {type(parser).__name__}')
 
         subdirectory = path.join(src_directory, f'{news_page}/cc_downloaded')
         for file_name in listdir(subdirectory):
@@ -31,7 +31,7 @@ def main(src_directory, out_directory):
                     article = parser.get_article(page)
                     articles.append(article)
                 except Exception as e:
-                    logger.error(e)
+                    logger.warning(e)
         if not path.exists(out_directory):
             mkdir(out_directory)
         ArticleSerializer.serialize_articles(out_directory, news_page, articles)

@@ -11,7 +11,7 @@ from summarization.utils.assertion import assert_has_title, assert_has_article
 
 
 class HvgParser(ParserBase):
-    def get_date_of_creation(self, soup) -> datetime:
+    def get_date_of_creation(self, soup) -> Optional[datetime]:
         # new date
         date_tag = soup.find('time', class_='article-datetime')
         date = dateparser.parse(date_tag.text if date_tag else "")
