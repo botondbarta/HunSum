@@ -6,6 +6,10 @@ https://telex.hu/dokumentum/.*
 https://telex.hu/archivum/.*
 https://telex.hu/napirajz/.*
 https://telex.hu/video/.*
+https://telex.hu/kedvenceink.*
+https://telex.hu/legfrissebb.*
+https://telex.hu/legfontosabb.*
+https://telex.hu/vesezo/.*
 https://index.hu/wanted/.*
 http://24.hu/author/.*
 https://24.hu/author/.*
