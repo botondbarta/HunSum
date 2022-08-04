@@ -1,4 +1,3 @@
-import logging
 from os import listdir, mkdir, path
 
 import click
@@ -8,8 +7,6 @@ from summarization.html_parsers.parser_factory import HtmlParserFactory
 from summarization.serializers.article_serializer import ArticleSerializer
 from summarization.utils.logger import get_logger
 from summarization.warc_parser.warc_parser import WarcParser
-
-logger = get_logger(__name__)
 
 
 @click.command()
@@ -25,8 +22,9 @@ def main(src_directory, out_directory):
         articles = []
         parser = HtmlParserFactory.get_parser(news_page)
 
-        logging.basicConfig(filename=f'{path.join(out_directory, news_page)}.log.txt', level=logging.INFO,
-                            format='%(asctime)s %(levelname)-19s %(message)s', filemode="w")
+        log_file = f'{path.join(out_directory, news_page)}.log.txt'
+        logger = get_logger(news_page, log_file)
+
         logger.info(f'Started processing pages for: {news_page} with {type(parser).__name__}')
 
         subdirectory = path.join(src_directory, f'{news_page}/cc_downloaded')
