@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional, Set
 
+import dateparser
 from bs4 import BeautifulSoup
 
 from summarization.html_parsers.parser_base import ParserBase
@@ -25,8 +26,28 @@ class Parser24(ParserBase):
         assert_has_article(article, url)
         return article.text.strip()
 
-    def get_date_of_creation(self, soup) -> datetime:
-        raise NotImplementedError
+    def get_date_of_creation(self, soup) -> Optional[datetime]:
+        date = soup.find('div', class_='author-content')
+        if date and date.p:
+            return dateparser.parse(date.p.text)
+
+        date = soup.find('span', class_='o-post__date')
+        if date:
+            date_text = date.text
+            if 'FRISS' in date.text:
+                date_text = date_text.split("FRISS")[0]
+            return dateparser.parse(date_text)
+
+        if not date:
+            date = soup.find('span', class_='m-author__catDateTitulusCreateDate')
+
+        if not date:
+            date = soup.find('div', class_='m-author__wrapCatDateTitulus')
+
+        if not date:
+            return None
+
+        return dateparser.parse(date.text)
 
     def get_tags(self, soup) -> Set[str]:
         tag = soup.find('a', class_='o-articleHead__catWrap')
@@ -49,6 +70,7 @@ class Parser24(ParserBase):
         to_remove.extend(soup.find_all('figure', class_='wp-caption'))
         # mischievous pages contains text in the sidebar
         to_remove.extend(soup.find_all('div', class_='sidebar'))
+        to_remove.extend(soup.find_all('span', class_='category titulus'))
         for r in to_remove:
             r.decompose()
         return soup

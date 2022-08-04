@@ -1,6 +1,7 @@
 from datetime import datetime
-from typing import Set, Optional
+from typing import Optional, Set
 
+import dateparser
 from bs4 import BeautifulSoup
 
 from summarization.html_parsers.parser_base import ParserBase
@@ -27,8 +28,12 @@ class TelexParser(ParserBase):
         assert_has_article(article, url)
         return article.text
 
-    def get_date_of_creation(self, soup) -> datetime:
-        raise NotImplementedError
+    def get_date_of_creation(self, soup) -> Optional[datetime]:
+        date = soup.find('p', class_='history--original')
+        try:
+            return dateparser.parse(date.text)
+        except:
+            return None
 
     def get_tags(self, soup) -> Set[str]:
         tags1 = soup.findAll('a', class_="tag--meta")
@@ -43,6 +48,3 @@ class TelexParser(ParserBase):
         for r in to_remove:
             r.decompose()
         return soup
-
-
-
