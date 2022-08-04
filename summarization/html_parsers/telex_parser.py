@@ -24,29 +24,29 @@ class TelexParser(ParserBase):
         if title is None:
             titles = soup.find_all('h1')
             tab_title = soup.title
-            title = next((x for x in titles if x.text in tab_title.text), None)
+            title = next((x for x in titles if x.get_text(' ') in tab_title.get_text(' ')), None)
 
         assert_has_title(title, url)
-        return title.text.strip()
+        return title.get_text(' ').strip()
 
     def get_lead(self, soup) -> Optional[str]:
         lead = soup.find('p', class_="article__lead")
-        return "" if lead is None else lead.text.strip()
+        return "" if lead is None else lead.get_text(' ').strip()
 
     def get_article_text(self, url, soup) -> str:
         article = soup.find('div', class_="article-html-content")
         assert_has_article(article, url)
-        return article.text
+        return article.get_text(' ')
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('p', class_='history--original')
 
-        return dateparser.parse(date.text)
+        return dateparser.parse(date.get_text(' '))
 
     def get_tags(self, soup) -> Set[str]:
-        tags1 = [tag.text.strip() for tag in soup.findAll('a', class_="tag--meta")]
+        tags1 = [tag.get_text(' ').strip() for tag in soup.findAll('a', class_="tag--meta")]
         tags2 = [tag["content"].strip() for tag in soup.findAll('meta', {"name": "article:tag"}) if tag["content"]]
-        tags3 = [tag.text.strip() for tag in soup.findAll('a', class_="meta tag")]
+        tags3 = [tag.get_text(' ').strip() for tag in soup.findAll('a', class_="meta tag")]
         return set(tags1 + tags2 + tags3)
 
     def remove_captions(self, soup) -> BeautifulSoup:

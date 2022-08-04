@@ -1,8 +1,8 @@
+import copy
 from datetime import datetime
 from typing import Set, Optional
-import dateparser
-import copy
 
+import dateparser
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 
@@ -14,23 +14,23 @@ class HvgParser(ParserBase):
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         # new date
         date_tag = soup.find('time', class_='article-datetime')
-        date = dateparser.parse(date_tag.text if date_tag else "")
+        date = dateparser.parse(date_tag.get_text(' ') if date_tag else "")
         if date:
             return date
 
         # older date
         date_tags = soup.select('article.article > p.time > time')
-        date = dateparser.parse(date_tags[0].text if date_tag else "")
+        date = dateparser.parse(date_tags[0].get_text(' ') if date_tag else "")
         if date:
             return date
 
         # older date
         titles = soup.find_all('h1')
         tab_title = soup.title
-        title = next((x for x in titles if x.text in tab_title.text), None)
+        title = next((x for x in titles if x.get_text(' ') in tab_title.get_text(' ')), None)
         if title:
             p = title.find_next_sibling('p')
-            date = dateparser.parse(p.text.strip().split('\n')[0].strip())
+            date = dateparser.parse(p.get_text(' ').strip().split('\n')[0].strip())
             if date:
                 return date
 
@@ -39,14 +39,14 @@ class HvgParser(ParserBase):
         if time_img:
             parent = time_img.parent
             if parent.name == 'a':
-                date = dateparser.parse(parent.text)
+                date = dateparser.parse(parent.get_text(' '))
                 if date:
                     return date
 
         # gallery date
         divs = soup.find_all('div', class_='fl')
         for div in divs:
-            date_string = div.text.strip().split('\n')[0]
+            date_string = div.get_text(' ').strip().split('\n')[0]
             date = dateparser.parse(date_string)
             if date:
                 return date
@@ -61,10 +61,10 @@ class HvgParser(ParserBase):
         if title is None:
             titles = soup.find_all('h1')
             tab_title = soup.title
-            title = next((x for x in titles if x.text in tab_title.text), None)
+            title = next((x for x in titles if x.get_text(' ') in tab_title.get_text(' ')), None)
 
         assert_has_title(title, url)
-        return title.text.strip()
+        return title.get_text(' ').strip()
 
     def get_lead(self, soup) -> Optional[str]:
         # new css
@@ -81,7 +81,8 @@ class HvgParser(ParserBase):
 
         # old css
         article_tag = soup.find('article', class_='article')
-        lead_comment = [child for child in article_tag.children if isinstance(child, Comment) and 'lead' in child.string]
+        lead_comment = [child for child in article_tag.children if
+                        isinstance(child, Comment) and 'lead' in child.string]
         if lead_comment:
             lead_p = lead_comment[0].find_next_sibling('p')
             lead = lead_p.next
@@ -152,7 +153,3 @@ class HvgParser(ParserBase):
         for r in to_remove:
             r.decompose()
         return soup
-
-
-
-
