@@ -1,8 +1,9 @@
 import re
-from typing import Iterator
-import warc
-import tldextract
 from datetime import datetime
+from typing import Iterator
+
+import tldextract
+import warc
 
 from summarization.models.page import Page
 
@@ -12,7 +13,7 @@ class WarcParser:
         if bad_index_file:
             with open(bad_index_file) as f:
                 self.bad_index = re.compile('^{}$'.format('|'.join(
-                    '(?:{})'.format(line.strip()) for line in f)))
+                    r'(?:(http|https)://(www\.)?{})'.format(line.strip()) for line in f)))
 
     def iter_pages(self, file) -> Iterator[Page]:
         warc_file = warc.open(file)
@@ -27,4 +28,3 @@ class WarcParser:
                     yield Page(url, domain, date, html_text.decode('utf-8'))
                 except:
                     yield Page(url, domain, date, html_text.decode('latin-1'))
-
