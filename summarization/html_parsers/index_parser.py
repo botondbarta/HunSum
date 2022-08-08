@@ -4,11 +4,16 @@ from typing import Optional, Set
 import dateparser
 from bs4 import BeautifulSoup
 
+from summarization.errors.invalid_page_error import InvalidPageError
 from summarization.html_parsers.parser_base import ParserBase
 from summarization.utils.assertion import assert_has_article, assert_has_title
 
 
 class IndexParser(ParserBase):
+    def check_page_is_valid(self, url, soup):
+        if soup.select('div.pp-article-site'):
+            raise InvalidPageError(url, 'Liveblog')
+
     def get_title(self, url, soup) -> str:
         title = soup.find('div', class_="content-title")
         if not title:

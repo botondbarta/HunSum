@@ -4,11 +4,17 @@ from typing import Optional, Set
 import dateparser
 from bs4 import BeautifulSoup
 
+from summarization.errors.invalid_page_error import InvalidPageError
 from summarization.html_parsers.parser_base import ParserBase
 from summarization.utils.assertion import assert_has_article, assert_has_title
 
 
 class TelexParser(ParserBase):
+
+    def check_page_is_valid(self, url, soup):
+        if soup.select('div.liveblog'):
+            raise InvalidPageError(url, 'Liveblog')
+
     def get_title(self, url: str, soup) -> str:
         # new css class
         title = soup.find('div', class_="title-section__top")
