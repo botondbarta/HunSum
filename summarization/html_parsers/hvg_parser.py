@@ -6,11 +6,16 @@ import dateparser
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 
+from summarization.errors.invalid_page_error import InvalidPageError
 from summarization.html_parsers.parser_base import ParserBase
 from summarization.utils.assertion import assert_has_title, assert_has_article
 
 
 class HvgParser(ParserBase):
+    def check_page_is_valid(self, url, soup):
+        if soup.select('section.article-pp'):
+            raise InvalidPageError(url, 'Liveblog')
+
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         # new date
         date_tag = soup.find('time', class_='article-datetime')
