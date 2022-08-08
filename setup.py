@@ -1,22 +1,11 @@
-from setuptools import find_packages, setup
+from setuptools import setup
 
 setup(
         name='summarization',
-        version='',
-        packages=find_packages(exclude=['scripts']),
-        package_dir={'': 'summarization'},
+        version='0.1',
+        description='',
         url='',
+        packages=['summarization'],
         license='',
         author='Dorina Lakatos, Botond Barta',
-        author_email='',
-        description='',
-        install_requires=[
-            'tqdm',
-            'click',
-            'dateparser',
-            'typing',
-            'warc3-wet',
-            'tldextract',
-            'beautifulsoup4',
-        ],
 )
