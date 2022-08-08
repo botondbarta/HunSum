@@ -10,19 +10,32 @@ from summarization.utils.assertion import assert_has_article, assert_has_title
 
 class Parser24(ParserBase):
     def get_title(self, url, soup) -> str:
-        title = soup.find('h1', class_="o-post__title")
-        if title is None:
+        title = soup.find('h1', class_='o-post__title')
+
+        if not title:
             # old css class
-            title = soup.find('h1', class_="post-title")
+            title = soup.find('h1', class_='post-title')
+
+        if not title:
+            title = soup.find('h1', class_='amp-wp-title')
+
         assert_has_title(title, url)
         return title.get_text(' ').strip()
 
     def get_lead(self, soup) -> Optional[str]:
-        lead = soup.find('div', class_="lead")
+        lead = soup.find('div', class_='lead')
+
+        if not lead:
+            lead = soup.find('div', class_='amp-wp-lead')
+
         return "" if lead is None else lead.get_text(' ').strip()
 
     def get_article_text(self, url, soup) -> str:
-        article = soup.find('div', class_="post-body")
+        article = soup.find('div', class_='post-body')
+
+        if not article:
+            article = soup.find('div', class_='amp-wp-post-content')
+
         assert_has_article(article, url)
         return article.get_text(' ').strip()
 
@@ -71,6 +84,7 @@ class Parser24(ParserBase):
         # mischievous pages contains text in the sidebar
         to_remove.extend(soup.find_all('div', class_='sidebar'))
         to_remove.extend(soup.find_all('span', class_='category titulus'))
+        to_remove.extend(soup.find_all('div', class_='ad-container'))
         for r in to_remove:
             r.decompose()
         return soup
