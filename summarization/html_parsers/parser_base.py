@@ -13,13 +13,18 @@ class ParserBase(ABC):
         pass
 
     def get_article(self, page: Page) -> Article:
-        html_soup = self.remove_captions(BeautifulSoup(page.html, 'html.parser'))
+        soup = BeautifulSoup(page.html, 'html.parser')
+        self.check_page_is_valid(page.url, soup)
+        html_soup = self.remove_captions(soup)
         title = self.get_title(page.url, html_soup)
         lead = self.get_lead(html_soup)
         article = self.get_article_text(page.url, html_soup)
         date_of_creation = self.get_date_of_creation(html_soup)
         tags = self.get_tags(html_soup)
         return Article(title, lead, article, page.domain, page.url, date_of_creation, page.date, list(tags))
+
+    def check_page_is_valid(self, url, soup):
+        return
 
     @abstractmethod
     def get_title(self, url, soup) -> str:
