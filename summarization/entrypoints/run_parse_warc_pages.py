@@ -6,6 +6,8 @@ from tqdm import tqdm
 from errors.missing_article_error import MissingArticleError
 from errors.missing_lead_error import MissingLeadError
 from errors.missing_title_error import MissingTitleError
+
+from summarization.errors.page_error import PageError
 from summarization.html_parsers.parser_factory import HtmlParserFactory
 from summarization.serializers.article_serializer import ArticleSerializer
 from summarization.utils.logger import get_logger
@@ -39,7 +41,7 @@ def main(src_directory, out_directory, sites):
                 try:
                     article = parser.get_article(page)
                     articles.append(article)
-                except (MissingArticleError, MissingTitleError, MissingLeadError) as e:
+                except PageError as e:
                     logger.warning(e)
                 except Exception as e:
                     logger.error(e, f'in {page.url}')
