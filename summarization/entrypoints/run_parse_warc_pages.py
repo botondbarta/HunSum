@@ -54,9 +54,12 @@ def get_next_log_file(out_directory, site):
         next_index = 0
     else:
         prev_log_files = [log_file.rpartition('/')[2] for log_file in glob.glob(f'{log_file_base}.log.*')]
-        indexes = [int(log_file.partition('log.')[2].partition('.txt')[0]) for log_file in prev_log_files]
-        indexes.sort()
-        next_index = indexes[-1] + 1
+        if not prev_log_files:
+            next_index = 0
+        else:
+            indexes = [int(log_file.partition('log.')[2].partition('.txt')[0]) for log_file in prev_log_files]
+            indexes.sort()
+            next_index = indexes[-1] + 1
     return f'{log_file_base}.log.{next_index}.txt'
 
 
