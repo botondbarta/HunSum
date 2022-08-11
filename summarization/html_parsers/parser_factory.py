@@ -2,6 +2,7 @@ from summarization.html_parsers.hvg_parser import HvgParser
 from summarization.html_parsers.index_parser import IndexParser
 from summarization.html_parsers.metropol_parser import MetropolParser
 from summarization.html_parsers.nlc_parser import NLCParser
+from summarization.html_parsers.origo_parser import OrigoParser
 from summarization.html_parsers.parser_24 import Parser24
 from summarization.html_parsers.parser_base import ParserBase
 from summarization.html_parsers.telex_parser import TelexParser
@@ -15,6 +16,7 @@ class HtmlParserFactory:
         'metropol': MetropolParser,
         'nlc':      NLCParser,
         'hvg':      HvgParser,
+        'origo':    OrigoParser,
     }
 
     @classmethod

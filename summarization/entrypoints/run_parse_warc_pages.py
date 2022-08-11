@@ -22,11 +22,15 @@ def main(src_directory, out_directory, sites):
 
     sites_to_scrape = listdir(src_directory) if sites == 'all' else sites.split(',')
     for site in sites_to_scrape:
-        parser = HtmlParserFactory.get_parser(site)
-
         log_file = get_next_log_file(out_directory, site)
         already_parsed_segments = get_previously_parsed_segments(out_directory, site)
         logger = get_logger(site, log_file)
+
+        try:
+            parser = HtmlParserFactory.get_parser(site)
+        except:
+            logger.warning(f'No parser found for {site}')
+            continue
 
         logger.info(f'Started processing pages for: {site} with {type(parser).__name__}')
 
