@@ -97,31 +97,24 @@ class OrigoParser(ParserBase):
     def get_tags(self, soup) -> Set[str]:
         tags = soup.select('div.article-tags a')
         if tags:
-            return set([a.text for a in tags])
+            return set([a.get_text('') for a in tags])
 
-        tag_kozep = soup.find('div', id='kozep')
+        tag_kozep = soup.select('div#kozep > a')
         if tag_kozep:
-            tags = [tag.text.strip() for tag in tag_kozep if type(tag) == Tag and tag.name == 'a']
-            if tags:
-                return set(tags)
+            return set([tag.get_text('').strip() for tag in tag_kozep])
 
-        kapcs_cimke = soup.find('div', id='kapcs-cimke', class_='kapcs-cimke')
+        kapcs_cimke = soup.select('div#kapcs-cimke > a')
         if kapcs_cimke:
-            tags = [tag.text.strip() for tag in kapcs_cimke if type(tag) == Tag and tag.name == 'a']
-            if tags:
-                return set(tags)
+            return set([tag.get_text('').strip() for tag in kapcs_cimke])
 
-        rovat_cimke = soup.find('div', id='rovatcimkek')
+        rovat_cimke = soup.select('div#rovatcimkek > a')
         if rovat_cimke:
-            tags = [tag.text.strip() for tag in rovat_cimke if type(tag) == Tag and tag.name == 'a']
-            if tags:
-                return set(tags)
+            return set([tag.get_text('').strip() for tag in rovat_cimke])
 
-        meta = soup.find('div', class_='article-meta')
+        meta = soup.select('div.article-meta > a')
         if meta:
-            tags = [tag.text.strip() for tag in meta if type(tag) == Tag and tag.name == 'a']
-            if tags:
-                return set(tags)
+            return set([tag.get_text('').strip() for tag in meta])
+
         return set()
 
     def remove_captions(self, soup) -> BeautifulSoup:
