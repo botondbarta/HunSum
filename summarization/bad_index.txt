@@ -36,3 +36,9 @@ hvg.hu/velemeny/.*
 hvg.hu/video/.*
 hvg.hu/nagyitas/.*
 hvg.hu/videotag/.*
+origo.hu/index.html\?u=http.*
+origo.hu/cimkek/.*
+origo.hu/index.html\?cID=.*
+origo.hu/newsfeed/index.html\?cID=.*
+origo.hu/hir-archivum/.*
+origo.hu/allas/cimkek/index.html\?cimke=.*
