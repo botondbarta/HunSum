@@ -74,27 +74,23 @@ class HvgParser(ParserBase):
     def get_lead(self, soup) -> Optional[str]:
         # new css
         lead = soup.find('div', class_='entry-summary')
-        if lead:
-            return self.get_text(lead)
 
         # older css
-        leads = soup.select('div.articlecontent > p > strong')
-        if leads:
-            lead = leads[0]
-            if lead:
-                return self.get_text(lead)
+        if not lead:
+            leads = soup.select('div.articlecontent > p > strong')
+            if leads:
+                lead = leads[0]
 
         # old css
-        article_tag = soup.find('article', class_='article')
-        lead_comment = [child for child in article_tag.children if
-                        isinstance(child, Comment) and 'lead' in child.string]
-        if lead_comment:
-            lead_p = lead_comment[0].find_next_sibling('p')
-            lead = lead_p.next
-            if lead:
-                return self.get_text(lead)
+        if not lead:
+            article_tag = soup.find('article', class_='article')
+            lead_comment = [child for child in article_tag.children if
+                            isinstance(child, Comment) and 'lead' in child.string]
+            if lead_comment:
+                lead_p = lead_comment[0].find_next_sibling('p')
+                lead = lead_p.next
 
-        return ""
+        return self.get_text(lead, '')
 
     def get_article_text(self, url, soup) -> str:
         # new css
