@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Optional, Set
 
+import bs4
+import pypandoc
 from bs4 import BeautifulSoup
 
 from summarization.models.article import Article
@@ -22,6 +24,11 @@ class ParserBase(ABC):
         date_of_creation = self.get_date_of_creation(html_soup)
         tags = self.get_tags(html_soup)
         return Article(title, lead, article, page.domain, page.url, date_of_creation, page.date, list(tags))
+
+    def get_text(self, tag: bs4.Tag, default=None):
+        if tag:
+            return pypandoc.convert_text(str(tag), 'plain', format='html', extra_args=['--wrap=none']).strip()
+        return default
 
     def check_page_is_valid(self, url, soup):
         return
