@@ -37,7 +37,7 @@ class OrigoParser(ParserBase):
             title = next(iter(soup.select('div.article_head > h1')), None)
 
         assert_has_title(title, url)
-        return title.get_text(' ').strip()
+        return self.get_text(title)
 
     def get_lead(self, soup) -> Optional[str]:
         lead = soup.find('div', id='leades')
@@ -48,7 +48,7 @@ class OrigoParser(ParserBase):
         if not lead:
             lead = soup.find('td', id='lead')
 
-        return "" if lead is None else lead.get_text(' ').strip()
+        return self.get_text(lead)
 
     def get_article_text(self, url, soup) -> str:
         article = soup.find('div', id='kenyer-szov')
@@ -70,7 +70,7 @@ class OrigoParser(ParserBase):
                 article.select('div.article-lead')[0].decompose()
 
         assert_has_article(article, url)
-        return article.get_text(' ').strip()
+        return self.get_text(article)
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('span', class_='cikk-datum')
@@ -81,7 +81,7 @@ class OrigoParser(ParserBase):
         if not date:
             date = soup.find('td', class_='cikkdatum')
             if date:
-                return dateparser.parse(date.get_text(' ').split('|')[0].strip())
+                return dateparser.parse(self.get_text(date).split('|')[0].strip())
 
         if not date:
             date = soup.find('div', class_='article-date')
@@ -92,28 +92,28 @@ class OrigoParser(ParserBase):
         if not date:
             return None
 
-        return dateparser.parse(date.get_text(' '))
+        return dateparser.parse(self.get_text(date))
 
     def get_tags(self, soup) -> Set[str]:
         tags = soup.select('div.article-tags a')
         if tags:
-            return set([a.get_text('') for a in tags])
+            return set([self.get_text(a) for a in tags])
 
         tag_kozep = soup.select('div#kozep > a')
         if tag_kozep:
-            return set([tag.get_text('').strip() for tag in tag_kozep])
+            return set([self.get_text(tag) for tag in tag_kozep])
 
         kapcs_cimke = soup.select('div#kapcs-cimke > a')
         if kapcs_cimke:
-            return set([tag.get_text('').strip() for tag in kapcs_cimke])
+            return set([self.get_text(tag) for tag in kapcs_cimke])
 
         rovat_cimke = soup.select('div#rovatcimkek > a')
         if rovat_cimke:
-            return set([tag.get_text('').strip() for tag in rovat_cimke])
+            return set([self.get_text(tag) for tag in rovat_cimke])
 
         meta = soup.select('div.article-meta > a')
         if meta:
-            return set([tag.get_text('').strip() for tag in meta])
+            return set([self.get_text(tag) for tag in meta])
 
         return set()
 

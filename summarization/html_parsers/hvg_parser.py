@@ -19,23 +19,23 @@ class HvgParser(ParserBase):
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         # new date
         date_tag = soup.find('time', class_='article-datetime')
-        date = dateparser.parse(date_tag.get_text(' ') if date_tag else "")
+        date = dateparser.parse(self.get_text(date_tag, ''))
         if date:
             return date
 
         # older date
         date_tags = soup.select('article.article > p.time > time')
-        date = dateparser.parse(date_tags[0].get_text(' ') if date_tag else "")
+        date = dateparser.parse(self.get_text(date_tags[0], ''))
         if date:
             return date
 
         # older date
         titles = soup.find_all('h1')
         tab_title = soup.title
-        title = next((x for x in titles if x.get_text(' ') in tab_title.get_text(' ')), None)
+        title = next((x for x in titles if self.get_text(x) in self.get_text(tab_title)), None)
         if title:
             p = title.find_next_sibling('p')
-            date = dateparser.parse(p.get_text(' ').strip().split('\n')[0].strip())
+            date = dateparser.parse(self.get_text(p).split('\n')[0])
             if date:
                 return date
 
@@ -44,14 +44,14 @@ class HvgParser(ParserBase):
         if time_img:
             parent = time_img.parent
             if parent.name == 'a':
-                date = dateparser.parse(parent.get_text(' '))
+                date = dateparser.parse(self.get_text(parent))
                 if date:
                     return date
 
         # gallery date
         divs = soup.find_all('div', class_='fl')
         for div in divs:
-            date_string = div.get_text(' ').strip().split('\n')[0]
+            date_string = self.get_text(div).split('\n')[0]
             date = dateparser.parse(date_string)
             if date:
                 return date
@@ -66,41 +66,37 @@ class HvgParser(ParserBase):
         if title is None:
             titles = soup.find_all('h1')
             tab_title = soup.title
-            title = next((x for x in titles if x.get_text(' ') in tab_title.get_text(' ')), None)
+            title = next((x for x in titles if self.get_text(x) in self.get_text(tab_title)), None)
 
         assert_has_title(title, url)
-        return title.get_text(' ').strip()
+        return self.get_text(title)
 
     def get_lead(self, soup) -> Optional[str]:
         # new css
         lead = soup.find('div', class_='entry-summary')
-        if lead:
-            return lead.get_text(' ').strip()
 
         # older css
-        leads = soup.select('div.articlecontent > p > strong')
-        if leads:
-            lead = leads[0]
-            if lead:
-                return lead.get_text(' ').strip()
+        if not lead:
+            leads = soup.select('div.articlecontent > p > strong')
+            if leads:
+                lead = leads[0]
 
         # old css
-        article_tag = soup.find('article', class_='article')
-        lead_comment = [child for child in article_tag.children if
-                        isinstance(child, Comment) and 'lead' in child.string]
-        if lead_comment:
-            lead_p = lead_comment[0].find_next_sibling('p')
-            lead = lead_p.next
-            if lead:
-                return lead.get_text(' ').strip()
+        if not lead:
+            article_tag = soup.find('article', class_='article')
+            lead_comment = [child for child in article_tag.children if
+                            isinstance(child, Comment) and 'lead' in child.string]
+            if lead_comment:
+                lead_p = lead_comment[0].find_next_sibling('p')
+                lead = lead_p.next
 
-        return ""
+        return self.get_text(lead, '')
 
     def get_article_text(self, url, soup) -> str:
         # new css
         article = soup.find('div', class_='entry-content')
-        if article and article.get_text(" ").strip():
-            return article.get_text(' ').strip()
+        if article and self.get_text(article):
+            return self.get_text(article)
 
         # older css
         article = next(iter(copy.copy(soup.select('div.articlecontent'))), None)
@@ -108,20 +104,20 @@ class HvgParser(ParserBase):
             leads = copy.copy(article.select(' p > strong'))
             if leads:
                 leads[0].decompose()
-            if article.get_text(" ").strip() == '':
+            if self.get_text(article) == '':
                 columns = soup.find_all('div', class_='columnarticle')
-                text = ''.join([c.get_text(" ").strip() for c in columns])
+                text = ''.join([self.get_text(c) for c in columns])
                 if text != '':
                     return text
 
-        if not article or not article.get_text(' ').strip():
-            article_p = map(lambda a: a.get_text(' '), soup.select('article.article > div > p'))
+        if not article or not self.get_text(article):
+            article_p = map(lambda a: self.get_text(a), soup.select('article.article > div > p'))
             article_text = '\n'.join(article_p)
             if article_text != '':
                 return article_text
 
         assert_has_article(article, url)
-        return article.get_text(' ').strip()
+        return self.get_text(article)
 
     def get_tags(self, soup) -> Set[str]:
         # new css
@@ -137,14 +133,14 @@ class HvgParser(ParserBase):
         # old css
         if not tags:
             tag_div = soup.find('div', class_='location')
-            if tag_div and tag_div.get_text(" ").lowercase().contains('hvg.hu'):
+            if tag_div and self.get_text(tag_div).lowercase().contains('hvg.hu'):
                 tags = [t for t in tag_div.children if t.name == 'a']
 
         # old css
         if not tags:
             tags = soup.select('article.article > p.tags > a')
 
-        return set(tag.get_text(" ") for tag in tags)
+        return set(self.get_text(tag) for tag in tags)
 
     def remove_captions(self, soup) -> BeautifulSoup:
         to_remove = []

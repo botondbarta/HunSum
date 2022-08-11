@@ -20,7 +20,7 @@ class Parser24(ParserBase):
             title = soup.find('h1', class_='amp-wp-title')
 
         assert_has_title(title, url)
-        return title.get_text(' ').strip()
+        return self.get_text(title)
 
     def get_lead(self, soup) -> Optional[str]:
         lead = soup.find('div', class_='lead')
@@ -28,7 +28,7 @@ class Parser24(ParserBase):
         if not lead:
             lead = soup.find('div', class_='amp-wp-lead')
 
-        return "" if lead is None else lead.get_text(' ').strip()
+        return self.get_text(lead, '')
 
     def get_article_text(self, url, soup) -> str:
         article = soup.find('div', class_='post-body')
@@ -37,17 +37,17 @@ class Parser24(ParserBase):
             article = soup.find('div', class_='amp-wp-post-content')
 
         assert_has_article(article, url)
-        return article.get_text(' ').strip()
+        return self.get_text(article)
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('div', class_='author-content')
         if date and date.p:
-            return dateparser.parse(date.p.get_text(' '))
+            return dateparser.parse(self.get_text(date.p))
 
         date = soup.find('span', class_='o-post__date')
         if date:
-            date_text = date.get_text(' ')
-            if 'FRISS' in date.get_text(' '):
+            date_text = self.get_text(date)
+            if 'FRISS' in self.get_text(date):
                 date_text = date_text.split("FRISS")[0]
             return dateparser.parse(date_text)
 
@@ -60,7 +60,7 @@ class Parser24(ParserBase):
         if not date:
             return None
 
-        return dateparser.parse(date.get_text(' '))
+        return dateparser.parse(self.get_text(date))
 
     def get_tags(self, soup) -> Set[str]:
         tag = soup.find('a', class_='o-articleHead__catWrap')

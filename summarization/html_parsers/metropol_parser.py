@@ -15,14 +15,15 @@ class MetropolParser(ParserBase):
             # old css class
             title = soup.find('h1', class_="articleTitle")
         assert_has_title(title, url)
-        return title.get_text(' ').strip()
+        return self.get_text(title)
 
     def get_lead(self, soup) -> Optional[str]:
         lead = soup.find('span', class_="lead")
         if lead is None:
             # old css class
             lead = soup.find('div', class_="lead")
-        return "" if lead is None else lead.get_text(' ').strip().replace('\n', ' ')
+        # TODO check if we need replace
+        return self.get_text(lead, '').replace('\n', ' ')
 
     def get_article_text(self, url, soup) -> str:
         article = soup.find('div', class_="postContent")
@@ -30,7 +31,7 @@ class MetropolParser(ParserBase):
             # old css class
             article = soup.find('div', class_="story")
         assert_has_article(article, url)
-        return article.get_text(' ').strip()
+        return self.get_text(article)
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('div', class_='publicationDate')
@@ -38,11 +39,11 @@ class MetropolParser(ParserBase):
         if not date:
             date = soup.find('li', class_='date')
 
-        return dateparser.parse(date.get_text(' '))
+        return dateparser.parse(self.get_text(date))
 
     def get_tags(self, soup) -> Set[str]:
         tags = soup.find('div', class_="tags")
-        return set(tags.get_text(' ').strip().split('\n')) if tags else set()
+        return set(self.get_text(tags).split('\n')) if tags else set()
 
     def remove_captions(self, soup) -> BeautifulSoup:
         to_remove = []
