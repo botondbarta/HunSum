@@ -1,3 +1,4 @@
+import copy
 from datetime import datetime
 from typing import Optional, Set
 
@@ -34,10 +35,31 @@ class IndexParser(ParserBase):
 
     def get_lead(self, soup) -> Optional[str]:
         lead = soup.find('div', class_="lead")
+
+        if not lead:
+            leads = soup.select('div.cikk-torzs > p > strong')
+            lead_text = ' '.join(leads) if leads else None
+            if lead_text:
+                return lead_text
+
+        if not lead:
+            article = soup.find('div', class_='cikk-torzs')
+            if article:
+                leads = article.findAll(text=True, recursive=False)
+                lead_text = ' '.join([' '.join(lead.strip().split()) for lead in leads]).strip()
+                if lead_text:
+                    return lead_text
+
         return self.get_text(lead, '')
 
     def get_article_text(self, url, soup) -> str:
-        article = soup.find('div', class_="cikk-torzs")
+        article = copy.copy(soup.find('div', class_="cikk-torzs"))
+        # remove lead if exists
+        if article:
+            lead = next(article.select('div.cikk-torzs > p > strong'), None)
+            if lead:
+                lead.decompose()
+
         if not article:
             article = soup.find('div', class_="text")
 
@@ -58,10 +80,7 @@ class IndexParser(ParserBase):
         if not date:
             date = soup.find('span', class_='ido')
 
-        if not date:
-            return None
-
-        date = self.get_text(date)
+        date = self.get_text(date, '')
         if 'Módosítva' in date:
             date = date.split("Módosítva")[0].strip()
 
