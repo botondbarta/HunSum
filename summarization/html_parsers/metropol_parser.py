@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import Optional, Set
 
-import dateparser
 from bs4 import BeautifulSoup
 
 from summarization.html_parsers.parser_base import ParserBase
 from summarization.utils.assertion import assert_has_article, assert_has_title
+from summarization.utils.dateparser import DateParser
 
 
 class MetropolParser(ParserBase):
@@ -39,7 +39,7 @@ class MetropolParser(ParserBase):
         if not date:
             date = soup.find('li', class_='date')
 
-        return dateparser.parse(self.get_text(date))
+        return DateParser.parse(self.get_text(date))
 
     def get_tags(self, soup) -> Set[str]:
         tags = soup.find('div', class_="tags")

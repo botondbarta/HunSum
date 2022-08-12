@@ -1,14 +1,14 @@
 import copy
 from datetime import datetime
-from typing import Set, Optional
+from typing import Optional, Set
 
-import dateparser
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 
 from summarization.errors.invalid_page_error import InvalidPageError
 from summarization.html_parsers.parser_base import ParserBase
-from summarization.utils.assertion import assert_has_title, assert_has_article
+from summarization.utils.assertion import assert_has_article, assert_has_title
+from summarization.utils.dateparser import DateParser
 
 
 class HvgParser(ParserBase):
@@ -19,13 +19,13 @@ class HvgParser(ParserBase):
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         # new date
         date_tag = soup.find('time', class_='article-datetime')
-        date = dateparser.parse(self.get_text(date_tag, ''))
+        date = DateParser.parse(self.get_text(date_tag, ''))
         if date:
             return date
 
         # older date
         date_tags = soup.select('article.article > p.time > time')
-        date = dateparser.parse(self.get_text(date_tags[0], ''))
+        date = DateParser.parse(self.get_text(date_tags[0], ''))
         if date:
             return date
 
@@ -35,7 +35,7 @@ class HvgParser(ParserBase):
         title = next((x for x in titles if self.get_text(x) in self.get_text(tab_title)), None)
         if title:
             p = title.find_next_sibling('p')
-            date = dateparser.parse(self.get_text(p).split('\n')[0])
+            date = DateParser.parse(self.get_text(p).split('\n')[0])
             if date:
                 return date
 
@@ -44,7 +44,7 @@ class HvgParser(ParserBase):
         if time_img:
             parent = time_img.parent
             if parent.name == 'a':
-                date = dateparser.parse(self.get_text(parent))
+                date = DateParser.parse(self.get_text(parent))
                 if date:
                     return date
 
@@ -52,7 +52,7 @@ class HvgParser(ParserBase):
         divs = soup.find_all('div', class_='fl')
         for div in divs:
             date_string = self.get_text(div).split('\n')[0]
-            date = dateparser.parse(date_string)
+            date = DateParser.parse(date_string)
             if date:
                 return date
         return None
