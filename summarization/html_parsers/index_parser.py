@@ -38,7 +38,9 @@ class IndexParser(ParserBase):
 
         if not lead:
             leads = soup.select('div.cikk-torzs > p > strong')
-            lead = ' '.join(leads) if leads else None
+            lead_text = ' '.join(leads) if leads else None
+            if lead_text:
+                return lead_text
 
         if not lead:
             article = soup.find('div', class_='cikk-torzs')
@@ -78,10 +80,7 @@ class IndexParser(ParserBase):
         if not date:
             date = soup.find('span', class_='ido')
 
-        if not date:
-            return None
-
-        date = self.get_text(date)
+        date = self.get_text(date, '')
         if 'Módosítva' in date:
             date = date.split("Módosítva")[0].strip()
 
