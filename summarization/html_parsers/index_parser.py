@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import Optional, Set
 
-import dateparser
 from bs4 import BeautifulSoup
 
 from summarization.errors.invalid_page_error import InvalidPageError
 from summarization.html_parsers.parser_base import ParserBase
 from summarization.utils.assertion import assert_has_article, assert_has_title
+from summarization.utils.dateparser import DateParser
 
 
 class IndexParser(ParserBase):
@@ -65,7 +65,7 @@ class IndexParser(ParserBase):
         if 'Módosítva' in date:
             date = date.split("Módosítva")[0].strip()
 
-        return dateparser.parse(date)
+        return DateParser.parse(date)
 
     def get_tags(self, soup) -> Set[str]:
         tags_ul = soup.find('ul', class_="cikk-cimkek")

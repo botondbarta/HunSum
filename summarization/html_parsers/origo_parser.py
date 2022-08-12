@@ -2,12 +2,12 @@ import copy
 from datetime import datetime
 from typing import Optional, Set
 
-import dateparser
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup
 
 from summarization.errors.invalid_page_error import InvalidPageError
 from summarization.html_parsers.parser_base import ParserBase
 from summarization.utils.assertion import assert_has_article, assert_has_title
+from summarization.utils.dateparser import DateParser
 
 
 class OrigoParser(ParserBase):
@@ -81,7 +81,7 @@ class OrigoParser(ParserBase):
         if not date:
             date = soup.find('td', class_='cikkdatum')
             if date:
-                return dateparser.parse(self.get_text(date).split('|')[0].strip())
+                return DateParser.parse(self.get_text(date).split('|')[0].strip())
 
         if not date:
             date = soup.find('div', class_='article-date')
@@ -92,7 +92,7 @@ class OrigoParser(ParserBase):
         if not date:
             return None
 
-        return dateparser.parse(self.get_text(date))
+        return DateParser.parse(self.get_text(date))
 
     def get_tags(self, soup) -> Set[str]:
         tags = soup.select('div.article-tags a')

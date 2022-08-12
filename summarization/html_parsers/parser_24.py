@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import Optional, Set
 
-import dateparser
 from bs4 import BeautifulSoup
 
 from summarization.html_parsers.parser_base import ParserBase
 from summarization.utils.assertion import assert_has_article, assert_has_title
+from summarization.utils.dateparser import DateParser
 
 
 class Parser24(ParserBase):
@@ -42,14 +42,14 @@ class Parser24(ParserBase):
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('div', class_='author-content')
         if date and date.p:
-            return dateparser.parse(self.get_text(date.p))
+            return DateParser.parse(self.get_text(date.p))
 
         date = soup.find('span', class_='o-post__date')
         if date:
             date_text = self.get_text(date)
             if 'FRISS' in self.get_text(date):
                 date_text = date_text.split("FRISS")[0]
-            return dateparser.parse(date_text)
+            return DateParser.parse(date_text)
 
         if not date:
             date = soup.find('span', class_='m-author__catDateTitulusCreateDate')
@@ -57,10 +57,7 @@ class Parser24(ParserBase):
         if not date:
             date = soup.find('div', class_='m-author__wrapCatDateTitulus')
 
-        if not date:
-            return None
-
-        return dateparser.parse(self.get_text(date))
+        return DateParser.parse(self.get_text(date, ''))
 
     def get_tags(self, soup) -> Set[str]:
         tag = soup.find('a', class_='o-articleHead__catWrap')
