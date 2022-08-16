@@ -11,30 +11,53 @@ from summarization.utils.dateparser import DateParser
 class NLCParser(ParserBase):
     def get_title(self, url, soup) -> str:
         title = soup.find('h1', class_='o-post__title')
-        if title is None:
+        if not title:
             # old css class
             title = soup.find('h2', class_='o-post__title')
+
+        if not title:
+            title = soup.find('h1', class_='amp-wp-title')
+
         assert_has_title(title, url)
         return self.get_text(title)
 
     def get_lead(self, soup) -> Optional[str]:
         lead = soup.find('div', class_='o-post__lead')
+
+        if not lead:
+            lead = soup.find('div', class_='amp-wp-lead')
+
         return self.get_text(lead, '')
 
     def get_article_text(self, url, soup) -> str:
-        article = soup.find('div', class_='u-onlyArticlePages')
+        article = soup.find('div', class_='single-post-container-content')
+
+        if not article:
+            article = soup.find('div', class_='amp-wp-post-content')
+
         assert_has_article(article, url)
         return self.get_text(article)
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('div', class_='o-post__date')
 
-        return DateParser.parse(self.get_text(date))
+        if not date:
+            author_and_date = soup.find('div', _class='amp-wp-author')
+            if author_and_date:
+                date_string = self.get_text(author_and_date, '').split('|')[-1]
+                return DateParser.parse(date_string)
+
+        return DateParser.parse(self.get_text(date, ''))
 
     def get_tags(self, soup) -> Set[str]:
         tags = soup.find('div', class_='single-post-tags')
         if tags:
             return set(t for t in self.get_text(tags).split('\n'))
+
+        tags = soup.select('li > a.tag')
+        if tags:
+            return set(self.get_text(t) for t in tags)
+
         return set()
 
     def remove_captions(self, soup) -> BeautifulSoup:
@@ -53,6 +76,7 @@ class NLCParser(ParserBase):
         to_remove.extend(soup.find_all('blockquote', class_='embedly-card'))
         # drop recipe parts
         to_remove.extend(soup.find_all('div', class_='recipe-wrapper'))
+        to_remove.extend(soup.find_all('table'))
         for r in to_remove:
             r.decompose()
         return soup
