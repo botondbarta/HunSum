@@ -47,7 +47,7 @@ def main(src_directory, out_directory, sites):
                 except PageError as e:
                     logger.warning(e)
                 except Exception as e:
-                    logger.exception(e, f'in {page.url}')
+                    logger.error(e, f'in {page.url}')
             ArticleSerializer.serialize_articles(out_directory, site, articles)
             logger.info(f'Parsed file: {file_name}')
 
