@@ -70,7 +70,7 @@ class OrigoParser(ParserBase):
                 article.select('div.article-lead')[0].decompose()
 
         assert_has_article(article, url)
-        return self.get_text(article)
+        return self.get_text_with_filter(article)
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('span', class_='cikk-datum')

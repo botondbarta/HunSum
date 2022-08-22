@@ -1,3 +1,5 @@
+import os
+import pathlib
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Optional, Set
@@ -12,7 +14,8 @@ from summarization.models.page import Page
 
 class ParserBase(ABC):
     def __init__(self):
-        pass
+        self.filters = []
+        self.filters.append(os.path.join(pathlib.Path(__file__).parent.resolve(), 'filters/image_filter.py'))
 
     def get_article(self, page: Page) -> Article:
         soup = BeautifulSoup(page.html, 'html.parser')
@@ -28,6 +31,12 @@ class ParserBase(ABC):
     def get_text(self, tag: bs4.Tag, default=None):
         if tag:
             return pypandoc.convert_text(str(tag), 'plain', format='html', extra_args=['--wrap=none']).strip()
+        return default
+
+    def get_text_with_filter(self, tag: bs4.Tag, default=None):
+        if tag:
+            return pypandoc.convert_text(str(tag), 'plain', format='html', extra_args=['--wrap=none'],
+                                         filters=self.filters).strip()
         return default
 
     def check_page_is_valid(self, url, soup):
