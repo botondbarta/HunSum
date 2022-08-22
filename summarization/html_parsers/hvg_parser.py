@@ -117,7 +117,7 @@ class HvgParser(ParserBase):
                 return article_text
 
         assert_has_article(article, url)
-        return self.get_text_with_filter(article)
+        return self.get_text(article)
 
     def get_tags(self, soup) -> Set[str]:
         # new css

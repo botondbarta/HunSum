@@ -36,7 +36,7 @@ class NLCParser(ParserBase):
             article = soup.find('div', class_='amp-wp-post-content')
 
         assert_has_article(article, url)
-        return self.get_text_with_filter(article)
+        return self.get_text(article)
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('div', class_='o-post__date')
