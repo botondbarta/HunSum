@@ -14,8 +14,7 @@ from summarization.models.page import Page
 
 class ParserBase(ABC):
     def __init__(self):
-        self.filters = []
-        self.filters.append(os.path.join(pathlib.Path(__file__).parent.resolve(), 'filters/image_filter.py'))
+        pass
 
     def get_article(self, page: Page) -> Article:
         soup = BeautifulSoup(page.html, 'html.parser')
