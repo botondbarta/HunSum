@@ -1,3 +1,5 @@
+import os
+import pathlib
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Optional, Set
@@ -27,7 +29,8 @@ class ParserBase(ABC):
 
     def get_text(self, tag: bs4.Tag, default=None):
         if tag:
-            return pypandoc.convert_text(str(tag), 'plain', format='html', extra_args=['--wrap=none']).strip()
+            text = pypandoc.convert_text(str(tag), 'plain', format='html', extra_args=['--wrap=none']).strip()
+            return text.replace('[]', '')
         return default
 
     def check_page_is_valid(self, url, soup):
