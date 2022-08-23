@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#CC_CORPUS_PATH=$HOME/PycharmProjects/cc_corpus
 CC_CORPUS_PATH="$2"
 
 CC_CORPUS_SCRIPT_PATH=$CC_CORPUS_PATH/scripts
