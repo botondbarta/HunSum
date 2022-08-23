@@ -1,8 +1,8 @@
 import copy
 from datetime import datetime
-from typing import Optional, Set
+from typing import Optional, Set, List
 
-from bs4 import BeautifulSoup
+from bs4 import Tag
 from bs4.element import Comment
 
 from summarization.errors.invalid_page_error import InvalidPageError
@@ -142,7 +142,7 @@ class HvgParser(ParserBase):
 
         return set(self.get_text(tag) for tag in tags)
 
-    def remove_captions(self, soup) -> BeautifulSoup:
+    def get_html_tags_to_remove(self, soup) -> List[Tag]:
         to_remove = []
         to_remove.extend(soup.find_all('figure', class_='article-img'))
         to_remove.extend(soup.find_all('div', class_='video-container'))
@@ -151,6 +151,4 @@ class HvgParser(ParserBase):
         to_remove.extend(soup.find_all('div', class_='embedly-card'))
         to_remove.extend(soup.find_all('table', class_='picture'))
 
-        for r in to_remove:
-            r.decompose()
-        return soup
+        return to_remove

@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Optional, Set
+from typing import Optional, Set, List
 
-from bs4 import BeautifulSoup
+from bs4 import Tag
 
 from summarization.html_parsers.parser_base import ParserBase
 from summarization.utils.assertion import assert_has_article, assert_has_title
@@ -45,7 +45,7 @@ class MetropolParser(ParserBase):
         tags = soup.find('div', class_="tags")
         return set(self.get_text(tags).split('\n')) if tags else set()
 
-    def remove_captions(self, soup) -> BeautifulSoup:
+    def get_html_tags_to_remove(self, soup) -> List[Tag]:
         to_remove = []
         to_remove.extend(soup.find_all('div', class_='wp-caption'))
         to_remove.extend(soup.find_all('div', class_='endless-shared-area'))
@@ -55,6 +55,5 @@ class MetropolParser(ParserBase):
         to_remove.extend(soup.find_all('blockquote', class_='twitter-tweet'))
         to_remove.extend(soup.find_all('blockquote', class_='tiktok-embed'))
         to_remove.extend(soup.find_all('div', class_='fb-post'))
-        for r in to_remove:
-            r.decompose()
-        return soup
+
+        return to_remove

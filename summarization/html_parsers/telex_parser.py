@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Optional, Set
+from typing import Optional, Set, List
 
-from bs4 import BeautifulSoup
+from bs4 import Tag
 
 from summarization.errors.invalid_page_error import InvalidPageError
 from summarization.html_parsers.parser_base import ParserBase
@@ -55,10 +55,9 @@ class TelexParser(ParserBase):
         tags3 = [self.get_text(tag) for tag in soup.findAll('a', class_="meta tag")]
         return set(tags1 + tags2 + tags3)
 
-    def remove_captions(self, soup) -> BeautifulSoup:
+    def get_html_tags_to_remove(self, soup) -> List[Tag]:
         to_remove = []
         to_remove.extend(soup.find_all('div', class_='long-img'))
         to_remove.extend(soup.find_all('table'))
-        for r in to_remove:
-            r.decompose()
-        return soup
+
+        return to_remove

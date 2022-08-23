@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Optional, Set
+from typing import Optional, Set, List
 
-from bs4 import BeautifulSoup
+from bs4 import Tag
 
 from summarization.html_parsers.parser_base import ParserBase
 from summarization.utils.assertion import assert_has_article, assert_has_title
@@ -66,7 +66,7 @@ class Parser24(ParserBase):
             tag = soup.find('a', class_='tag')
         return set() if tag is None else set(tag)
 
-    def remove_captions(self, soup) -> BeautifulSoup:
+    def get_html_tags_to_remove(self, soup) -> List[Tag]:
         to_remove = []
         to_remove.extend(soup.find_all('blockquote', class_='instagram-media'))
         to_remove.extend(soup.find_all('blockquote', class_='twitter-tweet'))
@@ -82,6 +82,5 @@ class Parser24(ParserBase):
         to_remove.extend(soup.find_all('div', class_='sidebar'))
         to_remove.extend(soup.find_all('span', class_='category titulus'))
         to_remove.extend(soup.find_all('div', class_='ad-container'))
-        for r in to_remove:
-            r.decompose()
-        return soup
+
+        return to_remove

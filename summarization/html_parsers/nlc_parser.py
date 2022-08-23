@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Optional, Set
+from typing import Optional, Set, List
 
-from bs4 import BeautifulSoup
+from bs4 import Tag
 
 from summarization.html_parsers.parser_base import ParserBase
 from summarization.utils.assertion import assert_has_article, assert_has_title
@@ -60,7 +60,7 @@ class NLCParser(ParserBase):
 
         return set()
 
-    def remove_captions(self, soup) -> BeautifulSoup:
+    def get_html_tags_to_remove(self, soup) -> List[Tag]:
         to_remove = []
         to_remove.extend(soup.find_all('div', class_='o-post__authorWrap'))
         to_remove.extend(soup.find_all('div', class_='cikkkeptable'))
@@ -77,6 +77,5 @@ class NLCParser(ParserBase):
         # drop recipe parts
         to_remove.extend(soup.find_all('div', class_='recipe-wrapper'))
         to_remove.extend(soup.find_all('table'))
-        for r in to_remove:
-            r.decompose()
-        return soup
+
+        return to_remove
