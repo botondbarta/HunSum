@@ -21,14 +21,14 @@ do
     -q $URL \
     -o "$CC_DIR_PATH/$SITE/cc_index" \
     -l "$SITE.log" \
-    -m 2
+    -m 5
 
   echo 'Filtering index'
   python "$CC_CORPUS_SCRIPT_PATH"/filter_index.py \
     "$CC_DIR_PATH/$SITE/cc_index/" \
     "$CC_DIR_PATH/$SITE/cc_index_filtered/" \
     -a "$ALLOWED_MIMES_PATH" \
-    -P 2
+    -P 12
 
   echo 'Deduplicating index'
   python "$CC_CORPUS_SCRIPT_PATH"/deduplicate_index_urls.py \
