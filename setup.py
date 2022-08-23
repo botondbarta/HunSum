@@ -18,5 +18,6 @@ setup(
         'tldextract~=3.3.1',
         'beautifulsoup4~=4.11.1',
         'pypandoc~=1.8.1',
+        'warc3-wet',
     ]
 )
