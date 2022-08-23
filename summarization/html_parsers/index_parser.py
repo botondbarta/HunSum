@@ -1,8 +1,8 @@
 import copy
 from datetime import datetime
-from typing import Optional, Set
+from typing import Optional, Set, List
 
-from bs4 import BeautifulSoup
+from bs4 import Tag
 
 from summarization.errors.invalid_page_error import InvalidPageError
 from summarization.html_parsers.parser_base import ParserBase
@@ -92,7 +92,7 @@ class IndexParser(ParserBase):
             return set(self.get_text(c) for c in tags_ul.children)
         return set()
 
-    def remove_captions(self, soup) -> BeautifulSoup:
+    def get_html_tags_to_remove(self, soup) -> List[Tag]:
         to_remove = []
         to_remove.extend(soup.find_all('div', class_='cikk-bottom-text-ad'))
         to_remove.extend(soup.find_all('div', class_='szerkfotogallery'))
@@ -111,6 +111,5 @@ class IndexParser(ParserBase):
         to_remove.extend(soup.find_all('blockquote', class_='tiktok-embed'))
         to_remove.extend(soup.find_all('section', class_='connected'))
         to_remove.extend(soup.find_all('div', class_='post_bottom'))
-        for r in to_remove:
-            r.decompose()
-        return soup
+
+        return to_remove

@@ -1,12 +1,10 @@
-import os
-import pathlib
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Optional, Set
+from typing import Optional, Set, List
 
 import bs4
 import pypandoc
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 from summarization.models.article import Article
 from summarization.models.page import Page
@@ -57,5 +55,11 @@ class ParserBase(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def remove_captions(self, soup) -> BeautifulSoup:
+    def get_html_tags_to_remove(self, soup) -> List[Tag]:
         raise NotImplementedError
+
+    def remove_captions(self, soup) -> BeautifulSoup:
+        tags = self.get_html_tags_to_remove(soup)
+        for tag in tags:
+            tag.decompose()
+        return soup
