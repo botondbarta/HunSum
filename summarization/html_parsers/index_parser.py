@@ -38,7 +38,7 @@ class IndexParser(ParserBase):
 
         if not lead:
             leads = soup.select('div.cikk-torzs > p > strong')
-            lead_text = ' '.join(leads) if leads else None
+            lead_text = ' '.join([self.get_text(lead) for lead in leads]) if leads else None
             if lead_text:
                 return lead_text
 
@@ -56,7 +56,7 @@ class IndexParser(ParserBase):
         article = copy.copy(soup.find('div', class_="cikk-torzs"))
         # remove lead if exists
         if article:
-            lead = next(article.select('div.cikk-torzs > p > strong'), None)
+            lead = next(iter(article.select('div.cikk-torzs > p > strong')), None)
             if lead:
                 lead.decompose()
 
