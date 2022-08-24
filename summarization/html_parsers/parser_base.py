@@ -23,6 +23,11 @@ class ParserBase(ABC):
         article = self.get_article_text(page.url, html_soup)
         date_of_creation = self.get_date_of_creation(html_soup)
         tags = self.get_tags(html_soup)
+
+        # check if article contains lead
+        if article.startswith(lead):
+            article = article[len(lead):]
+
         return Article(title, lead, article, page.domain, page.url, date_of_creation, page.date, list(tags))
 
     def get_text(self, tag: bs4.Tag, default=None):
