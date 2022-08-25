@@ -67,6 +67,7 @@ class TelexParser(ParserBase):
     def get_html_tags_to_remove(self, soup) -> List[Tag]:
         to_remove = []
         to_remove.extend(soup.find_all('div', class_='long-img'))
+        to_remove.extend(soup.find_all('figure', class_='media'))
         to_remove.extend(soup.find_all('table'))
 
         return to_remove
