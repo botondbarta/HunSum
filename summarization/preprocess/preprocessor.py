@@ -22,7 +22,7 @@ class Preprocessor:
 
     def preprocess(self):
         sites = glob.glob(f'{self.config.src_dir}/*.jsonl.gz')
-        df_sites = [pd.read_json(f'{site}', lines=True, nrows=10000) for site in sites]
+        df_sites = [pd.read_json(f'{site}', lines=True) for site in sites]
 
         language_detector = LanguageDetector(model_path=self.config.lang_detector_model_path)
         tokenizer = Tokenizer()
