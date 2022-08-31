@@ -12,12 +12,15 @@ setup(
     install_requires=[
         'setuptools~=61.2.0',
         'dateparser~=1.1.1',
+        'dotmap~=1.3.30',
         'typing~=3.7.4.3',
+        'numpy~=1.23.2',
         'click~=8.0.4',
         'tqdm~=4.64.0',
         'tldextract~=3.3.1',
         'beautifulsoup4~=4.11.1',
         'pypandoc~=1.8.1',
+        'PyYAML~=6.0',
         # 'warc @ https://github.com/erroneousboat/warc3/archive/master.zip',
         'warc3-wet',
     ]
