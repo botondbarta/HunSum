@@ -2,6 +2,7 @@ src_dir: '/dir'
 out_dir: '/dir'
 min_jaccard: 0.35
 min_article_len: 10
+min_article_sentences: 4
 char_ngram: 9
 num_of_permutations: 200
 num_bands: 10
