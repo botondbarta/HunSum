@@ -8,6 +8,7 @@ from lsh.minhash import MinHasher
 from summarization.preprocess.language_detector import LanguageDetector
 from summarization.utils.config_reader import get_config_from_yaml
 from summarization.utils.data_helpers import parallelize_df_processing
+from summarization.utils.tokenizer import Tokenizer
 
 
 class Preprocessor:
@@ -21,9 +22,10 @@ class Preprocessor:
 
     def preprocess(self):
         sites = glob.glob(f'{self.config.src_dir}/*.jsonl.gz')
+        df_sites = [pd.read_json(f'{site}', lines=True, nrows=10000) for site in sites]
 
-        df_sites = [pd.read_json(f'{site}', lines=True) for site in sites]
         language_detector = LanguageDetector(model_path=self.config.lang_detector_model_path)
+        tokenizer = Tokenizer()
 
         # filter non-Hungarian sentences
         df_sites = [df[df['article']
@@ -33,6 +35,10 @@ class Preprocessor:
 
         df_sites = [df[df['article'].str.len() > self.config.min_article_len] for df in df_sites]
         df_sites = [df.drop_duplicates(subset=['article']) for df in df_sites]
+        # filter articles by number of sentences
+        df_sites = [df[df['article']
+                       .map(tokenizer.count_sentences) > self.config.min_article_sentences]
+                    for df in df_sites]
 
         # add fingerprint column to dfs
         df_sites = [parallelize_df_processing(df, self.create_fingerprints, cpu_count() // 2, 100) for df in df_sites]
@@ -54,15 +60,15 @@ class Preprocessor:
 
         for (left, right) in duplicates:
             (left_df, _, left_loc) = left.partition('_')
-            (right_df, _, rigth_loc) = right.partition('_')
+            (right_df, _, right_loc) = right.partition('_')
             left_row = dfs[int(left_df)].iloc[int(left_loc)]
-            right_row = dfs[int(right_df)].iloc[int(rigth_loc)]
+            right_row = dfs[int(right_df)].iloc[int(right_loc)]
 
             # drop the one with empty lead or earlier crawl time
-            drop = (left_df, left_loc) if left_row.lead == '' and right_row.lead != '' \
-                else (right_df, rigth_loc) if right_row.lead == '' and left_row.lead != '' \
-                else (left_df, left_loc) if left_row.cc_date < right_row.cc_date \
-                else (right_df, rigth_loc)
+            drop = (left_df, left_row.name) if left_row.lead == '' and right_row.lead != '' \
+                else (right_df, right_row.name) if right_row.lead == '' and left_row.lead != '' \
+                else (left_df, left_row.name) if left_row.cc_date < right_row.cc_date \
+                else (right_df, right_row.name)
             drops[drop[0]].append(int(drop[1]))
 
         for df_num, df_drops in drops.items():
