@@ -9,6 +9,14 @@ conda install -c conda-forge pandoc
 pip install -e .
 ```
 
+#### Install LSH package used for deduplication
+```bash
+git clone https://github.com/mattilyra/LSH
+cd LSH
+git checkout fix/filter_duplicates
+pip install -e .
+```
+
 ## Usage
 ### Download data from Common Crawl
 #### Install CommonCrawl Downloader
@@ -32,4 +40,12 @@ Arguments:
 ```bash
 cd summarization
 python entrypoints/run_parse_warc_pages.py ../../CommonCrawl ../../articles
+```
+
+### Deduplicate articles
+Arguments:
+* config file
+```bash
+cd summarization
+python entrypoints/preprocess.py preprocess.yaml
 ```
