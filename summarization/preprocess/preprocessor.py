@@ -25,9 +25,8 @@ class Preprocessor:
         df_sites = [pd.read_json(f'{site}', lines=True) for site in sites]
 
         language_detector = LanguageDetector(model_path=self.config.lang_detector_model_path)
-        tokenizer = Tokenizer()
 
-        # filter non-Hungarian sentences
+        # drop non-Hungarian sentences
         df_sites = [df[df['article']
                        .apply(lambda x: x.replace('\n', ' '))
                        .map(language_detector.predict) == 'hu']
@@ -35,9 +34,9 @@ class Preprocessor:
 
         df_sites = [df[df['article'].str.len() > self.config.min_article_len] for df in df_sites]
         df_sites = [df.drop_duplicates(subset=['article']) for df in df_sites]
+
         # filter articles by number of sentences
-        df_sites = [df[df['article']
-                       .map(tokenizer.count_sentences) > self.config.min_article_sentences]
+        df_sites = [parallelize_df_processing(df, self.filter_by_number_of_sentences, cpu_count() // 2, 100)
                     for df in df_sites]
 
         # add fingerprint column to dfs
@@ -79,6 +78,9 @@ class Preprocessor:
         for i, df in enumerate(dfs):
             for j in range(len(df)):
                 self.lsh.add_fingerprint(df.iloc[j].fingerprint, f'{i}_{j}')
+
+    def filter_by_number_of_sentences(self, df):
+        return df[df['article'].map(Tokenizer.count_sentences) > self.config.min_article_sentences]
 
     def create_fingerprints(self, df):
         df['fingerprint'] = df.apply(lambda row: self.hasher.fingerprint(row['article'].encode('utf8')), axis=1)
