@@ -1,5 +1,4 @@
 import glob
-import timeit
 from multiprocessing import cpu_count
 
 import pandas as pd
