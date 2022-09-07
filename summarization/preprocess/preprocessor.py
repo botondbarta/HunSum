@@ -25,8 +25,7 @@ class Preprocessor:
 
     def preprocess(self):
         sites = glob.glob(f'{self.config.src_dir}/*.jsonl.gz')
-        site_domains = [site.replace('.jsonl.gz', '').replace(f'{self.config.src_dir}/', '')
-                        for site in glob.glob('/home/bart/data/*.jsonl.gz')]
+        site_domains = [site.replace('.jsonl.gz', '').replace(f'{self.config.src_dir}/', '') for site in sites]
 
         language_detector = LanguageDetector(model_path=self.config.lang_detector_model_path)
 
