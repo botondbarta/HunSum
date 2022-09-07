@@ -8,6 +8,7 @@ from summarization.serializers.datetime_serializer import DateTimeEncoder
 
 @dataclass
 class Article:
+    uuid: str
     title: str
     lead: str
     article: str
