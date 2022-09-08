@@ -25,7 +25,7 @@ class ParserBase(ABC):
         tags = self.get_tags(html_soup)
 
         # check if article contains lead
-        if lead and article.startswith(lead):
+        if article.startswith(lead):
             article = article[len(lead):]
 
         return Article(title, lead, article, page.domain, page.url, date_of_creation, page.date, list(tags))
