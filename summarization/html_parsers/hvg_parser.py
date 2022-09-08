@@ -116,8 +116,9 @@ class HvgParser(ParserBase):
             if article_text != '':
                 return article_text
 
-        assert_has_article(article, url)
-        return self.get_text(article)
+        article_text = self.get_text(article)
+        assert_has_article(article_text, url)
+        return article_text
 
     def get_tags(self, soup) -> Set[str]:
         # new css
