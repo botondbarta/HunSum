@@ -17,17 +17,6 @@ class ParserBase(ABC):
         pass
 
     def get_article(self, page: Page) -> Article:
-        if page.url in ['https://index.hu/nagykep/2015/10/30/prix_pictet_2015_-_disorder/',
-                        'https://index.hu/gazdasag/2016/02/16/adosterkep_nav_adotartozok_listaja_nemzeti_adosterkep_maganszemelyek/',
-                        'https://index.hu/tudomany/urkutatas/2010/10/22/eleg_viz_van_a_holdon_egy_urbazishoz/',
-                        'https://index.hu/info/2019/11/21/lataselmeny_kompromisszumok_nelkul_progressziv_lencsevel/',
-                        'https://index.hu/kulfold/2011/02/21/mozgokepen_az_arab_vilag_lazongasa/9/',
-                        'https://index.hu/belfold/2019/01/30/abcug_lestyanszky_adam_siklaki_istvan_szocialpszichologia/',
-                        'https://index.hu/leszokik/2014/12/17/orvosi_vizsgalat_video/',
-                        'https://index.hu/sport/2002/12/11/kezi2002/']:
-            i = 5
-        else:
-            return Article('','','','','','','','',[''])
         soup = BeautifulSoup(page.html, 'html.parser')
         self.check_page_is_valid(page.url, soup)
         html_soup = self.remove_captions(soup)
