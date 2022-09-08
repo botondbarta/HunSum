@@ -28,12 +28,40 @@ class IndexParserTest(unittest.TestCase):
 
         self.assertEqual(title, 'Title')
 
+    def test_get_title_2(self):
+        soup = self._get_soup('index_2.html')
+
+        title = self.parser.get_title('url', soup)
+
+        self.assertEqual(title, 'Title')
+
+    def test_get_title_3(self):
+        soup = self._get_soup('index_3.html')
+
+        title = self.parser.get_title('url', soup)
+
+        self.assertEqual(title, 'Title')
+
+    def test_get_title_4(self):
+        soup = self._get_soup('index_4.html')
+
+        title = self.parser.get_title('url', soup)
+
+        self.assertEqual(title, 'Title')
+
     def test_get_lead_1(self):
         soup = self._get_soup('index_1.html')
 
         lead = self.parser.get_lead(soup)
 
         self.assertEqual(lead, 'Lead.')
+
+    def test_get_lead_2(self):
+        soup = self._get_soup('index_2.html')
+
+        lead = self.parser.get_lead(soup)
+
+        self.assertEqual(lead, 'Lead 1. Lead 2.')
 
     def test_get_tags_1(self):
         soup = self._get_soup('index_1.html')
@@ -50,8 +78,61 @@ class IndexParserTest(unittest.TestCase):
         expected = 'Text link text.\nNew line.\n\nNew paragraph.'
         self.assertEqual(article, expected)
 
+    def test_get_article_2(self):
+        soup = self._get_soup('index_2.html')
+
+        article = self.parser.get_article_text('url', soup)
+
+        expected = 'Text link text.\nNew line.\n\nNew paragraph.'
+        self.assertEqual(article, expected)
+
+    def test_get_article_3(self):
+        soup = self._get_soup('index_3.html')
+
+        article = self.parser.get_article_text('url', soup)
+
+        expected = 'Text link text.\nNew line.\n\nNew paragraph.'
+        self.assertEqual(article, expected)
+
+    def test_get_article_4(self):
+        soup = self._get_soup('index_4.html')
+
+        article = self.parser.get_article_text('url', soup)
+
+        expected = 'Text link text.\nNew line.\n\nNew paragraph.'
+        self.assertEqual(article, expected)
+
+    def test_get_article_5(self):
+        soup = self._get_soup('index_5.html')
+
+        article = self.parser.get_article_text('url', soup)
+
+        expected = 'Text link text.\nNew line.\n\nNew paragraph.'
+        self.assertEqual(article, expected)
+
     def test_get_date_1(self):
         soup = self._get_soup('index_1.html')
+
+        date = self.parser.get_date_of_creation(soup)
+
+        self.assertEqual(date, DateParser.parse('2021. január 14. – 10:22'))
+
+    def test_get_date_2(self):
+        soup = self._get_soup('index_2.html')
+
+        date = self.parser.get_date_of_creation(soup)
+
+        self.assertEqual(date, DateParser.parse('2021. január 14. – 10:22'))
+
+    def test_get_date_3(self):
+        soup = self._get_soup('index_3.html')
+
+        date = self.parser.get_date_of_creation(soup)
+
+        self.assertEqual(date, DateParser.parse('2021. január 14. – 10:22'))
+
+    def test_get_date_4(self):
+        soup = self._get_soup('index_4.html')
 
         date = self.parser.get_date_of_creation(soup)
 
