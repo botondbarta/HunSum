@@ -19,14 +19,10 @@ class IndexParser(ParserBase):
         title = soup.find('div', class_="content-title")
 
         if not title:
-            title = soup.find('div', class_="szoveg")
-            if title:
-                title = title.h1
+            title = next(iter(soup.select('div.szoveg > h1')), None)
 
         if not title:
-            title = soup.find('div', class_="content")
-            if title:
-                title = title.h1
+            title = next(iter(soup.select('div.content > h1')), None)
 
         if not title:
             title = soup.find('h3', class_="title")
@@ -43,22 +39,14 @@ class IndexParser(ParserBase):
             if lead_text:
                 return lead_text
 
-        if not lead:
-            article = soup.find('div', class_='cikk-torzs')
-            if article:
-                leads = article.findAll(text=True, recursive=False)
-                lead_text = ' '.join([' '.join(lead.strip().split()) for lead in leads]).strip()
-                if lead_text:
-                    return lead_text
-
         return self.get_text(lead, '')
 
     def get_article_text(self, url, soup) -> str:
         article = copy.copy(soup.find('div', class_="cikk-torzs"))
         # remove lead if exists
         if article:
-            lead = next(iter(article.select('div.cikk-torzs > p > strong')), None)
-            if lead:
+            leads = article.select('div.cikk-torzs > p > strong')
+            for lead in leads:
                 lead.decompose()
 
         if not article:
