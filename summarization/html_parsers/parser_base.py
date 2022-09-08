@@ -1,6 +1,8 @@
+import unicodedata
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Optional, Set, List
+from uuid import uuid4
 
 import bs4
 import pypandoc
@@ -28,7 +30,15 @@ class ParserBase(ABC):
         if article.startswith(lead):
             article = article[len(lead):]
 
-        return Article(title, lead, article, page.domain, page.url, date_of_creation, page.date, list(tags))
+        return Article(uuid=uuid4().__str__(),
+                       title=title,
+                       lead=lead,
+                       article=unicodedata.normalize('NFKD', article),
+                       domain=page.domain,
+                       url=page.url,
+                       date_of_creation=date_of_creation,
+                       cc_date=page.date,
+                       tags=list(tags))
 
     def get_text(self, tag: bs4.Tag, default=None):
         if tag:

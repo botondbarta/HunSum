@@ -10,6 +10,7 @@ telex.hu/kedvenceink.*
 telex.hu/legfrissebb.*
 telex.hu/legfontosabb.*
 telex.hu/vesezo/.*
+telex.hu/english/.*
 index.hu/wanted/.*
 index.hu/24ora/\?cimke=.*
 index.hu/kultur/musor/.*
@@ -38,6 +39,7 @@ hvg.hu/velemeny/.*
 hvg.hu/video/.*
 hvg.hu/nagyitas/.*
 hvg.hu/videotag/.*
+hvg.hu/english/.*
 origo.hu/index.html\?u=http.*
 origo.hu/cimkek/.*
 origo.hu/index.html\?cID=.*
