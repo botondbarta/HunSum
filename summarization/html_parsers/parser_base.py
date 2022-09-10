@@ -19,7 +19,7 @@ class ParserBase(ABC):
     def get_article(self, page: Page) -> Article:
         soup = BeautifulSoup(page.html, 'html.parser')
         self.check_page_is_valid(page.url, soup)
-        html_soup = self.remove_captions(soup)
+        html_soup = self.remove_html_tags(soup)
         title = self.get_title(page.url, html_soup)
         lead = self.get_lead(html_soup)
         article = self.get_article_text(page.url, html_soup)
@@ -73,8 +73,9 @@ class ParserBase(ABC):
     def get_html_tags_to_remove(self, soup) -> List[Tag]:
         raise NotImplementedError
 
-    def remove_captions(self, soup) -> BeautifulSoup:
+    def remove_html_tags(self, soup) -> BeautifulSoup:
         tags = self.get_html_tags_to_remove(soup)
+        tags.extend(soup.find_all('table'))
         for tag in tags:
             tag.decompose()
         return soup

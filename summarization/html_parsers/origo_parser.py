@@ -48,7 +48,7 @@ class OrigoParser(ParserBase):
         if not lead:
             lead = soup.find('td', id='lead')
 
-        return self.get_text(lead)
+        return self.get_text(lead, '')
 
     def get_article_text(self, url, soup) -> str:
         article = soup.find('div', id='kenyer-szov')
@@ -69,8 +69,9 @@ class OrigoParser(ParserBase):
             if article and article.select('div.article-lead'):
                 article.select('div.article-lead')[0].decompose()
 
-        assert_has_article(article, url)
-        return self.get_text(article)
+        article_text = self.get_text(article)
+        assert_has_article(article_text, url)
+        return article_text
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('span', class_='cikk-datum')
