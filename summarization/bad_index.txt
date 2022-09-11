@@ -31,6 +31,7 @@ metropol.hu/author/.*
 metropol.hu/rejtvenyek/.*
 nlc.hu/cimke/.*
 nlc.hu/alomszotar/.*
+nlc.hu/kepeslap/kategoria/.*
 hvg.hu/360/.*
 hvg.hu/cimke/.*
 hvg.hu/hetilap/.*
