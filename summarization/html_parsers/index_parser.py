@@ -58,8 +58,9 @@ class IndexParser(ParserBase):
         if not article:
             article = soup.find('div', class_="szoveg")
 
-        assert_has_article(article, url)
-        return self.get_text(article)
+        article_text = self.get_text(article)
+        assert_has_article(article_text, url)
+        return article_text
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('div', class_='datum')
@@ -82,6 +83,10 @@ class IndexParser(ParserBase):
     def get_html_tags_to_remove(self, soup) -> List[Tag]:
         to_remove = []
         to_remove.extend(soup.find_all('div', class_='cikk-bottom-text-ad'))
+        to_remove.extend(soup.find_all('div', class_='cikk-bottom-box'))
+        to_remove.extend(soup.find_all('div', class_='pr__cikk-bottomcontent'))
+        to_remove.extend(soup.find_all('nav', class_='pager'))
+        to_remove.extend(soup.find_all('div', class_='iframe-embed-container'))
         to_remove.extend(soup.find_all('div', class_='szerkfotogallery'))
         to_remove.extend(soup.find_all('div', class_='szerkfotoimage'))
 
@@ -100,5 +105,6 @@ class IndexParser(ParserBase):
         to_remove.extend(soup.find_all('blockquote', class_='tiktok-embed'))
         to_remove.extend(soup.find_all('section', class_='connected'))
         to_remove.extend(soup.find_all('div', class_='post_bottom'))
+        to_remove.extend(soup.find_all('div', class_='nm_mini__wrapper'))
 
         return to_remove
