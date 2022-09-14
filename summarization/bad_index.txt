@@ -36,6 +36,7 @@ nlc.hu/kepeslap/.*
 nlc.hu/forum/.*
 nlc.hu/ujhozzaszolas/.*
 nlc.hu/szerzo/.*
+nlc.hu/nyeremenyjatekok/.*
 hvg.hu/360/.*
 hvg.hu/cimke/.*
 hvg.hu/hetilap/.*
@@ -51,3 +52,4 @@ origo.hu/index.html\?cID=.*
 origo.hu/newsfeed/index.html\?cID=.*
 origo.hu/hir-archivum/.*
 origo.hu/allas/cimkek/index.html\?cimke=.*
+origo.hu.*/percrolpercre/.*
