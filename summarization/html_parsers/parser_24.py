@@ -83,5 +83,7 @@ class Parser24(ParserBase):
         to_remove.extend(soup.find_all('div', class_='sidebar'))
         to_remove.extend(soup.find_all('span', class_='category titulus'))
         to_remove.extend(soup.find_all('div', class_='ad-container'))
+        to_remove.extend(soup.find_all('div', class_='central-wp-gallery-wrapper'))
+        to_remove.extend(soup.find_all(lambda t: t and 'central-wp-gallery' in t))
 
         return to_remove
