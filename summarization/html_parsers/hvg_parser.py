@@ -116,7 +116,7 @@ class HvgParser(ParserBase):
             if article_text != '':
                 return article_text
 
-        article_text = self.get_text(article)
+        article_text = self.get_text(article, remove_img=True)
         assert_has_article(article_text, url)
         return article_text
 

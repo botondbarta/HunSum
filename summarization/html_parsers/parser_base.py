@@ -22,9 +22,9 @@ class ParserBase(ABC):
         html_soup = self.remove_html_tags(soup)
         title = self.get_title(page.url, html_soup)
         lead = self.get_lead(html_soup)
-        article = self.get_article_text(page.url, html_soup)
         date_of_creation = self.get_date_of_creation(html_soup)
         tags = self.get_tags(html_soup)
+        article = self.get_article_text(page.url, html_soup)
 
         # check if article contains lead
         if article.startswith(lead):
@@ -40,10 +40,12 @@ class ParserBase(ABC):
                        cc_date=page.date,
                        tags=list(tags))
 
-    def get_text(self, tag: bs4.Tag, default=None) -> str:
+    def get_text(self, tag: bs4.Tag, default=None, remove_img=False) -> str:
         if tag:
-            text = pypandoc.convert_text(str(tag), 'plain', format='html', extra_args=['--wrap=none']).strip()
-            return text.replace('[]', '')
+            # remove images
+            if remove_img:
+                [img_tag.decompose() for img_tag in tag.select('img')]
+            return pypandoc.convert_text(str(tag), 'plain', format='html', extra_args=['--wrap=none']).strip()
         return default
 
     def check_page_is_valid(self, url, soup):
