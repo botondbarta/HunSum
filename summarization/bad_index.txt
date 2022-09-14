@@ -11,6 +11,7 @@ telex.hu/legfrissebb.*
 telex.hu/legfontosabb.*
 telex.hu/vesezo/.*
 telex.hu/english/.*
+telex.hu/english\?.*
 index.hu/wanted/.*
 index.hu/24ora/\?cimke=.*
 index.hu/kultur/musor/.*
@@ -31,6 +32,7 @@ metropol.hu/author/.*
 metropol.hu/rejtvenyek/.*
 nlc.hu/cimke/.*
 nlc.hu/alomszotar/.*
+nlc.hu/kepeslap/kategoria/.*
 hvg.hu/360/.*
 hvg.hu/cimke/.*
 hvg.hu/hetilap/.*
