@@ -133,4 +133,5 @@ class OrigoParser(ParserBase):
         to_remove.extend(soup.find_all('table', class_='szerk-table'))
         to_remove.extend(soup.find_all('span', class_='source'))
 
+        to_remove.extend(soup.find_all('div', class_='oab-related'))
         return to_remove
