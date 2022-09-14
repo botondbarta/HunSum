@@ -24,5 +24,7 @@ setup(
         # 'warc @ https://github.com/erroneousboat/warc3/archive/master.zip',
         'warc3-wet',
         'quntoken~=3.1.8',
+        'Cython',
+        'fasttext',
     ]
 )
