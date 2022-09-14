@@ -40,7 +40,7 @@ class ParserBase(ABC):
                        cc_date=page.date,
                        tags=list(tags))
 
-    def get_text(self, tag: bs4.Tag, default=None):
+    def get_text(self, tag: bs4.Tag, default=None) -> str:
         if tag:
             text = pypandoc.convert_text(str(tag), 'plain', format='html', extra_args=['--wrap=none']).strip()
             return text.replace('[]', '')
@@ -54,7 +54,7 @@ class ParserBase(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_lead(self, soup) -> Optional[str]:
+    def get_lead(self, soup) -> str:
         raise NotImplementedError
 
     @abstractmethod

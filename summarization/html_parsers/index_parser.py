@@ -17,15 +17,12 @@ class IndexParser(ParserBase):
 
     def get_title(self, url, soup) -> str:
         title = soup.find('div', class_="content-title")
-        if not title:
-            title = soup.find('div', class_="szoveg")
-            if title:
-                title = title.h1
 
         if not title:
-            title = soup.find('div', class_="content")
-            if title:
-                title = title.h1
+            title = next(iter(soup.select('div.szoveg > h1')), None)
+
+        if not title:
+            title = next(iter(soup.select('div.content > h1')), None)
 
         if not title:
             title = soup.find('h3', class_="title")
@@ -42,22 +39,14 @@ class IndexParser(ParserBase):
             if lead_text:
                 return lead_text
 
-        if not lead:
-            article = soup.find('div', class_='cikk-torzs')
-            if article:
-                leads = article.findAll(text=True, recursive=False)
-                lead_text = ' '.join([' '.join(lead.strip().split()) for lead in leads]).strip()
-                if lead_text:
-                    return lead_text
-
         return self.get_text(lead, '')
 
     def get_article_text(self, url, soup) -> str:
         article = copy.copy(soup.find('div', class_="cikk-torzs"))
         # remove lead if exists
         if article:
-            lead = next(iter(article.select('div.cikk-torzs > p > strong')), None)
-            if lead:
+            leads = article.select('div.cikk-torzs > p > strong')
+            for lead in leads:
                 lead.decompose()
 
         if not article:
@@ -88,10 +77,8 @@ class IndexParser(ParserBase):
         return DateParser.parse(date)
 
     def get_tags(self, soup) -> Set[str]:
-        tags_ul = soup.find('ul', class_="cikk-cimkek")
-        if tags_ul:
-            return set(self.get_text(c) for c in tags_ul.children)
-        return set()
+        tags = soup.select('ul.cikk-cimkek > li > a')
+        return set(self.get_text(tag) for tag in tags)
 
     def get_html_tags_to_remove(self, soup) -> List[Tag]:
         to_remove = []
@@ -107,10 +94,12 @@ class IndexParser(ParserBase):
         to_remove.extend(soup.find_all('aside', class_='m-automatic-file-snippet'))
         to_remove.extend(soup.find_all('div', class_='m-kepkuldes-box'))
         to_remove.extend(soup.find_all('div', class_='nm_supported__wrapper'))
+        to_remove.extend(soup.find_all('div', class_='nm_thanks__wrapper'))
         to_remove.extend(soup.find_all('div', class_='photographer'))
 
         to_remove.extend(soup.find_all('div', class_='indavideo'))
         to_remove.extend(soup.find_all('div', id='socialbox_facebook'))
+        to_remove.extend(soup.find_all('div', id='index-social-box'))
         to_remove.extend(soup.find_all('blockquote', class_='twitter-tweet'))
         to_remove.extend(soup.find_all('div', class_='twitter-tweet'))
         to_remove.extend(soup.find_all('blockquote', class_='tiktok-embed'))
