@@ -97,7 +97,7 @@ class TelexParserTest(unittest.TestCase):
 
         html_tags = self.parser.get_html_tags_to_remove(soup)
 
-        self.assertEqual(len(html_tags), 2)
+        self.assertEqual(len(html_tags), 1)
 
     def test_check_if_page_is_valid(self):
         soup = self._get_soup('telex_4.html')

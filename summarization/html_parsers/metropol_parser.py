@@ -31,7 +31,7 @@ class MetropolParser(ParserBase):
             # old css class
             article = soup.find('div', class_="story")
 
-        article_text = self.get_text(article)
+        article_text = self.get_text(article, remove_img=True)
         assert_has_article(article_text, url)
         return article_text
 

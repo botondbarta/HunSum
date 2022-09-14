@@ -42,7 +42,7 @@ class TelexParser(ParserBase):
     def get_article_text(self, url, soup) -> str:
         article = soup.find('div', class_="article-html-content")
 
-        article_text = self.get_text(article)
+        article_text = self.get_text(article, remove_img=True)
         assert_has_article(article_text, url)
         return article_text
 

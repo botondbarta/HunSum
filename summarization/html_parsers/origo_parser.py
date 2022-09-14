@@ -69,7 +69,7 @@ class OrigoParser(ParserBase):
             if article and article.select('div.article-lead'):
                 article.select('div.article-lead')[0].decompose()
 
-        article_text = self.get_text(article)
+        article_text = self.get_text(article, remove_img=True)
         assert_has_article(article_text, url)
         return article_text
 
