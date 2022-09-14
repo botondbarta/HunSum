@@ -11,6 +11,7 @@ telex.hu/legfrissebb.*
 telex.hu/legfontosabb.*
 telex.hu/vesezo/.*
 telex.hu/english/.*
+telex.hu/english\?.*
 index.hu/wanted/.*
 index.hu/24ora/\?cimke=.*
 index.hu/kultur/musor/.*

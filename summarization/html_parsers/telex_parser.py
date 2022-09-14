@@ -60,6 +60,8 @@ class TelexParser(ParserBase):
     def get_html_tags_to_remove(self, soup) -> List[Tag]:
         to_remove = []
         to_remove.extend(soup.find_all('div', class_='long-img'))
-        to_remove.extend(soup.find_all('table'))
+        to_remove.extend(soup.find_all('figure', class_='image'))
+        # Ide kattintva olvashatók a Telex legfrissebb hírei. / > > > > A Telex legfrissebb híreit itt találja > > > >
+        to_remove.extend(soup.select('p > a[href="/legfrissebb"] > strong'))
 
         return to_remove
