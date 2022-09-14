@@ -71,6 +71,7 @@ class NLCParser(ParserBase):
         to_remove.extend(soup.find_all('div', class_='u-sponsoredBottom'))
         to_remove.extend(soup.find_all('div', class_='wp-caption'))
         to_remove.extend(soup.find_all('div', class_='m-relatedWidget'))
+        to_remove.extend(soup.find_all('div', class_='related-picture'))
         to_remove.extend(soup.find_all('div', class_='o-cegPostCnt'))
         to_remove.extend(soup.find_all('div', class_='m-embed'))
         # pinterest
@@ -78,5 +79,9 @@ class NLCParser(ParserBase):
         # drop recipe parts
         to_remove.extend(soup.find_all('div', class_='recipe-wrapper'))
         to_remove.extend(soup.find_all('table'))
+
+        to_remove.extend(soup.find_all('iframe', class_='instagram-media'))
+        to_remove.extend(soup.find_all('blockquote', class_='instagram-media'))
+        to_remove.extend(soup.find_all('div', class_='fb-video'))
 
         return to_remove
