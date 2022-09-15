@@ -65,8 +65,6 @@ class NLCParser(ParserBase):
         to_remove = []
         to_remove.extend(soup.find_all('div', class_='o-post__authorWrap'))
         to_remove.extend(soup.find_all('div', class_='cikkkeptable'))
-        to_remove.extend(soup.find_all('table', class_='cikkkeptable'))
-        to_remove.extend(soup.find_all('table', class_='tabla_babazzunk'))
         to_remove.extend(soup.find_all('div', class_='banner-container'))
         to_remove.extend(soup.find_all('div', class_='u-sponsoredBottom'))
         to_remove.extend(soup.find_all('div', class_='wp-caption'))
