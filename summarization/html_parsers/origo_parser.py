@@ -130,7 +130,6 @@ class OrigoParser(ParserBase):
         # pics
         to_remove.extend([img.parent for img in soup.select('p[align=center] img')])
         # explanatory texts at the end of the articles
-        to_remove.extend(soup.find_all('table', class_='szerk-table'))
         to_remove.extend(soup.find_all('span', class_='source'))
 
         to_remove.extend(soup.find_all('div', class_='oab-related'))

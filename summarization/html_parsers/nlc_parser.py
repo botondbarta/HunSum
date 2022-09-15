@@ -78,7 +78,6 @@ class NLCParser(ParserBase):
         to_remove.extend(soup.find_all('blockquote', class_='embedly-card'))
         # drop recipe parts
         to_remove.extend(soup.find_all('div', class_='recipe-wrapper'))
-        to_remove.extend(soup.find_all('table'))
 
         to_remove.extend(soup.find_all('iframe', class_='instagram-media'))
         to_remove.extend(soup.find_all('blockquote', class_='instagram-media'))

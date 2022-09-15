@@ -150,6 +150,5 @@ class HvgParser(ParserBase):
         to_remove.extend(soup.find_all('blockquote', class_='twitter-tweet'))
         to_remove.extend(soup.find_all('blockquote', class_='tiktok-embed'))
         to_remove.extend(soup.find_all('div', class_='embedly-card'))
-        to_remove.extend(soup.find_all('table', class_='picture'))
 
         return to_remove
