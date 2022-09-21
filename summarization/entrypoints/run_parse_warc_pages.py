@@ -1,11 +1,16 @@
 import glob
+import multiprocessing as mp
 from os import listdir, mkdir, path
+from typing import Iterable, Optional
 
 import click
+from multiprocessing_logging import install_mp_handler
 from tqdm import tqdm
 
 from summarization.errors.page_error import PageError
 from summarization.html_parsers.parser_factory import HtmlParserFactory
+from summarization.models.article import Article
+from summarization.models.page import Page
 from summarization.serializers.article_serializer import ArticleSerializer
 from summarization.utils.logger import get_logger
 from summarization.warc_parser.warc_parser import WarcParser
@@ -14,8 +19,9 @@ from summarization.warc_parser.warc_parser import WarcParser
 @click.command()
 @click.argument('src_directory')
 @click.argument('out_directory')
+@click.option('--num_process', default=1, type=click.INT)
 @click.option('--sites', default='all', help='Sites to scrape, separated by commas')
-def main(src_directory, out_directory, sites):
+def main(src_directory, out_directory, num_process, sites):
     warc_parser = WarcParser('bad_index.txt')
 
     make_out_dir_if_not_exists(out_directory)
@@ -40,14 +46,30 @@ def main(src_directory, out_directory, sites):
             articles = []
             logger.info(f'Parsing file: {file_name}')
             file_path = path.join(subdirectory, file_name)
-            for page in tqdm(warc_parser.iter_pages(file_path)):
-                try:
-                    article = parser.get_article(page)
-                    articles.append(article)
-                except PageError as e:
-                    logger.warning(e)
-                except Exception as e:
-                    logger.exception(e, f'in {page.url}')
+            if num_process <= 1:
+                for page in tqdm(warc_parser.iter_pages(file_path)):
+                    try:
+                        article = parser.get_article(page)
+                        articles.append(article)
+                    except PageError as e:
+                        logger.warning(e)
+                    except Exception as e:
+                        logger.exception(e, f'in {page.url}')
+            else:
+                pbar = tqdm()
+                install_mp_handler()
+                proc_pool = mp.Pool(num_process)
+                for result in proc_pool.imap_unordered(process_page,
+                                                       iter_pages_with_args(warc_parser.iter_pages(file_path),
+                                                                            parser,
+                                                                            logger)):
+                    if result:
+                        articles.append(result)
+                    pbar.update()
+
+                proc_pool.close()
+                proc_pool.join()
+                pbar.close()
             ArticleSerializer.serialize_articles(out_directory, site, articles)
             logger.info(f'Parsed file: {file_name}')
 
@@ -82,6 +104,23 @@ def get_previously_parsed_segments(out_directory, site):
 def make_out_dir_if_not_exists(out_directory):
     if not path.exists(out_directory):
         mkdir(out_directory)
+
+
+def iter_pages_with_args(iterator: Iterable[Page], parser, logging):
+    for page in iterator:
+        yield page, parser, logging
+
+
+def process_page(params) -> Optional[Article]:
+    (page, parser, logger) = params
+    try:
+        article = parser.get_article(page)
+        return article
+    except PageError as e:
+        logger.warning(e)
+    except Exception as e:
+        logger.exception(e, f'in {page.url}')
+    return None
 
 
 if __name__ == '__main__':
