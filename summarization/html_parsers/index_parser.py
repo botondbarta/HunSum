@@ -107,5 +107,6 @@ class IndexParser(ParserBase):
         to_remove.extend(soup.find_all('div', class_='post_bottom'))
         to_remove.extend(soup.find_all('div', class_='nm_mini__wrapper'))
         to_remove.extend(soup.find_all('div', class_='table_container'))
+        to_remove.extend(soup.find_all('div', class_='szoveg_spec_container'))
 
         return to_remove
