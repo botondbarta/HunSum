@@ -48,8 +48,10 @@ hvg.hu/videotag/.*
 hvg.hu/english/.*
 origo.hu/index.html\?u=http.*
 origo.hu/cimkek/.*
-origo.hu/index.html\?cID=.*
+origo.hu/index.html\?.*
 origo.hu/newsfeed/index.html\?cID=.*
 origo.hu/hir-archivum/.*
 origo.hu/allas/cimkek/index.html\?cimke=.*
 origo.hu.*/percrolpercre/.*
+origo.hu/.*/galeria/.*
+origo.hu/foto/multimedia/.*
