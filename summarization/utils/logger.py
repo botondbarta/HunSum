@@ -8,7 +8,7 @@ def get_logger(name, log_file):
     ch = logging.StreamHandler(sys.stdout)
     ch.setFormatter(formatter)
 
-    file_handler = logging.FileHandler(log_file, mode='w')
+    file_handler = logging.FileHandler(log_file, mode='a')
     file_handler.setFormatter(formatter)
 
     log = logging.getLogger(name)

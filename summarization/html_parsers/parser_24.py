@@ -65,7 +65,7 @@ class Parser24(ParserBase):
         if tag is None:
             # old css class
             tag = soup.find('a', class_='tag')
-        return set() if tag is None else set(tag)
+        return set() if tag is None else {self.get_text(tag)}
 
     def get_html_tags_to_remove(self, soup) -> List[Tag]:
         to_remove = []
