@@ -1,8 +1,11 @@
 src_dir: '/dir'
 out_dir: '/dir'
 min_jaccard: 0.35
-min_article_len: 10
-min_article_sentences: 4
+min_lead_tokens: 6
+max_lead_sentences: 5
+min_article_len: 200
+max_article_len: 15000
+min_article_sentences: 6
 char_ngram: 9
 num_of_permutations: 200
 num_bands: 10
