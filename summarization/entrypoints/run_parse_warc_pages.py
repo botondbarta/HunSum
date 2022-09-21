@@ -48,13 +48,9 @@ def main(src_directory, out_directory, num_process, sites):
             file_path = path.join(subdirectory, file_name)
             if num_process <= 1:
                 for page in tqdm(warc_parser.iter_pages(file_path)):
-                    try:
-                        article = parser.get_article(page)
+                    article = process_page((page, parser, logger))
+                    if article:
                         articles.append(article)
-                    except PageError as e:
-                        logger.warning(e)
-                    except Exception as e:
-                        logger.exception(e, f'in {page.url}')
             else:
                 pbar = tqdm()
                 install_mp_handler()
