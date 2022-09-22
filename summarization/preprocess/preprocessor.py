@@ -2,6 +2,7 @@ import glob
 import os
 from distutils.util import strtobool
 from multiprocessing import cpu_count
+from os import path
 
 import pandas as pd
 from lsh.cache import Cache
@@ -11,6 +12,7 @@ from summarization.preprocess.language_detector import LanguageDetector
 from summarization.utils.config_reader import get_config_from_yaml
 from summarization.utils.data_helpers import parallelize_df_processing
 from summarization.utils.dateparser import DateParser
+from summarization.utils.logger import get_logger
 from summarization.utils.tokenizer import Tokenizer
 
 
@@ -24,6 +26,9 @@ class Preprocessor:
         self.lsh = Cache(self.hasher, num_bands=self.config.num_bands)
 
     def preprocess(self):
+        log_file = path.join(self.config.out_dir, 'log.txt')
+        logger = get_logger('preprocess', log_file)
+
         sites = glob.glob(f'{self.config.src_dir}/*.jsonl.gz')
         site_domains = [site.replace('.jsonl.gz', '').replace(f'{self.config.src_dir}/', '') for site in sites]
 
@@ -31,17 +36,28 @@ class Preprocessor:
 
         for site in sites:
             df_site = pd.read_json(f'{site}', lines=True)
+            logger.info(f'Processing {site}, size: {len(df_site)}')
 
             df_site = self._drop_non_hungarian_sentences(df_site, language_detector)
+            logger.info(f'Dropped non-Hungarian sentences, size: {len(df_site)}')
 
             # drop articles where lead is longer than article
             df_site = df_site[df_site['article'].str.len() > df_site['lead'].str.len()]
+            logger.info(f'Dropped articles where lead is longer than article, size: {len(df_site)}')
 
             df_site = df_site[df_site['article'].str.len().between(self.config.min_article_len,
                                                                    self.config.max_article_len)]
+            logger.info(f'Dropped articles where article is too long or short, size: {len(df_site)}')
+
             df_site = parallelize_df_processing(df_site, self.filter_by_min_article_sentences, cpu_count() // 2, 100)
+            logger.info(f'Dropped articles where article is not at least {self.filter_by_min_article_sentences} '
+                        f'sentence, size: {len(df_site)}')
             df_site = parallelize_df_processing(df_site, self.filter_by_min_lead_tokens, cpu_count() // 2, 100)
+            logger.info(f'Dropped articles where lead is not at least {self.filter_by_min_lead_tokens} '
+                        f'token, size: {len(df_site)}')
             df_site = parallelize_df_processing(df_site, self.filter_by_max_lead_sentences, cpu_count() // 2, 100)
+            logger.info(f'Dropped articles where lead is longer than {self.filter_by_max_lead_sentences} '
+                        f'sentence, size: {len(df_site)}')
 
             # add fingerprint column to df
             df_site = parallelize_df_processing(df_site, self.create_fingerprints, cpu_count() // 2, 100)
@@ -56,7 +72,7 @@ class Preprocessor:
         # remove duplicates from the temporary files and remove them from disk
         for (domain, drops) in duplicates_to_drop.items():
             df_site = pd.read_json(f'{self.config.src_dir}/{domain}_temp.jsonl.gz', lines=True)
-
+            logger.info(f'Dropping {len(drops)} duplicates from {domain}')
             df_site = df_site[~df_site.uuid.isin(drops)]
             df_site.to_json(f'{self.config.out_dir}/{domain}_dedup.jsonl.gz', orient='records',
                             lines=True, compression='gzip')
