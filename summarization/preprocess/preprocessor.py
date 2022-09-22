@@ -52,13 +52,13 @@ class Preprocessor:
             logger.info(f'Dropped articles where article is too long or short, size: {len(df_site)}')
 
             df_site = parallelize_df_processing(df_site, self.filter_by_min_article_sentences, cpu_count() // 2, 100)
-            logger.info(f'Dropped articles where article is not at least {self.config.filter_by_min_article_sentences} '
+            logger.info(f'Dropped articles where article is not at least {self.config.min_article_sentences} '
                         f'sentence, size: {len(df_site)}')
             df_site = parallelize_df_processing(df_site, self.filter_by_min_lead_tokens, cpu_count() // 2, 100)
-            logger.info(f'Dropped articles where lead is not at least {self.config.filter_by_min_lead_tokens} '
+            logger.info(f'Dropped articles where lead is not at least {self.config.min_lead_tokens} '
                         f'token, size: {len(df_site)}')
             df_site = parallelize_df_processing(df_site, self.filter_by_max_lead_sentences, cpu_count() // 2, 100)
-            logger.info(f'Dropped articles where lead is longer than {self.config.filter_by_max_lead_sentences} '
+            logger.info(f'Dropped articles where lead is longer than {self.config.max_lead_sentences} '
                         f'sentence, size: {len(df_site)}')
 
             # add fingerprint column to df
