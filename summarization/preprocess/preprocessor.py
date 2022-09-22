@@ -33,8 +33,15 @@ class Preprocessor:
             df_site = pd.read_json(f'{site}', lines=True)
 
             df_site = self._drop_non_hungarian_sentences(df_site, language_detector)
-            df_site = df_site[df_site['article'].str.len() > self.config.min_article_len]
-            df_site = parallelize_df_processing(df_site, self.filter_by_number_of_sentences, cpu_count() // 2, 100)
+
+            # drop articles where lead is longer than article
+            df_site = df_site[df_site['article'].str.len() > df_site['lead'].str.len()]
+
+            df_site = df_site[df_site['article'].str.len().between(self.config.min_article_len,
+                                                                   self.config.max_article_len)]
+            df_site = parallelize_df_processing(df_site, self.filter_by_min_article_sentences, cpu_count() // 2, 100)
+            df_site = parallelize_df_processing(df_site, self.filter_by_min_lead_tokens, cpu_count() // 2, 100)
+            df_site = parallelize_df_processing(df_site, self.filter_by_max_lead_sentences, cpu_count() // 2, 100)
 
             # add fingerprint column to df
             df_site = parallelize_df_processing(df_site, self.create_fingerprints, cpu_count() // 2, 100)
@@ -95,8 +102,14 @@ class Preprocessor:
             has_lead = True if df.iloc[i].lead != '' else False
             self.lsh.add_fingerprint(row.fingerprint, f'{domain}_{row.uuid}_{row.cc_date}_{has_lead}')
 
-    def filter_by_number_of_sentences(self, df):
+    def filter_by_min_article_sentences(self, df):
         return df[df['article'].map(Tokenizer.count_sentences) > self.config.min_article_sentences]
+
+    def filter_by_min_lead_tokens(self, df):
+        return df[df['lead'].map(Tokenizer.count_tokens) > self.config.min_lead_tokens]
+
+    def filter_by_max_lead_sentences(self, df):
+        return df[df['lead'].map(Tokenizer.count_sentences) < self.config.max_lead_sentences]
 
     def create_fingerprints(self, df):
         df['fingerprint'] = df.apply(lambda row: self.hasher.fingerprint(row['article'].encode('utf8')), axis=1)
