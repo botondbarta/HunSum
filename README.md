@@ -37,9 +37,20 @@ scripts/download_data.sh indexes_to_download.txt ../cc_corpus/ ../CommonCrawl/
 Arguments:
 * downloaded data
 * output directory
+* config file
+
+The cleaned articles will be in the config.clean_out_dir 
 ```bash
 cd summarization
-python entrypoints/run_parse_warc_pages.py ../../CommonCrawl ../../articles
+python entrypoints/run_parse_warc_pages.py ../../CommonCrawl ../../articles preprocess.yaml
+```
+
+### Clean articles
+Arguments:
+* config file
+```bash
+cd summarization
+python entrypoints/clean.py preprocess.yaml
 ```
 
 ### Deduplicate articles
@@ -47,5 +58,5 @@ Arguments:
 * config file
 ```bash
 cd summarization
-python entrypoints/preprocess.py preprocess.yaml
+python entrypoints/deduplicate.py preprocess.yaml
 ```

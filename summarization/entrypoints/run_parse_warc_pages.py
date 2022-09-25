@@ -1,6 +1,6 @@
 import glob
 import multiprocessing as mp
-from os import listdir, mkdir, path
+from os import listdir, path
 from typing import Iterable, Optional
 
 import click
@@ -11,7 +11,9 @@ from summarization.errors.page_error import PageError
 from summarization.html_parsers.parser_factory import HtmlParserFactory
 from summarization.models.article import Article
 from summarization.models.page import Page
+from summarization.preprocess.article_cleaner import ArticleCleaner
 from summarization.serializers.article_serializer import ArticleSerializer
+from summarization.utils.data_helpers import make_dir_if_not_exists
 from summarization.utils.logger import get_logger
 from summarization.warc_parser.warc_parser import WarcParser
 
@@ -19,18 +21,21 @@ from summarization.warc_parser.warc_parser import WarcParser
 @click.command()
 @click.argument('src_directory')
 @click.argument('out_directory')
+@click.argument('config_path')
 @click.option('--num_process', default=1, type=click.INT)
 @click.option('--sites', default='all', help='Sites to scrape, separated by commas')
-def main(src_directory, out_directory, num_process, sites):
+def main(src_directory, out_directory, config_path, num_process, sites):
     warc_parser = WarcParser('bad_index.txt')
 
-    make_out_dir_if_not_exists(out_directory)
+    make_dir_if_not_exists(out_directory)
 
     sites_to_scrape = listdir(src_directory) if sites == 'all' else sites.split(',')
     for site in sites_to_scrape:
         log_file = get_next_log_file(out_directory, site)
         already_parsed_segments = get_previously_parsed_segments(out_directory, site)
         logger = get_logger(site, log_file)
+
+        file_to_save_to = path.join(out_directory, f'{site}.jsonl.gz')
 
         try:
             parser = HtmlParserFactory.get_parser(site)
@@ -66,8 +71,12 @@ def main(src_directory, out_directory, num_process, sites):
                 proc_pool.close()
                 proc_pool.join()
                 pbar.close()
-            ArticleSerializer.serialize_articles(out_directory, site, articles)
+            ArticleSerializer.serialize_articles(file_to_save_to, articles)
             logger.info(f'Parsed file: {file_name}')
+
+        logger.info('Cleaning parsed articles')
+        cleaner = ArticleCleaner(config_path)
+        cleaner.clean(file_to_save_to, logger)
 
 
 def get_next_log_file(out_directory, site):
@@ -95,11 +104,6 @@ def get_previously_parsed_segments(out_directory, site):
         parsed_segments = [line.partition('Parsed file: ')[2] for line in lines if 'Parsed file: ' in line]
         all_parsed_segments.extend(parsed_segments)
     return all_parsed_segments
-
-
-def make_out_dir_if_not_exists(out_directory):
-    if not path.exists(out_directory):
-        mkdir(out_directory)
 
 
 def iter_pages_with_args(iterator: Iterable[Page], parser, logging):
