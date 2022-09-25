@@ -17,15 +17,15 @@ class M4SportParser(ParserBase):
             title = next(iter(soup.select('div.articleHead > div.articleMeta > h1')), None)
 
         if not title:
-            titles = soup.find_all('h1')
-            tab_title = soup.title
-            title = next((x for x in titles if self.get_text(x) in self.get_text(tab_title)), None)
-
-        if not title:
             title = soup.find('div', class_='titletextm4-redesign')
 
         if not title:
             title = next(iter(soup.select('div.articleTop > h1')), None)
+
+        if not title:
+            titles = soup.find_all('h1')
+            tab_title = soup.title
+            title = next((x for x in titles if self.get_text(x) in self.get_text(tab_title)), None)
 
         assert_has_title(title, url)
         return self.get_text(title)
@@ -53,24 +53,20 @@ class M4SportParser(ParserBase):
             article = next(iter(soup.select('div.articleContent')), None)
             if article:
                 leads = article.select('strong > p')
-                if leads:
-                    [lead.decompose() for lead in leads]
+                [lead.decompose() for lead in leads]
 
                 banners = article.select('div.hms-banner-wrapper')
-                if banners:
-                    [banner.decompose() for banner in banners]
+                [banner.decompose() for banner in banners]
 
                 pictures = article.select('div.articlePic')
-                if pictures:
-                    [picture.decompose() for picture in pictures]
+                [picture.decompose() for picture in pictures]
 
         if not article:
             article = next(iter(soup.select('div.article')), None)
             article = article.find_all('div', limit=3)[-1]
             if article:
                 pictures = article.select('div.articlePic')
-                if pictures:
-                    [picture.decompose() for picture in pictures]
+                [picture.decompose() for picture in pictures]
 
         article_text = self.get_text(article, remove_img=True)
         assert_has_article(article_text, url)
@@ -86,9 +82,6 @@ class M4SportParser(ParserBase):
         if not date:
             date = soup.find('div', class_='artTime')
             date_text = self.get_text(date, '')
-            minutes = next(iter(soup.select('div.artTime > span')), None)
-            minutes_text = self.get_text(minutes, '')
-            date_text = date_text + minutes_text
             return DateParser.parse(date_text)
 
         return DateParser.parse(self.get_text(date, ''))
