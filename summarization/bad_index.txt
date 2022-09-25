@@ -55,3 +55,13 @@ origo.hu/allas/cimkek/index.html\?cimke=.*
 origo.hu.*/percrolpercre/.*
 origo.hu/.*/galeria/.*
 origo.hu/foto/multimedia/.*
+m4sport.hu/videok/.*
+m4sport.hu/?.*/video/.*
+m4sport.hu/?.*/galeria/.*
+m4sport.hu/galeriak/.*
+m4sport.hu/rovatok/.*
+m4sport.hu/szemely/.*
+m4sport.hu/szervezet/.*
+m4sport.hu/tema/.*
+m4sport.hu/.*/elo/.*
+m4sport.hu/.*/csapat/.*
