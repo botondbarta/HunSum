@@ -8,7 +8,7 @@ import pandas as pd
 from lsh.cache import Cache
 from lsh.minhash import MinHasher
 
-from summarization.entrypoints.run_parse_warc_pages import make_out_dir_if_not_exists
+from summarization.entrypoints.run_parse_warc_pages import make_dir_if_not_exists
 from summarization.utils.config_reader import get_config_from_yaml
 from summarization.utils.data_helpers import parallelize_df_processing
 from summarization.utils.dateparser import DateParser
@@ -25,7 +25,7 @@ class Deduplicator:
         self.lsh = Cache(self.hasher, num_bands=self.config.num_bands)
 
     def deduplicate(self):
-        make_out_dir_if_not_exists(self.config.dedup_out_dir)
+        make_dir_if_not_exists(self.config.dedup_out_dir)
         log_file = path.join(self.config.dedup_out_dir, 'log.txt')
         logger = get_logger('preprocess', log_file)
 

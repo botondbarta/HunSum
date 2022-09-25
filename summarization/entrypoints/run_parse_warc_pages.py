@@ -13,7 +13,7 @@ from summarization.models.article import Article
 from summarization.models.page import Page
 from summarization.preprocess.article_cleaner import ArticleCleaner
 from summarization.serializers.article_serializer import ArticleSerializer
-from summarization.utils.data_helpers import make_out_dir_if_not_exists
+from summarization.utils.data_helpers import make_dir_if_not_exists
 from summarization.utils.logger import get_logger
 from summarization.warc_parser.warc_parser import WarcParser
 
@@ -27,7 +27,7 @@ from summarization.warc_parser.warc_parser import WarcParser
 def main(src_directory, out_directory, config_path, num_process, sites):
     warc_parser = WarcParser('bad_index.txt')
 
-    make_out_dir_if_not_exists(out_directory)
+    make_dir_if_not_exists(out_directory)
 
     sites_to_scrape = listdir(src_directory) if sites == 'all' else sites.split(',')
     for site in sites_to_scrape:

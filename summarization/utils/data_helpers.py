@@ -14,6 +14,6 @@ def parallelize_df_processing(df, func, num_cores=4, num_partitions=20):
     return df
 
 
-def make_out_dir_if_not_exists(out_directory):
-    if not path.exists(out_directory):
-        mkdir(out_directory)
+def make_dir_if_not_exists(directory):
+    if not path.exists(directory):
+        mkdir(directory)
