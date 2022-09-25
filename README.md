@@ -45,6 +45,14 @@ cd summarization
 python entrypoints/run_parse_warc_pages.py ../../CommonCrawl ../../articles preprocess.yaml
 ```
 
+### Clean articles
+Arguments:
+* config file
+```bash
+cd summarization
+python entrypoints/clean.py preprocess.yaml
+```
+
 ### Deduplicate articles
 Arguments:
 * config file
