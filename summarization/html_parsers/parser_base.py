@@ -8,8 +8,8 @@ import bs4
 import pypandoc
 from bs4 import BeautifulSoup, Tag
 
-from summarization.models.article import Article
-from summarization.models.page import Page
+from summarization.data_models.article import Article
+from summarization.data_models.page import Page
 
 
 class ParserBase(ABC):

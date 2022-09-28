@@ -9,8 +9,8 @@ from tqdm import tqdm
 
 from summarization.errors.page_error import PageError
 from summarization.html_parsers.parser_factory import HtmlParserFactory
-from summarization.models.article import Article
-from summarization.models.page import Page
+from summarization.data_models.article import Article
+from summarization.data_models.page import Page
 from summarization.preprocess.article_cleaner import ArticleCleaner
 from summarization.serializers.article_serializer import ArticleSerializer
 from summarization.utils.data_helpers import make_dir_if_not_exists

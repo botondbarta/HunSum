@@ -2,7 +2,7 @@ import gzip
 from abc import ABC
 from typing import List
 
-from summarization.models.article import Article
+from summarization.data_models.article import Article
 
 
 class ArticleSerializer(ABC):
