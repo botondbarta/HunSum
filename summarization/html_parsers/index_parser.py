@@ -37,7 +37,7 @@ class IndexParser(ParserBase):
             leads = []
             for tag in soup.select('div.cikk-torzs > p'):
                 lead = tag.find('strong')
-                if lead is None or tag.string is None:
+                if lead is None or str(tag).replace("<p>", "").replace("\n", "")[0] != '<':
                     break
                 else:
                     leads.append(lead)
