@@ -17,9 +17,6 @@ class M4SportParser(ParserBase):
             title = next(iter(soup.select('div.articleHead > div.articleMeta > h1')), None)
 
         if not title:
-            title = soup.find('h2', class_='hms_article_title')
-
-        if not title:
             title = soup.find('div', class_='titletextm4-redesign')
 
         if not title:
@@ -35,9 +32,6 @@ class M4SportParser(ParserBase):
 
     def get_lead(self, soup) -> str:
         lead = soup.find('span', class_='hms_article_lead_text')
-
-        if not lead:
-            lead = next(iter(soup.select('div.hms_article_lead_content > span.hms_article_lead_text')), None)
 
         if not lead:
             leads = soup.select('div.articleContent > strong > p')
