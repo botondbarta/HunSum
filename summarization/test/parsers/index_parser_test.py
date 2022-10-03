@@ -63,6 +63,13 @@ class IndexParserTest(unittest.TestCase):
 
         self.assertEqual(lead, 'Lead 1. Lead 2.')
 
+    def test_get_lead_3(self):
+        soup = self._get_soup('index_6.html')
+
+        lead = self.parser.get_lead(soup)
+
+        self.assertEqual(lead, 'Lead 1. Lead 2.')
+
     def test_get_tags_1(self):
         soup = self._get_soup('index_1.html')
 
