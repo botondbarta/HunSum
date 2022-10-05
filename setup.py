@@ -28,5 +28,7 @@ setup(
         'quntoken~=3.1.8',
         'Cython',
         'fasttext',
+        'nltk',
+        'sentencepiece'
     ]
 )

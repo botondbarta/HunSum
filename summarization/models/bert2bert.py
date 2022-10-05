@@ -39,7 +39,7 @@ class Bert2Bert(BaseModel):
         tokenized_datasets = self.tokenize_datasets(dataset)
 
         training_args = Seq2SeqTrainingArguments(
-            "test_trainer",
+            output_dir=self.config.output_dir,
             num_train_epochs=50,
             # predict_with_generate=True,
             evaluation_strategy=IntervalStrategy.STEPS,

@@ -30,9 +30,8 @@ class MT5(BaseModel):
         dataset = self.load_dataset(self.config.data_dir)
         tokenized_datasets = self.tokenize_datasets(dataset)
 
-        model_name = self.model_checkpoint.split("/")[-1]
         args = Seq2SeqTrainingArguments(
-            output_dir=f"{model_name}-test",
+            output_dir=self.config.output_dir,
             evaluation_strategy="epoch",
             learning_rate=self.config.learning_rate,
             per_device_train_batch_size=self.config.batch_size,
@@ -52,7 +51,6 @@ class MT5(BaseModel):
             eval_dataset=tokenized_datasets["validation"],
             data_collator=data_collator,
             tokenizer=self.tokenizer,
-            #compute_metrics=compute_metrics
         )
 
         trainer.train()
