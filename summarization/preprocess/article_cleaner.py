@@ -49,17 +49,20 @@ class ArticleCleaner:
                                                                self.config.max_article_len)]
         logger.info(f'Dropped articles where article is too long or short, size: {len(df_site)}')
 
-        df_site = self._filter_by_max_lead_sentences(df_site)
-        logger.info(f'Dropped articles where lead is longer than {self.config.max_lead_sentences} '
-                    f'sentence, size: {len(df_site)}')
+        if self.config.max_lead_sentences != -1:
+            df_site = self._filter_by_max_lead_sentences(df_site)
+            logger.info(f'Dropped articles where lead is longer than {self.config.max_lead_sentences} '
+                        f'sentence, size: {len(df_site)}')
 
-        df_site = self._filter_by_min_lead_tokens(df_site)
-        logger.info(f'Dropped articles where lead is not at least {self.config.min_lead_tokens} '
-                    f'token, size: {len(df_site)}')
+        if self.config.min_lead_tokens != -1:
+            df_site = self._filter_by_min_lead_tokens(df_site)
+            logger.info(f'Dropped articles where lead is not at least {self.config.min_lead_tokens} '
+                        f'token, size: {len(df_site)}')
 
-        df_site = self._filter_by_min_article_sentences(df_site)
-        logger.info(f'Dropped articles where article is not at least {self.config.min_article_sentences} '
-                    f'sentence, size: {len(df_site)}')
+        if self.config.min_article_sentences != -1:
+            df_site = self._filter_by_min_article_sentences(df_site)
+            logger.info(f'Dropped articles where article is not at least {self.config.min_article_sentences} '
+                        f'sentence, size: {len(df_site)}')
 
         df_site = self._drop_non_hungarian_sentences(df_site)
         logger.info(f'Dropped non-Hungarian sentences, size: {len(df_site)}')
@@ -78,10 +81,10 @@ class ArticleCleaner:
         return df.iloc[0].domain.split('.')[0]
 
     def _filter_by_min_article_sentences(self, df):
-        return df[df['article'].parallel_map(Tokenizer.count_sentences) > self.config.min_article_sentences]
+        return df[df['article'].parallel_map(Tokenizer.count_sentences) >= self.config.min_article_sentences]
 
     def _filter_by_min_lead_tokens(self, df):
-        return df[df['lead'].parallel_map(Tokenizer.count_tokens) > self.config.min_lead_tokens]
+        return df[df['lead'].parallel_map(Tokenizer.count_tokens) >= self.config.min_lead_tokens]
 
     def _filter_by_max_lead_sentences(self, df):
-        return df[df['lead'].parallel_map(Tokenizer.count_sentences) < self.config.max_lead_sentences]
+        return df[df['lead'].parallel_map(Tokenizer.count_sentences) <= self.config.max_lead_sentences]
