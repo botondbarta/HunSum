@@ -9,9 +9,9 @@ class Bert2Bert(BaseModel):
         super().__init__(config_path)
 
         self.model = EncoderDecoderModel.from_encoder_decoder_pretrained(
-            "bert-base-cased", "bert-base-cased"
+            "SZTAKI-HLT/hubert-base-cc", "SZTAKI-HLT/hubert-base-cc"
         )
-        self.tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
+        self.tokenizer = BertTokenizer.from_pretrained("SZTAKI-HLT/hubert-base-cc")
 
         # model.config.decoder_start_token_id = tokenizer.bos_token_id
         self.model.config.decoder_start_token_id = self.tokenizer.cls_token_id
@@ -20,8 +20,10 @@ class Bert2Bert(BaseModel):
 
     def process_data_to_model_inputs(self, batch):
         # Tokenize the input and target data
-        inputs = self.tokenizer(batch['article'], padding='max_length', truncation=True)
-        outputs = self.tokenizer(batch['lead'], padding='max_length', truncation=True)
+        inputs = self.tokenizer(batch['article'], padding='max_length',
+                                truncation=True, max_length=512)
+        outputs = self.tokenizer(batch['lead'], padding='max_length',
+                                 truncation=True, max_length=512)
 
         batch['input_ids'] = inputs.input_ids
         batch['attention_mask'] = inputs.attention_mask
@@ -35,12 +37,12 @@ class Bert2Bert(BaseModel):
         return batch
 
     def full_train(self):
-        dataset = self.load_dataset('')
+        dataset = self.load_dataset(self.config.data_dir)
         tokenized_datasets = self.tokenize_datasets(dataset)
 
         training_args = Seq2SeqTrainingArguments(
             output_dir=self.config.output_dir,
-            num_train_epochs=50,
+            num_train_epochs=15,
             # predict_with_generate=True,
             evaluation_strategy=IntervalStrategy.STEPS,
             eval_steps=self.config.train_size // self.config.batch_size,
@@ -49,7 +51,7 @@ class Bert2Bert(BaseModel):
             per_device_eval_batch_size=self.config.batch_size,
             save_total_limit=10,
             warmup_steps=5,
-            # fp16=True,
+            fp16=True,
             # eval_accumulation_steps=30,
         )
 
