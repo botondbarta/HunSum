@@ -17,6 +17,7 @@ setup(
         'typing~=3.7.4.3',
         'numpy~=1.23.2',
         'click~=8.0.4',
+        'transformers~=4.22.2',
         'tqdm~=4.64.0',
         'tldextract~=3.3.1',
         'beautifulsoup4~=4.11.1',

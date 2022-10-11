@@ -1,7 +1,6 @@
 import os
 from abc import abstractmethod, ABC
 
-import nltk
 import numpy as np
 import pandas as pd
 from datasets import DatasetDict, Dataset
