@@ -29,6 +29,7 @@ setup(
         'Cython',
         'fasttext',
         'nltk',
-        'sentencepiece'
+        'sentencepiece',
+        'protobuf==3.19.6'
     ]
 )
