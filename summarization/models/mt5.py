@@ -40,7 +40,7 @@ class MT5(BaseModel):
             per_device_eval_batch_size=self.config.batch_size,
             weight_decay=self.config.weight_decay,
             save_total_limit=self.config.save_total_limit,
-            num_train_epochs=self.config.num_training_epochs,
+            num_train_epochs=self.config.num_train_epochs,
             save_steps=self.config.save_checkpoint_steps,
             eval_steps=self.config.save_checkpoint_steps,
             predict_with_generate=True,
