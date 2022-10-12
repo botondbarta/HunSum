@@ -19,4 +19,5 @@ num_train_epochs: 1
 save_checkpoint_steps: 5000
 valid_steps: 5000
 batch_size: 16
+warmup_steps: 3000
 
