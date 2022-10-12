@@ -9,9 +9,9 @@ class Bert2Bert(BaseModel):
         super().__init__(config_path)
 
         self.model = EncoderDecoderModel.from_encoder_decoder_pretrained(
-            "SZTAKI-HLT/hubert-base-cc", "SZTAKI-HLT/hubert-base-cc"
+            self.config.bert2bert.tokenizer, self.config.bert2bert.tokenizer
         )
-        self.tokenizer = BertTokenizer.from_pretrained("SZTAKI-HLT/hubert-base-cc")
+        self.tokenizer = BertTokenizer.from_pretrained(self.config.bert2bert.tokenizer)
 
         # model.config.decoder_start_token_id = tokenizer.bos_token_id
         self.model.config.decoder_start_token_id = self.tokenizer.cls_token_id

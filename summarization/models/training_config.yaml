@@ -3,6 +3,8 @@ mt5:
   model_checkpoint: google/mt5-small
   max_input_length: 784
   max_output_length: 128
+bert2bert:
+  tokenizer: SZTAKI-HLT/hubert-base-cc
 
 #data
 data_dir: /dir
