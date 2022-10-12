@@ -1,5 +1,8 @@
+import os.path
+
+import pandas as pd
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, Seq2SeqTrainingArguments, DataCollatorForSeq2Seq, \
-    Seq2SeqTrainer
+    Seq2SeqTrainer, pipeline
 from transformers import IntervalStrategy
 
 from summarization.models.base_model import BaseModel
@@ -52,6 +55,29 @@ class MT5(BaseModel):
             eval_dataset=tokenized_datasets["validation"],
             data_collator=data_collator,
             tokenizer=self.tokenizer,
+            load_best_model_at_end=True,
         )
 
         trainer.train()
+        trainer.save_model(os.path.join(self.config.output_dir, 'best_model'))
+
+    def inference(self, model_dir, data_file):
+        self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(model_dir)
+
+        articles_df = pd.read_json(data_file, lines=True)
+
+        articles = articles_df.article.tolist()
+
+        summarizer = pipeline("summarization", model=self.model, tokenizer=self.tokenizer, framework="pt")
+        leads = summarizer(articles, min_length=5, max_length=self.config.mt5.max_output_length)
+
+        for lead in leads:
+            print(lead)
+
+
+
+
+
+
+
