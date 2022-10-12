@@ -49,7 +49,7 @@ class Bert2Bert(BaseModel):
             save_steps=self.config.save_checkpoint_steps,
             per_device_train_batch_size=self.config.batch_size,
             per_device_eval_batch_size=self.config.batch_size,
-            save_total_limit=10,
+            save_total_limit=self.config.save_total_limit,
             warmup_steps=self.config.warmup_steps,
             fp16=True,
             # eval_accumulation_steps=30,
