@@ -52,6 +52,7 @@ class Bert2Bert(BaseModel):
             save_total_limit=self.config.save_total_limit,
             warmup_steps=self.config.warmup_steps,
             fp16=True,
+            load_best_model_at_end=True,
             # eval_accumulation_steps=30,
         )
 
@@ -59,10 +60,11 @@ class Bert2Bert(BaseModel):
             model=self.model,
             args=training_args,
             train_dataset=tokenized_datasets["train"],
-            eval_dataset=tokenized_datasets["test"],
+            eval_dataset=tokenized_datasets["validation"],
         )
 
         trainer.train()
+        trainer.save_model(f'{self.config.output_dir}/best_model')
 
 # tokenized_datasets.set_format(
 #     type="torch", columns=["input_ids", "attention_mask", "decoder_attention_mask", "labels"],
