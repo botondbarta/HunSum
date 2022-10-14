@@ -65,3 +65,10 @@ m4sport.hu/szervezet/.*
 m4sport.hu/tema/.*
 m4sport.hu/.*/elo/.*
 m4sport.hu/.*/csapat/.*
+nepszava.hu/tag/.*
+nepszava.hu/articles/?subcategory=.*
+nepszava.hu/galeria/.*
+nepszava.hu/video/.*
+nepszava.hu/cikk_kuldes/.*
+nepszava.hu/PrintArticle.*
+nepszava.hu/default.asp?cCenter=.*
