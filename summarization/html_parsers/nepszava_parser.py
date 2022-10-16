@@ -57,13 +57,13 @@ class NepszavaParser(ParserBase):
 
 
     def get_article_text(self, url, soup) -> str:
-        article_text = ''.join([self.get_text(article, remove_img=True) for article in soup.select('div#article-content > p')])
+        article_text = '\n'.join([self.get_text(article, remove_img=True) for article in soup.select('div#article-content > p')])
 
         if not article_text:
-            article_text = ''.join([self.get_text(article, remove_img=True) for article in soup.select('div.p > p')])
+            article_text = '\n'.join([self.get_text(article, remove_img=True) for article in soup.select('div.p > p')])
 
         if not article_text:
-            article_text = ''.join([self.get_text(article, remove_img=True) for article in soup.select('div.p')][1:])
+            article_text = '\n'.join([self.get_text(article, remove_img=True) for article in soup.select('div.p')][1:])
 
         if not article_text:
             article_text = self.get_text(soup.find('span', id='text'), remove_img=True)
@@ -75,7 +75,7 @@ class NepszavaParser(ParserBase):
             content = soup.find('p', itemprop='date')
             if content:
                 content.decompose()
-            article_text = ''.join([self.get_text(article, remove_img=True) for article in soup.select('div#forbot > div > p')])
+            article_text = '\n'.join([self.get_text(article, remove_img=True) for article in soup.select('div#forbot > div > p')])
 
         if not article_text:
             content = next(iter(soup.select("div#article-content > div.article-lead")), None)
@@ -84,7 +84,7 @@ class NepszavaParser(ParserBase):
             content = next(iter(soup.select("div#article-content > div.article-pager")), None)
             if content:
                 content.decompose()
-            article_text = ''.join([self.get_text(article, remove_img=True) for article in soup.select('div#article-content')])
+            article_text = '\n'.join([self.get_text(article, remove_img=True) for article in soup.select('div#article-content')])
 
         assert_has_article(article_text, url)
         return article_text
