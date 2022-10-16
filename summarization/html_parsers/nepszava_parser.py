@@ -117,8 +117,10 @@ class NepszavaParser(ParserBase):
             tags = [self.get_text(tag) for tag in soup.select('div.tags > a')]
 
         if not tags:
-            tags_string = self.get_text(soup.find('p', itemprop='tags'))[:-1]
-            tags = tags_string.split(";")
+            tags_string = self.get_text(soup.find('p', itemprop='tags'))
+            if tags_string:
+                tags_string = tags_string[:-1]
+                tags = tags_string.split(";")
 
         return set(tags)
 
