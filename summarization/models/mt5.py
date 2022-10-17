@@ -1,4 +1,5 @@
 import os.path
+from pathlib import Path
 
 import pandas as pd
 from rouge_score import rouge
@@ -61,6 +62,25 @@ class MT5(BaseModel):
 
         trainer.train()
         trainer.save_model(os.path.join(self.config.output_dir, 'best_model'))
+
+        test_output = trainer.predict(
+            test_dataset=tokenized_datasets["test"],
+            metric_key_prefix="test",
+            max_length=self.config.mt5.max_output_length,
+            num_beams=1,
+            #length_penalty=data_args.length_penalty,
+            #no_repeat_ngram_size=data_args.no_repeat_ngram_size,
+        )
+
+        predictions = test_output.predictions
+        predictions[predictions == -100] = self.tokenizer.pad_token_id
+        test_preds = self.tokenizer.batch_decode(
+            predictions, skip_special_tokens=True, clean_up_tokenization_spaces=True
+        )
+        test_preds = list(map(str.strip, test_preds))
+        with open(os.path.join(self.config.output_dir, "test_generations.txt"), 'w+') as f:
+            for ln in test_preds:
+                f.write(ln + "\n")
 
     def inference(self, model_dir, data_file):
         self.tokenizer = AutoTokenizer.from_pretrained(model_dir).to("cuda")
