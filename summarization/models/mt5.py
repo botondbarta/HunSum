@@ -1,6 +1,7 @@
 import os.path
 
 import pandas as pd
+from rouge_score import rouge
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, Seq2SeqTrainingArguments, DataCollatorForSeq2Seq, \
     Seq2SeqTrainer, pipeline
 from transformers import IntervalStrategy
@@ -62,18 +63,37 @@ class MT5(BaseModel):
         trainer.save_model(os.path.join(self.config.output_dir, 'best_model'))
 
     def inference(self, model_dir, data_file):
-        self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
-        self.model = AutoModelForSeq2SeqLM.from_pretrained(model_dir)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_dir).to("cuda")
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(self.config.model_checkpoint)
 
-        articles_df = pd.read_json(data_file, lines=True)
+        dataset = self.load_dataset(data_file)
+        tokenized_datasets = self.tokenize_datasets(dataset)
 
-        articles = articles_df.article.tolist()
+        def generate_summary(batch):
+            inputs = self.tokenizer(batch['article'], padding='max_length', max_length=self.config.mt5.max_input_length,
+                                    truncation=True, return_tensors="pt")
+            input_ids = inputs.input_ids.to("cuda")
+            # attention_mask = inputs.attention_mask.to("cuda")
 
-        summarizer = pipeline("summarization", model=self.model, tokenizer=self.tokenizer, framework="pt")
-        leads = summarizer(articles, min_length=5, max_length=self.config.mt5.max_output_length)
+            outputs = self.model.generate(input_ids)#, attention_mask=attention_mask)
+            with self.tokenizer.as_target_tokenizer():
+                output_str = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
 
-        for lead in leads:
-            print(lead)
+            #output_str = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
+
+            batch["pred_summary"] = output_str
+            return batch
+
+        batch_size = 16  # change to 64 for full evaluation
+
+        results = tokenized_datasets.map(generate_summary, batched=True, batch_size=batch_size, remove_columns=["article"])
+
+        print(results['pred_summary'])
+
+        r = rouge.compute(predictions=results["pred_summary"], references=results["highlights"], rouge_types=["rouge2"])[
+            "rouge2"].mid
+
+        print(r)
 
 
 
