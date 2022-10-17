@@ -42,16 +42,19 @@ class Bert2Bert(BaseModel):
 
         training_args = Seq2SeqTrainingArguments(
             output_dir=self.config.output_dir,
+            learning_rate=self.config.learning_rate,
             num_train_epochs=self.config.num_train_epochs,
-            predict_with_generate=True,
-            evaluation_strategy=IntervalStrategy.STEPS,
-            eval_steps=self.config.valid_steps,
-            save_steps=self.config.save_checkpoint_steps,
             per_device_train_batch_size=self.config.batch_size,
             per_device_eval_batch_size=self.config.batch_size,
+            evaluation_strategy=IntervalStrategy.STEPS,
+            weight_decay=self.config.weight_decay,
             save_total_limit=self.config.save_total_limit,
+            eval_steps=self.config.valid_steps,
+            save_steps=self.config.valid_steps,
+            predict_with_generate=True,
             warmup_steps=self.config.warmup_steps,
             fp16=True,
+            load_best_model_at_end=True,
             # eval_accumulation_steps=30,
         )
 
@@ -59,10 +62,11 @@ class Bert2Bert(BaseModel):
             model=self.model,
             args=training_args,
             train_dataset=tokenized_datasets["train"],
-            eval_dataset=tokenized_datasets["test"],
+            eval_dataset=tokenized_datasets["validation"],
         )
 
         trainer.train()
+        trainer.save_model(f'{self.config.output_dir}/best_model')
 
 # tokenized_datasets.set_format(
 #     type="torch", columns=["input_ids", "attention_mask", "decoder_attention_mask", "labels"],
