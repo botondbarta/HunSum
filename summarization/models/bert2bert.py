@@ -1,3 +1,8 @@
+import os
+
+import datasets
+import numpy as np
+from datasets import Dataset, DatasetDict
 from transformers import EncoderDecoderModel, BertTokenizer, IntervalStrategy, Seq2SeqTrainer
 from transformers import Seq2SeqTrainingArguments
 
@@ -13,10 +18,10 @@ class Bert2Bert(BaseModel):
         )
         self.tokenizer = BertTokenizer.from_pretrained(self.config.bert2bert.tokenizer)
 
-        # model.config.decoder_start_token_id = tokenizer.bos_token_id
         self.model.config.decoder_start_token_id = self.tokenizer.cls_token_id
         self.model.config.pad_token_id = self.tokenizer.pad_token_id
-        self.model.config.vocab_size = self.model.config.decoder.vocab_size
+        self.model.config.eos_token_id = self.tokenizer.sep_token_id
+        self.model.config.vocab_size = self.model.config.encoder.vocab_size
 
     def process_data_to_model_inputs(self, batch):
         # Tokenize the input and target data
@@ -28,11 +33,11 @@ class Bert2Bert(BaseModel):
         batch['input_ids'] = inputs.input_ids
         batch['attention_mask'] = inputs.attention_mask
         # batch["decoder_input_ids"] = outputs.input_ids
-        batch['decoder_attention_mask'] = outputs.attention_mask
+        # batch['decoder_attention_mask'] = outputs.attention_mask
         batch['labels'] = outputs.input_ids.copy()
 
-        batch['labels'] = [[-100 if token == self.tokenizer.pad_token_id else token for token in labels] for labels in
-                           batch['labels']]
+        batch['labels'] = [[-100 if token == self.tokenizer.pad_token_id else token for token in labels]
+                           for labels in batch['labels']]
 
         return batch
 
