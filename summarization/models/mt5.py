@@ -1,6 +1,10 @@
+import logging
 import os.path
 from pathlib import Path
 
+import evaluate
+import nltk
+import numpy as np
 import pandas as pd
 from rouge_score import rouge
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, Seq2SeqTrainingArguments, DataCollatorForSeq2Seq, \
@@ -9,6 +13,7 @@ from transformers import IntervalStrategy
 
 from summarization.models.base_model import BaseModel
 
+logger = logging.getLogger(__name__)
 
 class MT5(BaseModel):
     def __init__(self, config_path):
@@ -23,16 +28,34 @@ class MT5(BaseModel):
         # Tokenize the input and target data
         inputs = self.tokenizer(batch['article'], padding='max_length', max_length=self.config.mt5.max_input_length,
                                 truncation=True)
-        with self.tokenizer.as_target_tokenizer():
-            outputs = self.tokenizer(batch['lead'], padding='max_length', max_length=self.config.mt5.max_output_length,
+        #with self.tokenizer.as_target_tokenizer():
+        outputs = self.tokenizer(text_target=batch['lead'], padding='max_length', max_length=self.config.mt5.max_output_length,
                                      truncation=True)
 
+        outputs["input_ids"] = [
+            [(l if l != self.tokenizer.pad_token_id else -100) for l in label] for label in outputs["input_ids"]
+        ]
         inputs['labels'] = outputs['input_ids']
         return inputs
 
     def full_train(self):
         dataset = self.load_dataset(self.config.data_dir)
         tokenized_datasets = self.tokenize_datasets(dataset)
+
+        if self.model.config.decoder_start_token_id is None:
+            raise ValueError("Make sure that `config.decoder_start_token_id` is correctly defined")
+
+        if (
+                hasattr(self.model.config, "max_position_embeddings")
+                and self.model.config.max_position_embeddings < self.config.mt5.max_input_length
+        ):
+            if True:
+                logger.warning(
+                    "Increasing the model's number of position embedding vectors from"
+                    f" {self.model.config.max_position_embeddings} to {self.config.mt5.max_input_length}."
+                )
+                self.model.resize_position_embeddings(self.config.mt5.max_input_length)
+
 
         args = Seq2SeqTrainingArguments(
             output_dir=self.config.output_dir,
@@ -48,7 +71,44 @@ class MT5(BaseModel):
             predict_with_generate=True,
         )
 
-        data_collator = DataCollatorForSeq2Seq(self.tokenizer, model=self.model)
+        label_pad_token_id = -100
+        data_collator = DataCollatorForSeq2Seq(
+            self.tokenizer,
+            model=self.model,
+            label_pad_token_id=label_pad_token_id,
+        )
+
+        #data_collator = DataCollatorForSeq2Seq(self.tokenizer, model=self.model)
+        # Metric
+        metric = evaluate.load("rouge")
+
+        def postprocess_text(preds, labels):
+            preds = [pred.strip() for pred in preds]
+            labels = [label.strip() for label in labels]
+
+            # rougeLSum expects newline after each sentence
+            preds = ["\n".join(nltk.sent_tokenize(pred)) for pred in preds]
+            labels = ["\n".join(nltk.sent_tokenize(label)) for label in labels]
+
+            return preds, labels
+
+        def compute_metrics(eval_preds):
+            preds, labels = eval_preds
+            if isinstance(preds, tuple):
+                preds = preds[0]
+            decoded_preds = self.tokenizer.batch_decode(preds, skip_special_tokens=True)
+
+            labels = np.where(labels != -100, labels, self.tokenizer.pad_token_id)
+            decoded_labels = self.tokenizer.batch_decode(labels, skip_special_tokens=True)
+
+            # Some simple post-processing
+            decoded_preds, decoded_labels = postprocess_text(decoded_preds, decoded_labels)
+
+            result = metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
+            result = {k: round(v * 100, 4) for k, v in result.items()}
+            prediction_lens = [np.count_nonzero(pred != self.tokenizer.pad_token_id) for pred in preds]
+            result["gen_len"] = np.mean(prediction_lens)
+            return result
 
         trainer = Seq2SeqTrainer(
             self.model,
@@ -58,6 +118,7 @@ class MT5(BaseModel):
             data_collator=data_collator,
             tokenizer=self.tokenizer,
             load_best_model_at_end=True,
+            compute_metrics=compute_metrics
         )
 
         trainer.train()
