@@ -29,17 +29,9 @@ class BaseModel(ABC):
             site_df = site_df.astype('str')
             site_df = site_df.sample(frac=1, random_state=123)
             site_dfs.append(site_df)
-        df = pd.concat(site_dfs)
-        train, validate, test = np.split(df.sample(frac=1, random_state=123),
-                                         [int(self.config.train_size * len(df)),
-                                          int((self.config.train_size + self.config.valid_size) * len(df))])
-        raw_datasets = DatasetDict({
-            'train': Dataset.from_pandas(train),
-            'validation': Dataset.from_pandas(validate),
-            'test': Dataset.from_pandas(test),
-        })
+        df = pd.concat(site_dfs).sample(frac=1, random_state=123)
 
-        return raw_datasets
+        return Dataset.from_pandas(df)
 
     @staticmethod
     def drop_na_and_duplicates(df):
