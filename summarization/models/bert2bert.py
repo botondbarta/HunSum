@@ -45,7 +45,7 @@ class Bert2Bert(BaseModel):
         raw_datasets = DatasetDict()
         if self.config.do_train:
             raw_datasets['train'] = self.load_dataset(self.config.train_dir)
-            raw_datasets['valid'] = self.load_dataset(self.config.valid_dir)
+            raw_datasets['validation'] = self.load_dataset(self.config.valid_dir)
 
         if self.config.do_predict:
             raw_datasets['test'] = self.load_dataset(self.config.test_dir)
