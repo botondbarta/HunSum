@@ -1,6 +1,9 @@
 import logging
 import os.path
+import sys
 
+import datasets
+import transformers
 from datasets import DatasetDict
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, Seq2SeqTrainingArguments, DataCollatorForSeq2Seq, \
     Seq2SeqTrainer
@@ -34,16 +37,33 @@ class MT5(BaseModel):
         inputs['labels'] = outputs['input_ids']
         return inputs
 
+    def setup_logging(self):
+        logging.basicConfig(
+            format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+            datefmt="%m/%d/%Y %H:%M:%S",
+            handlers=[logging.StreamHandler(sys.stdout)],
+        )
+        log_level = self.config.log_level
+        logger.setLevel(log_level)
+        datasets.utils.logging.set_verbosity(log_level)
+        transformers.utils.logging.set_verbosity(log_level)
+        transformers.utils.logging.enable_default_handler()
+        transformers.utils.logging.enable_explicit_format()
+
     def full_train(self):
-        raw_datasets = DatasetDict()
-        if self.config.do_train:
-            raw_datasets['train'] = self.load_dataset(self.config.train_dir)
-            raw_datasets['validation'] = self.load_dataset(self.config.valid_dir)
+        self.setup_logging()
+        if self.config.do_preprocess:
+            raw_datasets = DatasetDict()
+            if self.config.do_train:
+                raw_datasets['train'] = self.load_dataset(self.config.train_dir)
+                raw_datasets['validation'] = self.load_dataset(self.config.valid_dir)
 
-        if self.config.do_predict:
-            raw_datasets['test'] = self.load_dataset(self.config.test_dir)
-
-        tokenized_datasets = self.tokenize_datasets(raw_datasets)
+            if self.config.do_predict:
+                raw_datasets['test'] = self.load_dataset(self.config.test_dir)
+            tokenized_datasets = self.tokenize_datasets(raw_datasets)
+            tokenized_datasets.save_to_disk(self.config.preprocessed_dataset_path)
+        else:
+            tokenized_datasets = DatasetDict.load_from_disk(self.config.preprocessed_dataset_path)
 
         args = Seq2SeqTrainingArguments(
             output_dir=self.config.output_dir,
@@ -58,6 +78,7 @@ class MT5(BaseModel):
             eval_steps=self.config.save_checkpoint_steps,
             predict_with_generate=True,
             load_best_model_at_end=True,
+            warmup_steps=self.config.warmup_steps,
         )
 
         label_pad_token_id = -100
@@ -81,14 +102,14 @@ class MT5(BaseModel):
             if self.config.resume_from_checkpoint is not None:
                 checkpoint = self.config.resume_from_checkpoint
             trainer.train(resume_from_checkpoint=checkpoint)
-            trainer.save_model(os.path.join(self.config.output_dir, 'best_model'))  # Saves the tokenizer too for easy upload
+            trainer.save_model(os.path.join(self.config.output_dir, 'best_model'))
 
         if self.config.do_predict:
             test_output = trainer.predict(
                 test_dataset=tokenized_datasets["test"],
                 metric_key_prefix="test",
                 max_length=self.config.mt5.max_output_length,
-                num_beams=self.config.num_beans,
+                num_beams=self.config.num_beams,
                 length_penalty=self.config.length_penalty,
                 no_repeat_ngram_size=self.config.no_repeat_ngram_size,
                 temperature=self.config.temperature,

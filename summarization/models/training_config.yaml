@@ -11,15 +11,14 @@ train_dir: /train
 valid_dir: /valid
 test_dir: /test
 
-
 # preprocess
 do_preprocess: True
+preprocessed_dataset_path: None
 
 # training
 do_train: True
 output_dir: dir
 resume_from_checkpoint: False
-last_checkpoint: None
 
 learning_rate: 0.1
 weight_decay: 0.01
