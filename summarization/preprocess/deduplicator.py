@@ -1,4 +1,5 @@
 import glob
+import os
 from distutils.util import strtobool
 from os import path
 
@@ -49,16 +50,22 @@ class Deduplicator:
             logger.info(f'Dropping {len(drops)} duplicates from {domain}')
             df_site = df_site[~df_site.uuid.isin(drops)]
 
-            train, validate, test = np.split(df_site.sample(frac=1, random_state=123),
-                                             [int(self.config.train_size * len(df_site)),
-                                              int((self.config.train_size + self.config.valid_size) * len(df_site))])
+            self._split_and_save_site(df_site, domain)
 
-            train.to_json(f'{self.config.dedup_out_dir}/{domain}_train.jsonl.gz', orient='records',
-                          lines=True, compression='gzip')
-            validate.to_json(f'{self.config.dedup_out_dir}/{domain}_valid.jsonl.gz', orient='records',
-                             lines=True, compression='gzip')
-            test.to_json(f'{self.config.dedup_out_dir}/{domain}_test.jsonl.gz', orient='records',
+    def _split_and_save_site(self, df_site, domain):
+        train, validate, test = np.split(df_site.sample(frac=1, random_state=123),
+                                         [int(self.config.train_size * len(df_site)),
+                                          int((self.config.train_size + self.config.valid_size) * len(df_site))])
+
+        make_dir_if_not_exists(os.path.join(self.config.dedup_out_dir, 'train'))
+        make_dir_if_not_exists(os.path.join(self.config.dedup_out_dir, 'valid'))
+        make_dir_if_not_exists(os.path.join(self.config.dedup_out_dir, 'test'))
+        train.to_json(f'{self.config.dedup_out_dir}/train/{domain}_train.jsonl.gz', orient='records',
+                      lines=True, compression='gzip')
+        validate.to_json(f'{self.config.dedup_out_dir}/valid/{domain}_valid.jsonl.gz', orient='records',
                          lines=True, compression='gzip')
+        test.to_json(f'{self.config.dedup_out_dir}/test/{domain}_test.jsonl.gz', orient='records',
+                     lines=True, compression='gzip')
 
     def _get_domain_of_site(self, df):
         return df.iloc[0].domain.split('.')[0]
