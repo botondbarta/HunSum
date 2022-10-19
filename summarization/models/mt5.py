@@ -1,9 +1,6 @@
 import logging
 import os.path
-import sys
 
-import datasets
-import transformers
 from datasets import DatasetDict
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, Seq2SeqTrainingArguments, DataCollatorForSeq2Seq, \
     Seq2SeqTrainer
@@ -37,21 +34,7 @@ class MT5(BaseModel):
         inputs['labels'] = outputs['input_ids']
         return inputs
 
-    def setup_logging(self):
-        logging.basicConfig(
-            format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-            datefmt="%m/%d/%Y %H:%M:%S",
-            handlers=[logging.StreamHandler(sys.stdout)],
-        )
-        log_level = self.config.log_level
-        logger.setLevel(log_level)
-        datasets.utils.logging.set_verbosity(log_level)
-        transformers.utils.logging.set_verbosity(log_level)
-        transformers.utils.logging.enable_default_handler()
-        transformers.utils.logging.enable_explicit_format()
-
     def full_train(self):
-        self.setup_logging()
         if self.config.do_preprocess:
             raw_datasets = DatasetDict()
             if self.config.do_train:
@@ -124,5 +107,5 @@ class MT5(BaseModel):
             test_preds = list(map(str.strip, test_preds))
             with open(os.path.join(self.config.output_dir, "test_generations.txt"), 'w+') as f:
                 for ln in test_preds:
-                    f.write(ln + "\n")
+                    f.write(ln + "\n\n")
 
