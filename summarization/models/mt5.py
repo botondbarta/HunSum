@@ -88,9 +88,11 @@ class MT5(BaseModel):
                 test_dataset=tokenized_datasets["test"],
                 metric_key_prefix="test",
                 max_length=self.config.mt5.max_output_length,
-                num_beams=1,
-                #length_penalty=data_args.length_penalty,
-                #no_repeat_ngram_size=data_args.no_repeat_ngram_size,
+                num_beams=self.config.num_beans,
+                length_penalty=self.config.length_penalty,
+                no_repeat_ngram_size=self.config.no_repeat_ngram_size,
+                temperature=self.config.temperature,
+                top_k=self.config.top_k,
             )
 
             predictions = test_output.predictions

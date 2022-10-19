@@ -33,3 +33,9 @@ warmup_steps: 3000
 # predict
 do_predict: True
 test_data_file: /dir/file
+num_beans: 5
+length_penalty: 2
+no_repeat_ngram_size: 2
+temperature: 0.8
+top_k: 0.4
+
