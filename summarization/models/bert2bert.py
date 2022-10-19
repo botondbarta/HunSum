@@ -42,8 +42,15 @@ class Bert2Bert(BaseModel):
         return batch
 
     def full_train(self):
-        dataset = self.load_dataset(self.config.data_dir)
-        tokenized_datasets = self.tokenize_datasets(dataset)
+        raw_datasets = DatasetDict()
+        if self.config.do_train:
+            raw_datasets['train'] = self.load_dataset(self.config.train_dir)
+            raw_datasets['validation'] = self.load_dataset(self.config.valid_dir)
+
+        if self.config.do_predict:
+            raw_datasets['test'] = self.load_dataset(self.config.test_dir)
+
+        tokenized_datasets = self.tokenize_datasets(raw_datasets)
 
         training_args = Seq2SeqTrainingArguments(
             output_dir=self.config.output_dir,

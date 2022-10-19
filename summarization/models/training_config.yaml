@@ -7,12 +7,18 @@ bert2bert:
   tokenizer: SZTAKI-HLT/hubert-base-cc
 
 #data
-data_dir: /dir
-train_size: 0.8
-valid_size: 0.1
+train_dir: /train
+valid_dir: /valid
+test_dir: /test
+
+# preprocess
+do_preprocess: True
+preprocessed_dataset_path: None
 
 # training
+do_train: True
 output_dir: dir
+resume_from_checkpoint: False
 
 learning_rate: 0.1
 weight_decay: 0.01
@@ -22,4 +28,12 @@ save_checkpoint_steps: 5000
 valid_steps: 5000
 batch_size: 16
 warmup_steps: 3000
+
+# predict
+do_predict: True
+num_beams: 5
+length_penalty: 2
+no_repeat_ngram_size: 2
+temperature: 0.8
+top_k: 0.4
 
