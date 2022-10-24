@@ -1,3 +1,4 @@
+import glob
 import os
 from abc import abstractmethod, ABC
 
@@ -17,9 +18,10 @@ class BaseModel(ABC):
         raise NotImplementedError
 
     def load_dataset(self, data_dir, shuffle=True):
+        files = [data_dir] if os.path.isfile(data_dir) else glob.glob(f'{data_dir}/*.jsonl.gz')
         site_dfs = []
-        for file in os.listdir(data_dir):
-            site_df = pd.read_json(os.path.join(data_dir, file), lines=True)
+        for file in files:
+            site_df = pd.read_json(file, lines=True)
             site_df = site_df[['lead', 'article']]
             site_df = self.drop_na_and_duplicates(site_df)
             site_df = site_df.astype('str')
