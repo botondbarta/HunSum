@@ -5,6 +5,8 @@ mt5:
   max_output_length: 128
 bert2bert:
   tokenizer: SZTAKI-HLT/hubert-base-cc
+  load_model: False
+  model_path: /dir
 
 #data
 train_dir: /train
