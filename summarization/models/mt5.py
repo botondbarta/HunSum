@@ -43,8 +43,8 @@ class MT5(BaseModel):
         return Seq2SeqTrainer(
             model=self.model,
             args=training_args,
-            train_dataset=tokenized_datasets["train"],
-            eval_dataset=tokenized_datasets["validation"],
+            train_dataset=tokenized_datasets["train"] if self.config.do_train else None,
+            eval_dataset=tokenized_datasets["validation"] if self.config.do_train else None,
             data_collator=data_collator,
             tokenizer=self.tokenizer,
         )
