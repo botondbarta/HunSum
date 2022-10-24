@@ -15,6 +15,7 @@ test_dir: /test
 
 # preprocess
 do_preprocess: True
+save_tokenized_data: True
 preprocessed_dataset_path: None
 
 # training

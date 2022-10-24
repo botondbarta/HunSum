@@ -16,7 +16,7 @@ class BaseModel(ABC):
     def process_data_to_model_inputs(self, batch):
         raise NotImplementedError
 
-    def load_dataset(self, data_dir):
+    def load_dataset(self, data_dir, shuffle=True):
         site_dfs = []
         for file in os.listdir(data_dir):
             site_df = pd.read_json(os.path.join(data_dir, file), lines=True)
@@ -24,8 +24,9 @@ class BaseModel(ABC):
             site_df = self.drop_na_and_duplicates(site_df)
             site_df = site_df.astype('str')
             site_dfs.append(site_df)
-        df = pd.concat(site_dfs).sample(frac=1, random_state=123)
-
+        df = pd.concat(site_dfs)
+        if shuffle:
+            df = df.sample(frac=1, random_state=123)
         return Dataset.from_pandas(df)
 
     @staticmethod
@@ -49,9 +50,10 @@ class BaseModel(ABC):
                 raw_datasets['validation'] = self.load_dataset(self.config.valid_dir)
 
             if self.config.do_predict:
-                raw_datasets['test'] = self.load_dataset(self.config.test_dir)
+                raw_datasets['test'] = self.load_dataset(self.config.test_dir, shuffle=False)
             tokenized_datasets = self.tokenize_datasets(raw_datasets)
-            tokenized_datasets.save_to_disk(self.config.preprocessed_dataset_path)
+            if self.config.save_tokenized_data:
+                tokenized_datasets.save_to_disk(self.config.preprocessed_dataset_path)
         else:
             tokenized_datasets = DatasetDict.load_from_disk(self.config.preprocessed_dataset_path)
 
