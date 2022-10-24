@@ -1,10 +1,4 @@
-import os
-
-import datasets
-import numpy as np
-from datasets import Dataset, DatasetDict
-from transformers import EncoderDecoderModel, BertTokenizer, IntervalStrategy, Seq2SeqTrainer
-from transformers import Seq2SeqTrainingArguments
+from transformers import EncoderDecoderModel, BertTokenizer, Seq2SeqTrainer
 
 from summarization.models.base_model import BaseModel
 
@@ -41,44 +35,13 @@ class Bert2Bert(BaseModel):
 
         return batch
 
-    def full_train(self):
-        raw_datasets = DatasetDict()
-        if self.config.do_train:
-            raw_datasets['train'] = self.load_dataset(self.config.train_dir)
-            raw_datasets['validation'] = self.load_dataset(self.config.valid_dir)
-
-        if self.config.do_predict:
-            raw_datasets['test'] = self.load_dataset(self.config.test_dir)
-
-        tokenized_datasets = self.tokenize_datasets(raw_datasets)
-
-        training_args = Seq2SeqTrainingArguments(
-            output_dir=self.config.output_dir,
-            learning_rate=self.config.learning_rate,
-            num_train_epochs=self.config.num_train_epochs,
-            per_device_train_batch_size=self.config.batch_size,
-            per_device_eval_batch_size=self.config.batch_size,
-            evaluation_strategy=IntervalStrategy.STEPS,
-            weight_decay=self.config.weight_decay,
-            save_total_limit=self.config.save_total_limit,
-            eval_steps=self.config.valid_steps,
-            save_steps=self.config.valid_steps,
-            predict_with_generate=True,
-            warmup_steps=self.config.warmup_steps,
-            fp16=True,
-            load_best_model_at_end=True,
-            # eval_accumulation_steps=30,
-        )
-
-        trainer = Seq2SeqTrainer(
+    def get_seq2seq_trainer(self, training_args, tokenized_datasets) -> Seq2SeqTrainer:
+        return Seq2SeqTrainer(
             model=self.model,
             args=training_args,
             train_dataset=tokenized_datasets["train"],
             eval_dataset=tokenized_datasets["validation"],
         )
-
-        trainer.train()
-        trainer.save_model(f'{self.config.output_dir}/best_model')
 
 # tokenized_datasets.set_format(
 #     type="torch", columns=["input_ids", "attention_mask", "decoder_attention_mask", "labels"],
