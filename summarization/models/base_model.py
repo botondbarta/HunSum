@@ -23,7 +23,6 @@ class BaseModel(ABC):
             site_df = site_df[['lead', 'article']]
             site_df = self.drop_na_and_duplicates(site_df)
             site_df = site_df.astype('str')
-            site_df = site_df.sample(frac=1, random_state=123)
             site_dfs.append(site_df)
         df = pd.concat(site_dfs).sample(frac=1, random_state=123)
 

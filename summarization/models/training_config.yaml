@@ -5,6 +5,8 @@ mt5:
   max_output_length: 128
 bert2bert:
   tokenizer: SZTAKI-HLT/hubert-base-cc
+  load_model: False
+  model_path: /dir
 
 #data
 train_dir: /train
@@ -31,8 +33,8 @@ fp16: False
 
 # predict
 do_predict: True
-max_predict_length: 128
 prediction_file: None
+max_predict_length: 128
 num_beams: 5
 length_penalty: 2
 no_repeat_ngram_size: 2

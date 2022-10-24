@@ -7,9 +7,13 @@ class Bert2Bert(BaseModel):
     def __init__(self, config_path):
         super().__init__(config_path)
 
-        self.model = EncoderDecoderModel.from_encoder_decoder_pretrained(
-            self.config.bert2bert.tokenizer, self.config.bert2bert.tokenizer
-        )
+        if self.config.load_model:
+            self.model = EncoderDecoderModel.from_pretrained(self.config.model_path)
+        else:
+            self.model = EncoderDecoderModel.from_encoder_decoder_pretrained(
+                self.config.bert2bert.tokenizer, self.config.bert2bert.tokenizer
+            )
+
         self.tokenizer = BertTokenizer.from_pretrained(self.config.bert2bert.tokenizer)
 
         self.model.config.decoder_start_token_id = self.tokenizer.cls_token_id
@@ -19,10 +23,8 @@ class Bert2Bert(BaseModel):
 
     def process_data_to_model_inputs(self, batch):
         # Tokenize the input and target data
-        inputs = self.tokenizer(batch['article'], padding='max_length',
-                                truncation=True, max_length=512)
-        outputs = self.tokenizer(batch['lead'], padding='max_length',
-                                 truncation=True, max_length=512)
+        inputs = self.tokenizer(batch['article'], padding='max_length', truncation=True, max_length=512)
+        outputs = self.tokenizer(batch['lead'], padding='max_length', truncation=True, max_length=512)
 
         batch['input_ids'] = inputs.input_ids
         batch['attention_mask'] = inputs.attention_mask
