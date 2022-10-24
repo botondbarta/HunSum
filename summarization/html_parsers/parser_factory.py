@@ -2,6 +2,7 @@ from summarization.html_parsers.hvg_parser import HvgParser
 from summarization.html_parsers.index_parser import IndexParser
 from summarization.html_parsers.m4sport_parser import M4SportParser
 from summarization.html_parsers.metropol_parser import MetropolParser
+from summarization.html_parsers.nepszava_parser import NepszavaParser
 from summarization.html_parsers.nlc_parser import NLCParser
 from summarization.html_parsers.origo_parser import OrigoParser
 from summarization.html_parsers.parser_24 import Parser24
@@ -19,6 +20,7 @@ class HtmlParserFactory:
         'hvg':      HvgParser,
         'origo':    OrigoParser,
         'm4sport': M4SportParser,
+        'nepszava': NepszavaParser,
     }
 
     @classmethod

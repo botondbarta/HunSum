@@ -1,10 +1,4 @@
-import os
-
-import datasets
-import numpy as np
-from datasets import Dataset, DatasetDict
-from transformers import EncoderDecoderModel, BertTokenizer, IntervalStrategy, Seq2SeqTrainer
-from transformers import Seq2SeqTrainingArguments
+from transformers import EncoderDecoderModel, BertTokenizer, Seq2SeqTrainer
 
 from summarization.models.base_model import BaseModel
 
@@ -13,9 +7,13 @@ class Bert2Bert(BaseModel):
     def __init__(self, config_path):
         super().__init__(config_path)
 
-        self.model = EncoderDecoderModel.from_encoder_decoder_pretrained(
-            self.config.bert2bert.tokenizer, self.config.bert2bert.tokenizer
-        )
+        if self.config.load_model:
+            self.model = EncoderDecoderModel.from_pretrained(self.config.model_path)
+        else:
+            self.model = EncoderDecoderModel.from_encoder_decoder_pretrained(
+                self.config.bert2bert.tokenizer, self.config.bert2bert.tokenizer
+            )
+
         self.tokenizer = BertTokenizer.from_pretrained(self.config.bert2bert.tokenizer)
 
         self.model.config.decoder_start_token_id = self.tokenizer.cls_token_id
@@ -25,10 +23,8 @@ class Bert2Bert(BaseModel):
 
     def process_data_to_model_inputs(self, batch):
         # Tokenize the input and target data
-        inputs = self.tokenizer(batch['article'], padding='max_length',
-                                truncation=True, max_length=512)
-        outputs = self.tokenizer(batch['lead'], padding='max_length',
-                                 truncation=True, max_length=512)
+        inputs = self.tokenizer(batch['article'], padding='max_length', truncation=True, max_length=512)
+        outputs = self.tokenizer(batch['lead'], padding='max_length', truncation=True, max_length=512)
 
         batch['input_ids'] = inputs.input_ids
         batch['attention_mask'] = inputs.attention_mask
@@ -41,37 +37,13 @@ class Bert2Bert(BaseModel):
 
         return batch
 
-    def full_train(self):
-        dataset = self.load_dataset(self.config.data_dir)
-        tokenized_datasets = self.tokenize_datasets(dataset)
-
-        training_args = Seq2SeqTrainingArguments(
-            output_dir=self.config.output_dir,
-            learning_rate=self.config.learning_rate,
-            num_train_epochs=self.config.num_train_epochs,
-            per_device_train_batch_size=self.config.batch_size,
-            per_device_eval_batch_size=self.config.batch_size,
-            evaluation_strategy=IntervalStrategy.STEPS,
-            weight_decay=self.config.weight_decay,
-            save_total_limit=self.config.save_total_limit,
-            eval_steps=self.config.valid_steps,
-            save_steps=self.config.valid_steps,
-            predict_with_generate=True,
-            warmup_steps=self.config.warmup_steps,
-            fp16=True,
-            load_best_model_at_end=True,
-            # eval_accumulation_steps=30,
-        )
-
-        trainer = Seq2SeqTrainer(
+    def get_seq2seq_trainer(self, training_args, tokenized_datasets) -> Seq2SeqTrainer:
+        return Seq2SeqTrainer(
             model=self.model,
             args=training_args,
-            train_dataset=tokenized_datasets["train"],
-            eval_dataset=tokenized_datasets["validation"],
+            train_dataset=tokenized_datasets["train"] if self.config.do_train else None,
+            eval_dataset=tokenized_datasets["validation"] if self.config.do_train else None,
         )
-
-        trainer.train()
-        trainer.save_model(f'{self.config.output_dir}/best_model')
 
 # tokenized_datasets.set_format(
 #     type="torch", columns=["input_ids", "attention_mask", "decoder_attention_mask", "labels"],

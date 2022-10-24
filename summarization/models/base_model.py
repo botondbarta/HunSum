@@ -1,9 +1,9 @@
 import os
 from abc import abstractmethod, ABC
 
-import numpy as np
 import pandas as pd
 from datasets import DatasetDict, Dataset
+from transformers import IntervalStrategy, Seq2SeqTrainingArguments, Seq2SeqTrainer
 
 from summarization.utils.config_reader import get_config_from_yaml
 
@@ -16,10 +16,6 @@ class BaseModel(ABC):
     def process_data_to_model_inputs(self, batch):
         raise NotImplementedError
 
-    @abstractmethod
-    def full_train(self):
-        raise NotImplementedError
-
     def load_dataset(self, data_dir):
         site_dfs = []
         for file in os.listdir(data_dir):
@@ -27,19 +23,10 @@ class BaseModel(ABC):
             site_df = site_df[['lead', 'article']]
             site_df = self.drop_na_and_duplicates(site_df)
             site_df = site_df.astype('str')
-            site_df = site_df.sample(frac=1, random_state=123)
             site_dfs.append(site_df)
-        df = pd.concat(site_dfs)
-        train, validate, test = np.split(df.sample(frac=1, random_state=123),
-                                         [int(self.config.train_size * len(df)),
-                                          int((self.config.train_size + self.config.valid_size) * len(df))])
-        raw_datasets = DatasetDict({
-            'train': Dataset.from_pandas(train),
-            'validation': Dataset.from_pandas(validate),
-            'test': Dataset.from_pandas(test),
-        })
+        df = pd.concat(site_dfs).sample(frac=1, random_state=123)
 
-        return raw_datasets
+        return Dataset.from_pandas(df)
 
     @staticmethod
     def drop_na_and_duplicates(df):
@@ -50,3 +37,72 @@ class BaseModel(ABC):
     def tokenize_datasets(self, raw_datasets):
         return raw_datasets.map(self.process_data_to_model_inputs, batched=True, remove_columns=['article', 'lead'])
 
+    @abstractmethod
+    def get_seq2seq_trainer(self, training_args, tokenized_datasets) -> Seq2SeqTrainer:
+        raise NotImplementedError
+
+    def full_train(self):
+        if self.config.do_preprocess:
+            raw_datasets = DatasetDict()
+            if self.config.do_train:
+                raw_datasets['train'] = self.load_dataset(self.config.train_dir)
+                raw_datasets['validation'] = self.load_dataset(self.config.valid_dir)
+
+            if self.config.do_predict:
+                raw_datasets['test'] = self.load_dataset(self.config.test_dir)
+            tokenized_datasets = self.tokenize_datasets(raw_datasets)
+            tokenized_datasets.save_to_disk(self.config.preprocessed_dataset_path)
+        else:
+            tokenized_datasets = DatasetDict.load_from_disk(self.config.preprocessed_dataset_path)
+
+        training_args = Seq2SeqTrainingArguments(
+            output_dir=self.config.output_dir,
+            learning_rate=self.config.learning_rate,
+            num_train_epochs=self.config.num_train_epochs,
+            per_device_train_batch_size=self.config.batch_size,
+            per_device_eval_batch_size=self.config.batch_size,
+            evaluation_strategy=IntervalStrategy.STEPS,
+            weight_decay=self.config.weight_decay,
+            save_total_limit=self.config.save_total_limit,
+            eval_steps=self.config.valid_steps,
+            save_steps=self.config.valid_steps,
+            predict_with_generate=True,
+            warmup_steps=self.config.warmup_steps,
+            load_best_model_at_end=True,
+            fp16=self.config.fp16,
+            # eval_accumulation_steps=30,
+        )
+
+        trainer = self.get_seq2seq_trainer(training_args, tokenized_datasets)
+
+        if self.config.do_train:
+            checkpoint = self.config.resume_from_checkpoint if self.config.resume_from_checkpoint else None
+            trainer.train(resume_from_checkpoint=checkpoint)
+            trainer.save_model(os.path.join(self.config.output_dir, 'best_model'))
+
+        if self.config.do_predict:
+            test_output = trainer.predict(
+                test_dataset=tokenized_datasets["test"],
+                metric_key_prefix="test",
+                max_length=self.config.max_predict_length,
+                num_beams=self.config.num_beams,
+                length_penalty=self.config.length_penalty,
+                no_repeat_ngram_size=self.config.no_repeat_ngram_size,
+                temperature=self.config.temperature,
+                top_k=self.config.top_k,
+            )
+
+            predictions = test_output.predictions
+            predictions[predictions == -100] = self.tokenizer.pad_token_id
+            test_preds = self.tokenizer.batch_decode(
+                predictions, skip_special_tokens=True, clean_up_tokenization_spaces=True
+            )
+            test_preds = list(map(str.strip, test_preds))
+
+            if self.config.prediction_file is not None:
+                output_file = os.path.join(self.config.output_dir, self.config.prediction_file)
+            else:
+                output_file = os.path.join(self.config.output_dir, "test_generations.txt")
+            with open(output_file, 'w+') as f:
+                for ln in test_preds:
+                    f.write(ln + "\n\n")
