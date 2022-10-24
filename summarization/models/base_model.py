@@ -99,6 +99,11 @@ class BaseModel(ABC):
                 predictions, skip_special_tokens=True, clean_up_tokenization_spaces=True
             )
             test_preds = list(map(str.strip, test_preds))
-            with open(os.path.join(self.config.output_dir, "test_generations.txt"), 'w+') as f:
+
+            if self.config.prediction_file is not None:
+                output_file = os.path.join(self.config.output_dir, self.config.prediction_file)
+            else:
+                output_file = os.path.join(self.config.output_dir, "test_generations.txt")
+            with open(output_file, 'w+') as f:
                 for ln in test_preds:
                     f.write(ln + "\n\n")
