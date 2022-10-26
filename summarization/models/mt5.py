@@ -1,7 +1,10 @@
 import logging
 
+import evaluate
+import nltk
+import numpy as np
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, DataCollatorForSeq2Seq, \
-    Seq2SeqTrainer
+    Seq2SeqTrainer, pipeline
 
 from summarization.models.base_model import BaseModel
 
@@ -47,4 +50,38 @@ class MT5(BaseModel):
             eval_dataset=tokenized_datasets["validation"] if self.config.do_train else None,
             data_collator=data_collator,
             tokenizer=self.tokenizer,
+            compute_metrics=self.compute_metrics
         )
+
+    def postprocess_text(self, preds, labels):
+        preds = [pred.strip() for pred in preds]
+        labels = [label.strip() for label in labels]
+
+        # rougeLSum expects newline after each sentence
+        preds = ["\n".join(nltk.sent_tokenize(pred)) for pred in preds]
+        labels = ["\n".join(nltk.sent_tokenize(label)) for label in labels]
+
+        return preds, labels
+
+    def compute_metrics(self, eval_preds):
+        metric = evaluate.load("rouge")
+
+        preds, labels = eval_preds
+        if isinstance(preds, tuple):
+            preds = preds[0]
+        decoded_preds = self.tokenizer.batch_decode(preds, skip_special_tokens=True)
+        labels = np.where(labels != -100, labels, self.tokenizer.pad_token_id)
+        decoded_labels = self.tokenizer.batch_decode(labels, skip_special_tokens=True)
+
+        # Some simple post-processing
+        decoded_preds, decoded_labels = self.postprocess_text(decoded_preds, decoded_labels)
+
+        result = metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
+        result = {k: round(v * 100, 4) for k, v in result.items()}
+        prediction_lens = [np.count_nonzero(pred != self.tokenizer.pad_token_id) for pred in preds]
+        result["gen_len"] = np.mean(prediction_lens)
+        return result
+
+    def predict_pipeline(self, text):
+        nlp = pipeline(model=self.model, task='summarization', tokenizer=self.tokenizer)
+        return nlp(text, max_length=128, num_beams=3, no_repeat_ngram_size=2)
