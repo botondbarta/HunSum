@@ -4,7 +4,7 @@ from abc import abstractmethod, ABC
 
 import pandas as pd
 from datasets import DatasetDict, Dataset
-from transformers import IntervalStrategy, Seq2SeqTrainingArguments, Seq2SeqTrainer
+from transformers import IntervalStrategy, Seq2SeqTrainingArguments, Seq2SeqTrainer, pipeline
 
 from summarization.utils.config_reader import get_config_from_yaml
 
@@ -106,3 +106,14 @@ class BaseModel(ABC):
         with open(output_file, 'w+') as f:
             for ln in test_preds:
                 f.write(ln + "\n\n")
+
+    def predict_pipeline(self, text):
+        nlp = pipeline(model=self.model, task='summarization', tokenizer=self.tokenizer)
+        return nlp(text,
+                   max_length=self.config.max_predict_length,
+                   num_beams=self.config.num_beams,
+                   length_penalty=self.config.length_penalty,
+                   no_repeat_ngram_size=self.config.no_repeat_ngram_size,
+                   temperature=self.config.temperature,
+                   top_k=self.config.top_k,
+                   )

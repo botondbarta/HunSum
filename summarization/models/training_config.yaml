@@ -19,7 +19,6 @@ save_tokenized_data: True
 preprocessed_dataset_path: None
 
 # training
-do_train: True
 output_dir: dir
 resume_from_checkpoint: False
 
@@ -33,7 +32,6 @@ warmup_steps: 3000
 fp16: False
 
 # predict
-do_predict: True
 prediction_file: None
 max_predict_length: 128
 num_beams: 5

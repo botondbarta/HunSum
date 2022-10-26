@@ -82,6 +82,3 @@ class MT5(BaseModel):
         result["gen_len"] = np.mean(prediction_lens)
         return result
 
-    def predict_pipeline(self, text):
-        nlp = pipeline(model=self.model, task='summarization', tokenizer=self.tokenizer)
-        return nlp(text, max_length=128, num_beams=3, no_repeat_ngram_size=2)
