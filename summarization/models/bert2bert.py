@@ -41,8 +41,8 @@ class Bert2Bert(BaseModel):
         return Seq2SeqTrainer(
             model=self.model,
             args=training_args,
-            train_dataset=tokenized_datasets["train"] if self.config.do_train else None,
-            eval_dataset=tokenized_datasets["validation"] if self.config.do_train else None,
+            train_dataset=tokenized_datasets["train"],
+            eval_dataset=tokenized_datasets["validation"],
         )
 
 # tokenized_datasets.set_format(
