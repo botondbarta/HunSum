@@ -3,8 +3,7 @@ import logging
 import evaluate
 import nltk
 import numpy as np
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, DataCollatorForSeq2Seq, \
-    Seq2SeqTrainer, pipeline
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, DataCollatorForSeq2Seq, Seq2SeqTrainer
 
 from summarization.models.base_model import BaseModel
 
@@ -81,4 +80,3 @@ class MT5(BaseModel):
         prediction_lens = [np.count_nonzero(pred != self.tokenizer.pad_token_id) for pred in preds]
         result["gen_len"] = np.mean(prediction_lens)
         return result
-
