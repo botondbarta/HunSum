@@ -14,6 +14,7 @@ setup(
         'datasets~=2.5.1',
         'dateparser~=1.1.1',
         'dotmap~=1.3.30',
+        'evaluate~=0.3.0',
         'typing~=3.7.4.3',
         'numpy~=1.23.2',
         'click~=8.0.4',
