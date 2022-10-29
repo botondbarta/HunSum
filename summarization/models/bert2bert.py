@@ -29,7 +29,7 @@ class Bert2Bert(BaseModel):
         batch['input_ids'] = inputs.input_ids
         batch['attention_mask'] = inputs.attention_mask
         # batch["decoder_input_ids"] = outputs.input_ids
-        # batch['decoder_attention_mask'] = outputs.attention_mask
+        batch['decoder_attention_mask'] = outputs.attention_mask
         batch['labels'] = outputs.input_ids.copy()
 
         batch['labels'] = [[-100 if token == self.tokenizer.pad_token_id else token for token in labels]
