@@ -7,8 +7,8 @@ class Bert2Bert(BaseModel):
     def __init__(self, config_path):
         super().__init__(config_path)
 
-        if self.config.load_model:
-            self.model = EncoderDecoderModel.from_pretrained(self.config.model_path)
+        if self.config.bert2bert.load_model:
+            self.model = EncoderDecoderModel.from_pretrained(self.config.bert2bert.model_path)
         else:
             self.model = EncoderDecoderModel.from_encoder_decoder_pretrained(
                 self.config.bert2bert.tokenizer, self.config.bert2bert.tokenizer
