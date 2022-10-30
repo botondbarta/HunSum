@@ -52,27 +52,12 @@ class PortfolioParser(ParserBase):
                 article_text = '\n'.join(reversed([self.get_text(article) for article in precedent.find_previous_siblings('p')]))
 
         if not article_text:
-            content = soup.find('span', class_='title-bar')
-            if content:
-                content.decompose()
             content = soup.find('ul', class_='tags')
             if content:
                 content.decompose()
             article_text = '\n'.join([self.get_text(article) for article in soup.select("div.pfarticle-section-content")])
 
         if not article_text:
-            content = next(iter(soup.select('div.smscontent > b')), None)
-            if content:
-                content.decompose()
-
-            content = next(iter(soup.select('div.traderhirdetes')), None)
-            if content:
-                content.decompose()
-
-            content = next(iter(soup.select('div.smscontent > p')), None)
-            if content:
-                content.decompose()
-
             article = soup.find('div', class_='smscontent')
             article_text = self.get_text(article)
 
@@ -105,4 +90,8 @@ class PortfolioParser(ParserBase):
         to_remove = []
         to_remove.extend(soup.find_all('iframe'))
         to_remove.extend(soup.find_all('figure'))
+        to_remove.extend(soup.find_all('span', class_='title-bar'))
+        to_remove.extend(soup.select('div.smscontent > b'))
+        to_remove.extend(soup.select('div.traderhirdetes'))
+        to_remove.extend(soup.select('div.smscontent > p'))
         return to_remove
