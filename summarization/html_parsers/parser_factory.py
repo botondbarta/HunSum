@@ -7,6 +7,7 @@ from summarization.html_parsers.nlc_parser import NLCParser
 from summarization.html_parsers.origo_parser import OrigoParser
 from summarization.html_parsers.parser_24 import Parser24
 from summarization.html_parsers.parser_base import ParserBase
+from summarization.html_parsers.portfolio_parser import PortfolioParser
 from summarization.html_parsers.telex_parser import TelexParser
 
 
@@ -21,6 +22,7 @@ class HtmlParserFactory:
         'origo':    OrigoParser,
         'm4sport': M4SportParser,
         'nepszava': NepszavaParser,
+        'portfolio': PortfolioParser,
     }
 
     @classmethod
