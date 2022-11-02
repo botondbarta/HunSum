@@ -19,6 +19,8 @@ class MT5(BaseModel):
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_checkpoint)
         self.model = AutoModelForSeq2SeqLM.from_pretrained(self.model_checkpoint)
 
+        self.metric = evaluate.load("rouge")
+
         utils.logging.set_verbosity(logging.INFO)
         utils.logging.enable_default_handler()
         utils.logging.enable_explicit_format()
@@ -67,7 +69,7 @@ class MT5(BaseModel):
         return preds, labels
 
     def compute_metrics(self, eval_preds):
-        metric = evaluate.load("rouge")
+
 
         preds, labels = eval_preds
         if isinstance(preds, tuple):
@@ -79,7 +81,7 @@ class MT5(BaseModel):
         # Some simple post-processing
         decoded_preds, decoded_labels = self.postprocess_text(decoded_preds, decoded_labels)
 
-        result = metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
+        result = self.metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
         result = {k: round(v * 100, 4) for k, v in result.items()}
         prediction_lens = [np.count_nonzero(pred != self.tokenizer.pad_token_id) for pred in preds]
         result["gen_len"] = np.mean(prediction_lens)
