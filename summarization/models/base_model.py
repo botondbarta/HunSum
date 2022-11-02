@@ -78,13 +78,15 @@ class BaseModel(ABC):
 
         # Training
         checkpoint = self.config.resume_from_checkpoint if self.config.resume_from_checkpoint else None
-        metrics = trainer.train(resume_from_checkpoint=checkpoint)
+        train_output = trainer.train(resume_from_checkpoint=checkpoint)
+        metrics = train_output.metrics
         trainer.save_model(os.path.join(self.config.output_dir, 'best_model'))
         trainer.save_metrics("train", metrics)
 
         # Evalutation
-        metrics = trainer.evaluate(max_length=self.config.max_predict_length, num_beams=self.config.num_beams,
+        eval_output = trainer.evaluate(max_length=self.config.max_predict_length, num_beams=self.config.num_beams,
                                    metric_key_prefix="eval")
+        metrics = eval_output.metrics
 
         trainer.save_metrics("eval", metrics)
 
@@ -100,7 +102,8 @@ class BaseModel(ABC):
             top_k=self.config.top_k,
         )
 
-        metrics = test_output.metrics
+        predict_output = test_output.metrics
+        metrics = predict_output.metrics
         trainer.save_metrics("predict", metrics)
 
         predictions = test_output.predictions
