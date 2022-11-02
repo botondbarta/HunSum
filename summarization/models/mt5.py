@@ -1,9 +1,6 @@
 import logging
 
-import evaluate
-import nltk
-import numpy as np
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, DataCollatorForSeq2Seq, Seq2SeqTrainer, utils
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, DataCollatorForSeq2Seq, Seq2SeqTrainer
 
 from summarization.models.base_model import BaseModel
 

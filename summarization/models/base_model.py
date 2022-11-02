@@ -2,10 +2,10 @@ import glob
 import os
 from abc import abstractmethod, ABC
 
-import datasets
+import evaluate
 import pandas as pd
 from datasets import DatasetDict, Dataset
-from transformers import IntervalStrategy, Seq2SeqTrainingArguments, Seq2SeqTrainer, pipeline, PreTrainedTokenizerBase
+from transformers import IntervalStrategy, Seq2SeqTrainingArguments, Seq2SeqTrainer, pipeline
 
 from summarization.utils.config_reader import get_config_from_yaml
 
@@ -77,7 +77,7 @@ class BaseModel(ABC):
             # eval_accumulation_steps=30,
         )
 
-        self.rouge = datasets.load_metric("rouge")
+        self.rouge = evaluate.load("rouge")
 
         trainer = self.get_seq2seq_trainer(training_args, tokenized_datasets)
 
