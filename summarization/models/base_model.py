@@ -89,6 +89,7 @@ class BaseModel(ABC):
         trainer.save_metrics("train", metrics)
 
         # Evalutation
+        trainer.compute_metrics = self.compute_metrics
         metrics = trainer.evaluate(max_length=self.config.max_predict_length, num_beams=self.config.num_beams,
                                    metric_key_prefix="eval")
 

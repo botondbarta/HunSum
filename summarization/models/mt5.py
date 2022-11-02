@@ -46,5 +46,4 @@ class MT5(BaseModel):
             eval_dataset=tokenized_datasets["validation"],
             data_collator=data_collator,
             tokenizer=self.tokenizer,
-            compute_metrics=self.compute_metrics,
         )
