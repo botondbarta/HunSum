@@ -72,3 +72,16 @@ nepszava.hu/video/.*
 nepszava.hu/cikk_kuldes/.*
 nepszava.hu/PrintArticle.*
 nepszava.hu/default.asp?cCenter=.*
+portfolio.hu/.*arfolyam.html
+portfolio.hu/allashirdetesek.*
+portfolio.hu/arfolyam.*
+portfolio.hu/cimke.*
+portfolio.hu/rendezvenyek/eloado/.*
+portfolio.hu/rendezvenyek/galeria.*
+portfolio.hu/rendezvenyek/konferencia.*
+portfolio.hu/szerzo/.*
+portfolio.hu/en/users/.*
+portfolio.hu/konyv/.*
+portfolio.hu/en/events/.*
+portfolio.hu/traderszoba/.*
+portfolio.hu/users/.*
