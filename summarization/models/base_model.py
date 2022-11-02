@@ -2,9 +2,10 @@ import glob
 import os
 from abc import abstractmethod, ABC
 
+import datasets
 import pandas as pd
 from datasets import DatasetDict, Dataset
-from transformers import IntervalStrategy, Seq2SeqTrainingArguments, Seq2SeqTrainer, pipeline
+from transformers import IntervalStrategy, Seq2SeqTrainingArguments, Seq2SeqTrainer, pipeline, PreTrainedTokenizerBase
 
 from summarization.utils.config_reader import get_config_from_yaml
 
@@ -76,6 +77,8 @@ class BaseModel(ABC):
             # eval_accumulation_steps=30,
         )
 
+        self.rouge = datasets.load_metric("rouge")
+
         trainer = self.get_seq2seq_trainer(training_args, tokenized_datasets)
 
         # Training
@@ -128,6 +131,22 @@ class BaseModel(ABC):
                    num_beams=self.config.num_beams,
                    length_penalty=self.config.length_penalty,
                    no_repeat_ngram_size=self.config.no_repeat_ngram_size,
-                   temperature=self.config.temperature,
-                   top_k=self.config.top_k,
                    )
+
+    def compute_metrics(self, pred):
+        labels_ids = pred.label_ids
+        pred_ids = pred.predictions
+
+        pred_str = self.tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
+        labels_ids[labels_ids == -100] = self.tokenizer.pad_token_id
+        label_str = self.tokenizer.batch_decode(labels_ids, skip_special_tokens=True)
+
+        rouge_output = self.rouge.compute(
+            predictions=pred_str, references=label_str, rouge_types=["rouge2"]
+        )["rouge2"].mid
+
+        return {
+            "rouge2_precision": round(rouge_output.precision, 4),
+            "rouge2_recall": round(rouge_output.recall, 4),
+            "rouge2_fmeasure": round(rouge_output.fmeasure, 4),
+        }

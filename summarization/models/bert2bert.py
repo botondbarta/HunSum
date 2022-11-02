@@ -43,6 +43,7 @@ class Bert2Bert(BaseModel):
             args=training_args,
             train_dataset=tokenized_datasets["train"],
             eval_dataset=tokenized_datasets["validation"],
+            compute_metrics=self.compute_metrics,
         )
 
 # tokenized_datasets.set_format(

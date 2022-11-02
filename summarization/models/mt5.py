@@ -19,12 +19,6 @@ class MT5(BaseModel):
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_checkpoint)
         self.model = AutoModelForSeq2SeqLM.from_pretrained(self.model_checkpoint)
 
-        self.metric = evaluate.load("rouge")
-
-        utils.logging.set_verbosity(logging.INFO)
-        utils.logging.enable_default_handler()
-        utils.logging.enable_explicit_format()
-
     def process_data_to_model_inputs(self, batch):
         # Tokenize the input and target data
         inputs = self.tokenizer(batch['article'], padding='max_length', max_length=self.config.mt5.max_input_length,
@@ -55,34 +49,5 @@ class MT5(BaseModel):
             eval_dataset=tokenized_datasets["validation"],
             data_collator=data_collator,
             tokenizer=self.tokenizer,
-            compute_metrics=self.compute_metrics
+            compute_metrics=self.compute_metrics,
         )
-
-    def postprocess_text(self, preds, labels):
-        preds = [pred.strip() for pred in preds]
-        labels = [label.strip() for label in labels]
-
-        # rougeLSum expects newline after each sentence
-        preds = ["\n".join(nltk.sent_tokenize(pred)) for pred in preds]
-        labels = ["\n".join(nltk.sent_tokenize(label)) for label in labels]
-
-        return preds, labels
-
-    def compute_metrics(self, eval_preds):
-
-
-        preds, labels = eval_preds
-        if isinstance(preds, tuple):
-            preds = preds[0]
-        decoded_preds = self.tokenizer.batch_decode(preds, skip_special_tokens=True)
-        labels = np.where(labels != -100, labels, self.tokenizer.pad_token_id)
-        decoded_labels = self.tokenizer.batch_decode(labels, skip_special_tokens=True)
-
-        # Some simple post-processing
-        decoded_preds, decoded_labels = self.postprocess_text(decoded_preds, decoded_labels)
-
-        result = self.metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
-        result = {k: round(v * 100, 4) for k, v in result.items()}
-        prediction_lens = [np.count_nonzero(pred != self.tokenizer.pad_token_id) for pred in preds]
-        result["gen_len"] = np.mean(prediction_lens)
-        return result
