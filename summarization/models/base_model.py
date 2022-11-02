@@ -2,7 +2,7 @@ import glob
 import os
 from abc import abstractmethod, ABC
 
-import evaluate
+import datasets
 import pandas as pd
 from datasets import DatasetDict, Dataset
 from transformers import IntervalStrategy, Seq2SeqTrainingArguments, Seq2SeqTrainer, pipeline
@@ -77,9 +77,10 @@ class BaseModel(ABC):
             # eval_accumulation_steps=30,
         )
 
-        self.rouge = evaluate.load("rouge")
+        self.rouge = datasets.load_metric("rouge")
 
         trainer = self.get_seq2seq_trainer(training_args, tokenized_datasets)
+        trainer.compute_metrics = self.compute_metrics
 
         # Training
         checkpoint = self.config.resume_from_checkpoint if self.config.resume_from_checkpoint else None
@@ -89,7 +90,6 @@ class BaseModel(ABC):
         trainer.save_metrics("train", metrics)
 
         # Evalutation
-        trainer.compute_metrics = self.compute_metrics
         metrics = trainer.evaluate(max_length=self.config.max_predict_length, num_beams=self.config.num_beams,
                                    metric_key_prefix="eval")
 
