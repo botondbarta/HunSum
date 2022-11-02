@@ -103,8 +103,7 @@ class BaseModel(ABC):
             top_k=self.config.top_k,
         )
 
-        predict_output = test_output.metrics
-        metrics = predict_output.metrics
+        metrics = test_output.metrics
         trainer.save_metrics("predict", metrics)
 
         predictions = test_output.predictions
