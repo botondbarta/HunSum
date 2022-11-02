@@ -68,6 +68,8 @@ class BaseModel(ABC):
             eval_steps=self.config.valid_steps,
             save_steps=self.config.valid_steps,
             predict_with_generate=True,
+            generation_max_length=self.config.max_predict_length,
+            generation_num_beams=self.config.num_beams,
             warmup_steps=self.config.warmup_steps,
             load_best_model_at_end=True,
             fp16=self.config.fp16,
@@ -84,9 +86,8 @@ class BaseModel(ABC):
         trainer.save_metrics("train", metrics)
 
         # Evalutation
-        eval_output = trainer.evaluate(max_length=self.config.max_predict_length, num_beams=self.config.num_beams,
+        metrics = trainer.evaluate(max_length=self.config.max_predict_length, num_beams=self.config.num_beams,
                                    metric_key_prefix="eval")
-        metrics = eval_output.metrics
 
         trainer.save_metrics("eval", metrics)
 
