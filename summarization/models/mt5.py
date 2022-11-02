@@ -3,7 +3,7 @@ import logging
 import evaluate
 import nltk
 import numpy as np
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, DataCollatorForSeq2Seq, Seq2SeqTrainer
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, DataCollatorForSeq2Seq, Seq2SeqTrainer, utils
 
 from summarization.models.base_model import BaseModel
 
@@ -18,6 +18,10 @@ class MT5(BaseModel):
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_checkpoint)
         self.model = AutoModelForSeq2SeqLM.from_pretrained(self.model_checkpoint)
+
+        utils.logging.set_verbosity(logging.INFO)
+        utils.logging.enable_default_handler()
+        utils.logging.enable_explicit_format()
 
     def process_data_to_model_inputs(self, batch):
         # Tokenize the input and target data
