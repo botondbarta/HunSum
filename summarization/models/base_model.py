@@ -88,9 +88,16 @@ class BaseModel(ABC):
         trainer.save_model(os.path.join(self.config.output_dir, 'best_model'))
         trainer.save_metrics("train", metrics)
 
-        # Evalutation
-        metrics = trainer.evaluate(max_length=self.config.max_predict_length, num_beams=self.config.num_beams,
-                                   metric_key_prefix="eval")
+        # Evaluation
+        metrics = trainer.evaluate(
+            metric_key_prefix="eval",
+            max_length=self.config.max_predict_length,
+            num_beams=self.config.num_beams,
+            length_penalty=self.config.length_penalty,
+            no_repeat_ngram_size=self.config.no_repeat_ngram_size,
+            encoder_no_repeat_ngram_size=self.config.encoder_no_repeat_ngram_size,
+            early_stopping=self.config.generate_early_stopping,
+        )
 
         trainer.save_metrics("eval", metrics)
 
@@ -102,8 +109,8 @@ class BaseModel(ABC):
             num_beams=self.config.num_beams,
             length_penalty=self.config.length_penalty,
             no_repeat_ngram_size=self.config.no_repeat_ngram_size,
-            temperature=self.config.temperature,
-            top_k=self.config.top_k,
+            encoder_no_repeat_ngram_size=self.config.encoder_no_repeat_ngram_size,
+            early_stopping=self.config.generate_early_stopping,
         )
 
         metrics = test_output.metrics
@@ -131,6 +138,8 @@ class BaseModel(ABC):
                    num_beams=self.config.num_beams,
                    length_penalty=self.config.length_penalty,
                    no_repeat_ngram_size=self.config.no_repeat_ngram_size,
+                   encoder_no_repeat_ngram_size=self.config.encoder_no_repeat_ngram_size,
+                   early_stopping=self.config.generate_early_stopping,
                    )
 
     def compute_metrics(self, pred):
