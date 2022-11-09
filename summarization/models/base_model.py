@@ -13,6 +13,7 @@ from summarization.utils.config_reader import get_config_from_yaml
 class BaseModel(ABC):
     def __init__(self, config_path):
         self.config = get_config_from_yaml(config_path)
+        self.rouge = datasets.load_metric("rouge")
 
     @abstractmethod
     def process_data_to_model_inputs(self, batch):
@@ -76,8 +77,6 @@ class BaseModel(ABC):
             fp16=self.config.fp16,
             # eval_accumulation_steps=30,
         )
-
-        self.rouge = datasets.load_metric("rouge")
 
         trainer = self.get_seq2seq_trainer(training_args, tokenized_datasets)
         trainer.compute_metrics = self.compute_metrics
