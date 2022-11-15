@@ -37,12 +37,12 @@ class Bert2Bert(BaseModel):
 
         return batch
 
-    def get_seq2seq_trainer(self, training_args, tokenized_datasets) -> Seq2SeqTrainer:
+    def get_seq2seq_trainer(self, training_args, tokenized_datasets, load_dataset=True) -> Seq2SeqTrainer:
         return Seq2SeqTrainer(
             model=self.model,
             args=training_args,
-            train_dataset=tokenized_datasets["train"],
-            eval_dataset=tokenized_datasets["validation"],
+            train_dataset=tokenized_datasets["train"] if load_dataset else None,
+            eval_dataset=tokenized_datasets["validation"] if load_dataset else None,
         )
 
 # tokenized_datasets.set_format(
