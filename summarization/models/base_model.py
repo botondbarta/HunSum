@@ -160,11 +160,21 @@ class BaseModel(ABC):
         label_str = self.tokenizer.batch_decode(labels_ids, skip_special_tokens=True)
 
         rouge_output = self.rouge.compute(
-            predictions=pred_str, references=label_str, rouge_types=["rouge1","rouge2"]
-        )["rouge2"].mid
+            predictions=pred_str, references=label_str, rouge_types=["rouge1", "rouge2", "rougeL"]
+        )
+
+        rouge1 = rouge_output["rouge1"].mid
+        rouge2 = rouge_output["rouge2"].mid
+        rougeL = rouge_output["rougeL"].mid
 
         return {
-            "rouge2_precision": round(rouge_output.precision, 4),
-            "rouge2_recall": round(rouge_output.recall, 4),
-            "rouge2_fmeasure": round(rouge_output.fmeasure, 4),
+            "rouge1_precision": round(rouge1.precision, 4),
+            "rouge1_recall": round(rouge1.recall, 4),
+            "rouge1_fmeasure": round(rouge1.fmeasure, 4),
+            "rouge2_precision": round(rouge2.precision, 4),
+            "rouge2_recall": round(rouge2.recall, 4),
+            "rouge2_fmeasure": round(rouge2.fmeasure, 4),
+            "rougeL_precision": round(rougeL.precision, 4),
+            "rougeL_recall": round(rougeL.recall, 4),
+            "rougeL_fmeasure": round(rougeL.fmeasure, 4),
         }
