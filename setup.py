@@ -25,6 +25,7 @@ setup(
         'pandas~=1.4.3',
         'pypandoc~=1.8.1',
         'PyYAML~=6.0',
+        'rouge~=1.0.1',
         # 'warc @ https://github.com/erroneousboat/warc3/archive/master.zip',
         'warc3-wet',
         'quntoken~=3.1.8',
