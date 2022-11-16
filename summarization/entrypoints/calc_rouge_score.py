@@ -2,6 +2,7 @@ import click
 from rouge import FilesRouge
 
 
+@click.command()
 @click.argument('references')  # path to original
 @click.argument('predictions')  # path to predicted
 def main(references, predictions):
