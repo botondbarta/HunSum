@@ -19,12 +19,12 @@ class BaseModel(ABC):
     def process_data_to_model_inputs(self, batch):
         raise NotImplementedError
 
-    def load_dataset(self, data_dir, shuffle=True):
+    def load_dataset(self, data_dir, shuffle=True, keep_uuid=False):
         files = [data_dir] if os.path.isfile(data_dir) else sorted(glob.glob(f'{data_dir}/*.jsonl.gz'))
         site_dfs = []
         for file in files:
             site_df = pd.read_json(file, lines=True)
-            site_df = site_df[['lead', 'article']]
+            site_df = site_df[['lead', 'article', 'uuid']] if keep_uuid else site_df[['lead', 'article']]
             site_df = self.drop_na_and_duplicates(site_df)
             site_df = site_df.astype('str')
             site_dfs.append(site_df)
@@ -128,13 +128,17 @@ class BaseModel(ABC):
                 )
                 test_preds = list(map(str.strip, test_preds))
 
+                test_df = self.load_dataset(self.config.test_dir, shuffle=False, keep_uuid=True).to_pandas()
+                test_df['generated_lead'] = test_preds
+                test_df = test_df[['generated_lead', 'uuid']]
+
                 if self.config.prediction_file is not None:
                     output_file = os.path.join(self.config.output_dir, self.config.prediction_file)
                 else:
-                    output_file = os.path.join(self.config.output_dir, "test_generations.txt")
-                with open(output_file, 'w+') as f:
-                    for ln in test_preds:
-                        f.write(ln + "\n\n")
+                    output_file = os.path.join(self.config.output_dir, "test_generations.jsonl")
+                with open(output_file, 'w', encoding='utf-8') as file:
+                    test_df.to_json(file, force_ascii=False, lines=True, orient='records')
+
 
     def predict_pipeline(self, text):
         nlp = pipeline(model=self.model, task='summarization', tokenizer=self.tokenizer)
@@ -156,7 +160,7 @@ class BaseModel(ABC):
         label_str = self.tokenizer.batch_decode(labels_ids, skip_special_tokens=True)
 
         rouge_output = self.rouge.compute(
-            predictions=pred_str, references=label_str, rouge_types=["rouge2"]
+            predictions=pred_str, references=label_str, rouge_types=["rouge1","rouge2"]
         )["rouge2"].mid
 
         return {
