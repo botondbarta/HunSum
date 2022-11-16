@@ -31,7 +31,7 @@ class MT5(BaseModel):
         inputs['labels'] = outputs['input_ids']
         return inputs
 
-    def get_seq2seq_trainer(self, training_args, tokenized_datasets) -> Seq2SeqTrainer:
+    def get_seq2seq_trainer(self, training_args, tokenized_datasets, load_dataset=True) -> Seq2SeqTrainer:
         label_pad_token_id = -100
         data_collator = DataCollatorForSeq2Seq(
             self.tokenizer,
@@ -42,8 +42,8 @@ class MT5(BaseModel):
         return Seq2SeqTrainer(
             model=self.model,
             args=training_args,
-            train_dataset=tokenized_datasets["train"],
-            eval_dataset=tokenized_datasets["validation"],
+            train_dataset=tokenized_datasets["train"] if load_dataset else None,
+            eval_dataset=tokenized_datasets["validation"] if load_dataset else None,
             data_collator=data_collator,
             tokenizer=self.tokenizer,
         )
