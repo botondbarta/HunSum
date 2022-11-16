@@ -20,7 +20,7 @@ class BaseModel(ABC):
         raise NotImplementedError
 
     def load_dataset(self, data_dir, shuffle=True):
-        files = [data_dir] if os.path.isfile(data_dir) else glob.glob(f'{data_dir}/*.jsonl.gz')
+        files = [data_dir] if os.path.isfile(data_dir) else sorted(glob.glob(f'{data_dir}/*.jsonl.gz'))
         site_dfs = []
         for file in files:
             site_df = pd.read_json(file, lines=True)
