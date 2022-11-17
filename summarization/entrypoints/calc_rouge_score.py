@@ -27,7 +27,7 @@ def main(references, predicted, results_file, use_stemming):
     ref_df = pd.concat(site_dfs)
     pred_df = pd.read_json(predicted, lines=True)
 
-    df = pd.merge([ref_df, pred_df], on='uuid')
+    df = pd.merge(ref_df, pred_df, on='uuid')
 
     ref = df['lead'].tolist()
     gen = df['generated_lead'].tolist()
