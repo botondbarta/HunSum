@@ -1,16 +1,17 @@
-clean_src_dir: '/dir/data'
-clean_out_dir: '/dir/data/clean'
+clean_src_dir: '/home/bart/data'
+clean_out_dir: '/home/bart/data/clean'
 min_lead_tokens: 6
 max_lead_sentences: 5
 min_article_len: 200
 max_article_len: 15000
 min_article_sentences: 6
-lang_detector_model_path: '/tmp/lid.176.bin'
-num_process: 4
+# lang_detector_model_path: '/tmp/lid.176.bin'
+lang_detector_model_path: '/home/bart/Downloads/lid.176.bin'
+num_process: 12
 
 # deduplication configs
-dedup_src_dir: '/dir/data/clean'
-dedup_out_dir: '/dir/data/dedup'
+dedup_src_dir: '/home/bart/data'
+dedup_out_dir: '/home/bart/data/dedup'
 char_ngram: 9
 num_of_permutations: 200
 num_bands: 10
