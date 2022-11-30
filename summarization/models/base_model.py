@@ -19,13 +19,13 @@ class BaseModel(ABC):
     def process_data_to_model_inputs(self, batch):
         raise NotImplementedError
 
-    def load_dataset(self, data_dir, shuffle=True, keep_uuid=False):
+    def load_dataset(self, data_dir, shuffle=True):
         files = [data_dir] if os.path.isfile(data_dir) else sorted(glob.glob(f'{data_dir}/*.jsonl.gz'))
         site_dfs = []
         for file in files:
             site_df = pd.read_json(file, lines=True)
-            site_df = site_df[['lead', 'article', 'uuid']] if keep_uuid else site_df[['lead', 'article']]
-            site_df = self.drop_na_and_duplicates(site_df)
+            site_df = site_df[['lead', 'article', 'uuid']]
+            site_df = site_df.dropna()
             site_df = site_df.astype('str')
             site_dfs.append(site_df)
         df = pd.concat(site_dfs)
@@ -33,34 +33,15 @@ class BaseModel(ABC):
             df = df.sample(frac=1, random_state=123)
         return Dataset.from_pandas(df)
 
-    @staticmethod
-    def drop_na_and_duplicates(df):
-        df = df.dropna()
-        df = df.drop_duplicates(subset='article')
-        return df
-
     def tokenize_datasets(self, raw_datasets):
         return raw_datasets.map(self.process_data_to_model_inputs, batched=True, remove_columns=['article', 'lead'])
 
     @abstractmethod
-    def get_seq2seq_trainer(self, training_args, tokenized_datasets, load_dataset=True) -> Seq2SeqTrainer:
+    def get_seq2seq_trainer(self, tokenized_datasets, load_train_data=True) -> Seq2SeqTrainer:
         raise NotImplementedError
 
-    def full_train(self, do_train=True, do_predict=True, generate_predict=True):
-        if self.config.do_preprocess:
-            raw_datasets = DatasetDict()
-            if do_train:
-                raw_datasets['train'] = self.load_dataset(self.config.train_dir)
-                raw_datasets['validation'] = self.load_dataset(self.config.valid_dir)
-            if do_predict:
-                raw_datasets['test'] = self.load_dataset(self.config.test_dir, shuffle=False)
-            tokenized_datasets = self.tokenize_datasets(raw_datasets)
-            if self.config.save_tokenized_data:
-                tokenized_datasets.save_to_disk(self.config.preprocessed_dataset_path)
-        else:
-            tokenized_datasets = DatasetDict.load_from_disk(self.config.preprocessed_dataset_path)
-
-        training_args = Seq2SeqTrainingArguments(
+    def _get_seq2seq_training_args(self):
+        return Seq2SeqTrainingArguments(
             output_dir=self.config.output_dir,
             learning_rate=self.config.learning_rate,
             num_train_epochs=self.config.num_train_epochs,
@@ -77,68 +58,90 @@ class BaseModel(ABC):
             warmup_steps=self.config.warmup_steps,
             load_best_model_at_end=True,
             fp16=self.config.fp16,
-            # eval_accumulation_steps=30,
         )
 
-        trainer = self.get_seq2seq_trainer(training_args, tokenized_datasets, do_train)
+    def _load_tokenized_dataset(self, load_train: bool = True, load_test: bool = True):
+        if self.config.do_preprocess:
+            raw_datasets = DatasetDict()
+            if load_train:
+                raw_datasets['train'] = self.load_dataset(self.config.train_dir)
+                raw_datasets['validation'] = self.load_dataset(self.config.valid_dir)
+            if load_test:
+                raw_datasets['test'] = self.load_dataset(self.config.test_dir, shuffle=False)
+            tokenized_datasets = self.tokenize_datasets(raw_datasets)
+            if self.config.save_tokenized_data:
+                tokenized_datasets.save_to_disk(self.config.preprocessed_dataset_path)
+        else:
+            tokenized_datasets = DatasetDict.load_from_disk(self.config.preprocessed_dataset_path)
+        return tokenized_datasets
+
+    def train(self):
+        tokenized_datasets = self._load_tokenized_dataset(load_train=True, load_test=True)
+
+        trainer = self.get_seq2seq_trainer(tokenized_datasets, load_train_data=True)
         trainer.compute_metrics = self.compute_metrics
 
-        if do_train:
-            # Training
-            checkpoint = self.config.resume_from_checkpoint if self.config.resume_from_checkpoint else None
-            train_output = trainer.train(resume_from_checkpoint=checkpoint)
-            metrics = train_output.metrics
-            trainer.save_model(os.path.join(self.config.output_dir, 'best_model'))
-            trainer.save_metrics("train", metrics)
+        # Training
+        checkpoint = self.config.resume_from_checkpoint if self.config.resume_from_checkpoint else None
+        train_output = trainer.train(resume_from_checkpoint=checkpoint)
+        metrics = train_output.metrics
+        trainer.save_model(os.path.join(self.config.output_dir, 'best_model'))
+        trainer.save_metrics("train", metrics)
 
-            # Evaluation
-            metrics = trainer.evaluate(
-                metric_key_prefix="eval",
-                max_length=self.config.max_predict_length,
-                num_beams=self.config.num_beams,
-                length_penalty=self.config.length_penalty,
-                no_repeat_ngram_size=self.config.no_repeat_ngram_size,
-                encoder_no_repeat_ngram_size=self.config.encoder_no_repeat_ngram_size,
-                early_stopping=self.config.generate_early_stopping,
-            )
+        # Evaluation
+        metrics = trainer.evaluate(
+            metric_key_prefix="eval",
+            max_length=self.config.max_predict_length,
+            num_beams=self.config.num_beams,
+            length_penalty=self.config.length_penalty,
+            no_repeat_ngram_size=self.config.no_repeat_ngram_size,
+            encoder_no_repeat_ngram_size=self.config.encoder_no_repeat_ngram_size,
+            early_stopping=self.config.generate_early_stopping,
+        )
+        trainer.save_metrics("eval", metrics)
 
-            trainer.save_metrics("eval", metrics)
+        # Prediction
+        self._generate_and_save(trainer, tokenized_datasets)
 
-        if do_predict:
-            # Prediction
-            test_output = trainer.predict(
-                test_dataset=tokenized_datasets["test"],
-                metric_key_prefix="test",
-                max_length=self.config.max_predict_length,
-                num_beams=self.config.num_beams,
-                length_penalty=self.config.length_penalty,
-                no_repeat_ngram_size=self.config.no_repeat_ngram_size,
-                encoder_no_repeat_ngram_size=self.config.encoder_no_repeat_ngram_size,
-                early_stopping=self.config.generate_early_stopping,
-            )
+    def generate(self):
+        raw_datasets = DatasetDict()
+        raw_datasets['test'] = self.load_dataset(self.config.generate_dir, shuffle=False)
+        tokenized_datasets = self.tokenize_datasets(raw_datasets)
 
-            metrics = test_output.metrics
-            trainer.save_metrics("predict", metrics)
+        trainer = self.get_seq2seq_trainer(tokenized_datasets, load_train_data=False)
+        trainer.compute_metrics = self.compute_metrics
+        self._generate_and_save(trainer, tokenized_datasets)
 
-            if generate_predict:
-                predictions = test_output.predictions
-                predictions[predictions == -100] = self.tokenizer.pad_token_id
-                test_preds = self.tokenizer.batch_decode(
-                    predictions, skip_special_tokens=True, clean_up_tokenization_spaces=True
-                )
-                test_preds = list(map(str.strip, test_preds))
+    def _generate_and_save(self, trainer, tokenized_datasets):
+        test_output = trainer.predict(
+            test_dataset=tokenized_datasets["test"],
+            metric_key_prefix="test",
+            max_length=self.config.max_predict_length,
+            num_beams=self.config.num_beams,
+            length_penalty=self.config.length_penalty,
+            no_repeat_ngram_size=self.config.no_repeat_ngram_size,
+            encoder_no_repeat_ngram_size=self.config.encoder_no_repeat_ngram_size,
+            early_stopping=self.config.generate_early_stopping,
+        )
 
-                test_df = self.load_dataset(self.config.test_dir, shuffle=False, keep_uuid=True).to_pandas()
-                test_df['generated_lead'] = test_preds
-                test_df = test_df[['generated_lead', 'uuid']]
+        metrics = test_output.metrics
+        trainer.save_metrics("predict", metrics)
 
-                if self.config.prediction_file is not None:
-                    output_file = os.path.join(self.config.output_dir, self.config.prediction_file)
-                else:
-                    output_file = os.path.join(self.config.output_dir, "test_generations.jsonl")
-                with open(output_file, 'w', encoding='utf-8') as file:
-                    test_df.to_json(file, force_ascii=False, lines=True, orient='records')
+        predictions = test_output.predictions
+        predictions[predictions == -100] = self.tokenizer.pad_token_id
+        test_preds = self.tokenizer.batch_decode(
+            predictions, skip_special_tokens=True, clean_up_tokenization_spaces=True
+        )
+        test_preds = list(map(str.strip, test_preds))
 
+        test_df = tokenized_datasets['test'].to_pandas()
+        test_df['generated_lead'] = test_preds
+        test_df = test_df[['generated_lead', 'uuid']]
+
+        output_file = os.path.join(self.config.output_dir, self.config.prediction_file)
+
+        with open(output_file, 'w', encoding='utf-8') as file:
+            test_df.to_json(file, force_ascii=False, lines=True, orient='records')
 
     def predict_pipeline(self, text):
         nlp = pipeline(model=self.model, task='summarization', tokenizer=self.tokenizer)

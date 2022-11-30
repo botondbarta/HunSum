@@ -12,6 +12,7 @@ bert2bert:
 train_dir: /train
 valid_dir: /valid
 test_dir: /test
+generate_dir: /test
 
 # preprocess
 do_preprocess: True
