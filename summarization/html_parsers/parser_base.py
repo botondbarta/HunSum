@@ -33,7 +33,7 @@ class ParserBase(ABC):
         return Article(uuid=uuid4().__str__(),
                        title=title,
                        lead=lead,
-                       article=unicodedata.normalize('NFKD', article),
+                       article=unicodedata.normalize('NFKC', article),
                        domain=page.domain,
                        url=page.url,
                        date_of_creation=date_of_creation,
