@@ -1,4 +1,10 @@
-# summarization
+# Abstractive summarization for Hungarian
+
+Links to the HunSum-1 dataset and our baseline models:
+- [HunSum-1](https://huggingface.co/datasets/SZTAKI-HLT/HunSum-1)
+- [mt5-base](https://huggingface.co/SZTAKI-HLT/mT5-base-HunSum-1)
+- [mt5-small](https://huggingface.co/SZTAKI-HLT/mT5-small-HunSum-1)
+- [Bert2Bert](https://huggingface.co/SZTAKI-HLT/Bert2Bert-HunSum-1)
 
 ## Setup
 ```bash
@@ -59,4 +65,19 @@ Arguments:
 ```bash
 cd summarization
 python entrypoints/deduplicate.py preprocess.yaml
+```
+
+## Citation
+If you use our dataset or models, please cite the following paper:
+
+```
+@inproceedings {HunSum-1,
+    title = {{HunSum-1: an Abstractive Summarization Dataset for Hungarian}},
+    booktitle = {XIX. Magyar Számítógépes Nyelvészeti Konferencia (MSZNY 2023)},
+    year = {2023},
+    publisher = {Szegedi Tudományegyetem, Informatikai Intézet},
+    address = {Szeged, Magyarország},
+    author = {Barta, Botond and Lakatos, Dorina and Nagy, Attila and Nyist, Mil{\'{a}}n Konor and {\'{A}}cs, Judit},
+    pages = {231--243}
+}
 ```
