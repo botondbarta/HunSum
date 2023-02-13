@@ -66,12 +66,14 @@ m4sport.hu/tema/.*
 m4sport.hu/.*/elo/.*
 m4sport.hu/.*/csapat/.*
 nepszava.hu/tag/.*
+nepszava.hu/szerzo/.*
 nepszava.hu/articles/?subcategory=.*
 nepszava.hu/galeria/.*
 nepszava.hu/video/.*
 nepszava.hu/cikk_kuldes/.*
 nepszava.hu/PrintArticle.*
 nepszava.hu/default.asp?cCenter=.*
+nepszava.hu/-frissitendo/.*
 portfolio.hu/.*arfolyam.html
 portfolio.hu/allashirdetesek.*
 portfolio.hu/arfolyam.*
