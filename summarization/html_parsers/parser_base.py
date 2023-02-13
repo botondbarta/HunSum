@@ -28,7 +28,7 @@ class ParserBase(ABC):
 
         # check if article contains lead
         if article.startswith(lead):
-            article = article[len(lead):]
+            article = article[len(lead):].strip()
 
         return Article(uuid=uuid4().__str__(),
                        title=title,
