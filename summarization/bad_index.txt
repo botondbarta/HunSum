@@ -123,3 +123,6 @@ delmagyar.hu/mozi/.*id=.*
 delmagyar.hu/buli/.*id=.*
 delmagyar.hu/fesztival/.*id=.*
 delmagyar.hu/szinhaz/.*id=.*
+delmagyar.hu/gyaszkozlemenyek/.*
+delmagyar.hu/allas/.*
+delmagyar.hu/jatek/.*
