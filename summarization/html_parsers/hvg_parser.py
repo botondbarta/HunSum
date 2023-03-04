@@ -118,7 +118,13 @@ class HvgParser(ParserBase):
 
         article_text = self.get_text(article, remove_img=True)
         assert_has_article(article_text, url)
-        return article_text
+        
+        article_text = article_text.replace('Regisztrálj a Jobline-on, hogy megtaláld álmaid állását és első kézből értesülhess a legújabb munkaerőpiaci trendekről!', '')
+        article_text = article_text.replace('Kövess minket a Facebook-on is, ahol mindig friss cikkekkel információkkal várunk!', '')
+        article_text = article_text.replace('Kövess minket a Facebookon!', '')
+
+
+        return article_text.strip()
 
     def get_tags(self, soup) -> Set[str]:
         # new css
