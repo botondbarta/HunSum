@@ -17,9 +17,6 @@ class ParserBase(ABC):
         pass
 
     def get_article(self, page: Page) -> Article:
-        if page.url != 'https://www.kisalfold.hu/helyi-sport/nemet-nagydij-vettel-volt-a-leggyorsabb-az-elso-szabadedzesen-fotok-6332769/':
-            return
-
         soup = BeautifulSoup(page.html, 'html.parser')
         self.check_page_is_valid(page.url, soup)
         html_soup = self.remove_html_tags(soup)
