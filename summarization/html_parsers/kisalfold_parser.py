@@ -45,16 +45,15 @@ class KisalfoldParser(ParserBase):
         article_text = self.get_text(soup.find('div', id='article_text'))
 
         if not article_text:
-            article = soup.select('div.enews-article-content > p')
-            article_text = "".join([self.get_text(text, remove_img=True) for text in article])
+            content = next(iter(soup.select('div.enews-article-content > div.tagsContainer')), None)
+            if content:
+                content.decompose()
+            article = soup.select('div.enews-article-content')
+            article_text = "\n".join([self.get_text(text, remove_img=True) for text in article])
 
         if not article_text:
-            article = soup.select('div.enews-article-content > div')
-            article_text = "".join([self.get_text(text, remove_img=True) for text in article])
-
-        if not article_text:
-            article = soup.select('div.block-content > p')
-            article_text = "".join([self.get_text(text, remove_img=True) for text in article])
+            article = soup.select('div.block-content')
+            article_text = "\n".join([self.get_text(text, remove_img=True) for text in article])
 
         assert_has_article(article_text, url)
         return article_text
@@ -100,4 +99,5 @@ class KisalfoldParser(ParserBase):
         to_remove.extend(soup.select('div#article_text > div#kapcsolodo_cikk'))
         to_remove.extend(soup.select('div#article_text > div#article_data_2'))
         to_remove.extend(soup.select('div#article_text > div.lapcomallas'))
+        to_remove.extend(soup.select('div.enews-article-content > div.articleInArticleOfferer'))
         return to_remove
