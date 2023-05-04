@@ -15,6 +15,12 @@ class TelexParser(ParserBase):
         if soup.select('div.liveblog'):
             raise InvalidPageError(url, 'Liveblog')
 
+        if '#7per7' in [self.get_text(tag) for tag in soup.select('div.content-wrapper > a.tag--meta')]:
+            raise InvalidPageError(url, '7per7')
+
+        if '#sakkfeladvány' in [self.get_text(tag) for tag in soup.select('div.content-wrapper > a.tag--meta')]:
+            raise InvalidPageError(url, 'sakkfeladvány')
+
     def get_title(self, url: str, soup) -> str:
         # new css class
         title = soup.find('div', class_="title-section__top")
@@ -43,6 +49,8 @@ class TelexParser(ParserBase):
         article = soup.find('div', class_="article-html-content")
 
         article_text = self.get_text(article, remove_img=True)
+        article_text = article_text.replace('A Telex legfrissebb koronavírussal kapcsolatos híreiért kattintson ide>>>', '')
+        article_text = article_text.replace('A Telex legfrissebb híreiért kattintson ide>>>', '')
         assert_has_article(article_text, url)
         return article_text
 
