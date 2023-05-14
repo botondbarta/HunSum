@@ -34,16 +34,8 @@ class IndexParser(ParserBase):
         lead = soup.find('div', class_="lead")
 
         if not lead:
-            leads = []
-            for tag in soup.select('div.cikk-torzs > p'):
-                lead = tag.find('strong')
-                if lead is None or str(tag).replace("<p>", "").replace("\n", "")[0] != '<':
-                    break
-                else:
-                    leads.append(lead)
-            lead_text = ' '.join([self.get_text(lead) for lead in leads]) if leads else None
-            if lead_text:
-                return lead_text
+            lead_content = next(iter(soup.select('div.cikk-torzs > p')), None)
+            lead = lead_content.find('strong')
 
         return self.get_text(lead, '')
 
@@ -52,8 +44,17 @@ class IndexParser(ParserBase):
         # remove lead if exists
         if article:
             leads = article.select('div.cikk-torzs > p > strong')
+            tags = article.select('div.cikk-torzs > div > ul.m-tag-list')
+            asides = article.select('div.cikk-torzs > aside')
+            content_disclaimer = soup.select('div.cikk-torzs > div.content-disclaimer-text')
             for lead in leads:
                 lead.decompose()
+            for tag in tags:
+                tag.decompose()
+            for aside in asides:
+                aside.decompose()
+            for element in content_disclaimer:
+                element.decompose()
 
         if not article:
             article = soup.find('div', class_="text")
@@ -65,6 +66,7 @@ class IndexParser(ParserBase):
             article = soup.find('div', class_="szoveg")
 
         article_text = self.get_text(article, remove_img=True)
+        article_text = article_text.replace('Kövesse az Indexet Facebookon is!', '')
         assert_has_article(article_text, url)
         return article_text
 
