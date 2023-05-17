@@ -35,7 +35,8 @@ class IndexParser(ParserBase):
 
         if not lead:
             lead_content = next(iter(soup.select('div.cikk-torzs > p')), None)
-            lead = lead_content.find('strong')
+            if lead_content is not None:
+                lead = lead_content.find('strong')
 
         return self.get_text(lead, '')
 
@@ -43,18 +44,19 @@ class IndexParser(ParserBase):
         article = copy.copy(soup.find('div', class_="cikk-torzs"))
         # remove lead if exists
         if article:
-            leads = article.select('div.cikk-torzs > p > strong')
-            tags = article.select('div.cikk-torzs > div > ul.m-tag-list')
-            asides = article.select('div.cikk-torzs > aside')
-            content_disclaimer = soup.select('div.cikk-torzs > div.content-disclaimer-text')
-            for lead in leads:
-                lead.decompose()
-            for tag in tags:
-                tag.decompose()
-            for aside in asides:
-                aside.decompose()
-            for element in content_disclaimer:
-                element.decompose()
+            lead_content = next(iter(article.select('div.cikk-torzs > p')), None)
+            if lead_content is not None:
+                lead = lead_content.find('strong')
+                if lead:
+                    lead.decompose()
+
+            to_decompose = []
+            to_decompose += article.select('div.cikk-torzs > div > ul.m-tag-list')
+            to_decompose += article.select('div.cikk-torzs > aside')
+            to_decompose += article.select('div.cikk-torzs > div.content-disclaimer-text')
+
+            for decomposable in to_decompose:
+                decomposable.decompose()
 
         if not article:
             article = soup.find('div', class_="text")

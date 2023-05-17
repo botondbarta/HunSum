@@ -25,10 +25,6 @@ index.hu/.*/napinapi/.*
 index.hu/.*/igazamiigaz/.*
 index.hu/.*/napi_osszefoglalo/
 index.hu/.*/hetilapszemle/
-index.hu/.*/napinapi/.*
-index.hu/.*/igazamiigaz/.*
-index.hu/.*/napi_osszefoglalo/
-index.hu/.*/hetilapszemle/
 24.hu/bulvar/
 24.hu/author/.*
 24.hu/tag/.*
