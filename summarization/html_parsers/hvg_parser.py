@@ -119,6 +119,7 @@ class HvgParser(ParserBase):
         article_text = article_text.replace('Regisztrálj a Jobline-on, hogy megtaláld álmaid állását és első kézből értesülhess a legújabb munkaerőpiaci trendekről!', '')
         article_text = article_text.replace('Kövess minket a Facebook-on is, ahol mindig friss cikkekkel információkkal várunk!', '')
         article_text = article_text.replace('Kövess minket a Facebookon!', '')
+        article_text = article_text.replace('Ide kattintva eléri a Nyüzsi további cikkeit, azonnali véleményeket, érdekességeket, szórakoztató mémeket, gifeket, videókat.', '')
 
 
         return article_text.strip()
@@ -153,5 +154,7 @@ class HvgParser(ParserBase):
         to_remove.extend(soup.find_all('blockquote', class_='twitter-tweet'))
         to_remove.extend(soup.find_all('blockquote', class_='tiktok-embed'))
         to_remove.extend(soup.find_all('div', class_='embedly-card'))
+
+        to_remove.extend(soup.find_all('div', class_='embed-container'))
 
         return to_remove
