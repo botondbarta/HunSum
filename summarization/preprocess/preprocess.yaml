@@ -14,6 +14,7 @@ dedup_out_dir: '/dir/data/dedup'
 char_ngram: 9
 num_of_permutations: 200
 num_bands: 10
-min_jaccard: 0.35
+article_min_jaccard: 0.35
+lead_min_jaccard: 0.70
 train_size: 0.8
 valid_size: 0.1
