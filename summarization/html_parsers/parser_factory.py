@@ -1,3 +1,4 @@
+from summarization.html_parsers.delmagyar_parser import DelmagyarParser
 from summarization.html_parsers.hvg_parser import HvgParser
 from summarization.html_parsers.index_parser import IndexParser
 from summarization.html_parsers.kisalfold_parser import KisalfoldParser
@@ -25,6 +26,7 @@ class HtmlParserFactory:
         'nepszava': NepszavaParser,
         'portfolio': PortfolioParser,
         'kisalfold': KisalfoldParser,
+        'delmagyar': DelmagyarParser,
     }
 
     @classmethod
