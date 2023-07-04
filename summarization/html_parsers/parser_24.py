@@ -38,6 +38,21 @@ class Parser24(ParserBase):
 
         article_text = self.get_text(article, remove_img=True)
         assert_has_article(article_text, url)
+
+        article_text = article_text.replace('Ahol a futball esze és szíve találkozik!', '')
+        article_text = article_text.replace('Válogatott írások a legjobbaktól.', '')
+        article_text = article_text.replace('Minden hónapban legalább 24 kiemelkedő színvonalú tartalom havi 990 forintért.', '')
+        article_text = article_text.replace('Próbáld ki 490 forintért az első hónapban!', '')
+        article_text = article_text.replace('Ahogyan szerzőgárdánk összetétele ígéri, a legkülönfélébb műfajokban, témákban jelennek majd meg szövegek: lesznek elemzések, interjúk, kisprózák, riportok, lesznek hazai és nemzetközi témák, adat- és véleményalapú cikkek egyaránt.', '')
+        article_text = article_text.replace('Tartsatok velünk minél többen, hogy együtt alakíthassuk, építhessük az új magyar futballújságot, amely leginkább az írások nívójával és egyediségével akar kitűnni!', '')
+        article_text = article_text.replace('Fizessetek elő, olvassatok, kövessetek minket, vitatkozzatok velünk, adjatok ötleteket!', '')
+        article_text = article_text.replace('Várjuk ebbe a közösségbe mindazokat, akiknek a futball csak egy játék, s mindazokat, akiknek a futball több mint egy játék.', '')
+        article_text = article_text.replace('KIPRÓBÁLOM!', '')
+        article_text = article_text.replace('Sőt, már a Tumblren is megtalálsz minket!', '')
+        article_text = article_text.replace('Kérjük, tartsanak minél többen velünk, hogy együtt alakíthassuk, építhessük az új magyar futballújságot, amely leginkább az írások nívójával és egyediségével akar kitűnni. Fizessenek elő, olvassanak, kövessenek minket, vitatkozzanak velünk, adjanak ötleteket.', '')
+        article_text = article_text.replace('Sőt már a Tumblren is megtalálsz minket!', '')
+        article_text = article_text.replace('Kövess minket a Facebookon is!', '')
+
         return article_text
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:

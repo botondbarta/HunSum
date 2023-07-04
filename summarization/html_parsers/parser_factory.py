@@ -1,5 +1,7 @@
+from summarization.html_parsers.delmagyar_parser import DelmagyarParser
 from summarization.html_parsers.hvg_parser import HvgParser
 from summarization.html_parsers.index_parser import IndexParser
+from summarization.html_parsers.kisalfold_parser import KisalfoldParser
 from summarization.html_parsers.m4sport_parser import M4SportParser
 from summarization.html_parsers.metropol_parser import MetropolParser
 from summarization.html_parsers.nepszava_parser import NepszavaParser
@@ -23,6 +25,8 @@ class HtmlParserFactory:
         'm4sport': M4SportParser,
         'nepszava': NepszavaParser,
         'portfolio': PortfolioParser,
+        'kisalfold': KisalfoldParser,
+        'delmagyar': DelmagyarParser,
     }
 
     @classmethod

@@ -1,2 +1,4 @@
 __pycache__/
 .idea/
+/summarization/models/*-local.yaml
+/summarization/models/*_local.yaml

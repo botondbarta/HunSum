@@ -8,8 +8,8 @@ import bs4
 import pypandoc
 from bs4 import BeautifulSoup, Tag
 
-from summarization.models.article import Article
-from summarization.models.page import Page
+from summarization.data_models.article import Article
+from summarization.data_models.page import Page
 
 
 class ParserBase(ABC):
@@ -28,12 +28,12 @@ class ParserBase(ABC):
 
         # check if article contains lead
         if article.startswith(lead):
-            article = article[len(lead):]
+            article = article[len(lead):].strip()
 
         return Article(uuid=uuid4().__str__(),
                        title=title,
                        lead=lead,
-                       article=unicodedata.normalize('NFKD', article),
+                       article=unicodedata.normalize('NFKC', article),
                        domain=page.domain,
                        url=page.url,
                        date_of_creation=date_of_creation,

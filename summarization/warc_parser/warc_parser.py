@@ -5,7 +5,7 @@ from typing import Iterator
 import tldextract
 import warc
 
-from summarization.models.page import Page
+from summarization.data_models.page import Page
 
 
 class WarcParser:
