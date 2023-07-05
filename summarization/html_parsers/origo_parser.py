@@ -70,6 +70,7 @@ class OrigoParser(ParserBase):
                 article.select('div.article-lead')[0].decompose()
 
         article_text = self.get_text(article, remove_img=True)
+        article_text = article_text.replace('Kapcsolódó cikkek:', '')
         assert_has_article(article_text, url)
         return article_text
 
@@ -133,4 +134,5 @@ class OrigoParser(ParserBase):
         to_remove.extend(soup.find_all('span', class_='source'))
 
         to_remove.extend(soup.find_all('div', class_='oab-related'))
+        to_remove.extend(soup.find_all('ul', class_='korabban'))
         return to_remove
