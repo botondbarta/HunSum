@@ -50,6 +50,7 @@ hvg.hu/video/.*
 hvg.hu/nagyitas/.*
 hvg.hu/videotag/.*
 hvg.hu/english/.*
+hvg.hu\/\w+\/\d\d\d\d\d\d\d\d_heti_top
 origo.hu/index.html\?u=http.*
 origo.hu/cimkek/.*
 origo.hu/index.html\?.*

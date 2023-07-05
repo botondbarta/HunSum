@@ -95,33 +95,31 @@ class HvgParser(ParserBase):
     def get_article_text(self, url, soup) -> str:
         # new css
         article = soup.find('div', class_='entry-content')
-        if article and self.get_text(article):
-            return self.get_text(article)
+        article_text = self.get_text(article, remove_img=True)
 
         # older css
-        article = next(iter(copy.copy(soup.select('div.articlecontent'))), None)
-        if article:
-            leads = copy.copy(article.select(' p > strong'))
-            if leads:
-                leads[0].decompose()
-            if self.get_text(article) == '':
-                columns = soup.find_all('div', class_='columnarticle')
-                text = ''.join([self.get_text(c) for c in columns])
-                if text != '':
-                    return text
-
         if not article or not self.get_text(article):
+            article = next(iter(copy.copy(soup.select('div.articlecontent'))), None)
+            if article:
+                leads = copy.copy(article.select('p > strong'))
+                if leads:
+                    leads[0].decompose()
+            article_text = self.get_text(article, remove_img=True)
+
+        if not article_text:
+            columns = soup.find_all('div', class_='columnarticle')
+            article_text = ''.join([self.get_text(c, remove_img=True) for c in columns])
+
+        if not article_text:
             article_p = map(lambda a: self.get_text(a), soup.select('article.article > div > p'))
             article_text = '\n'.join(article_p)
-            if article_text != '':
-                return article_text
 
-        article_text = self.get_text(article, remove_img=True)
         assert_has_article(article_text, url)
         
         article_text = article_text.replace('Regisztrálj a Jobline-on, hogy megtaláld álmaid állását és első kézből értesülhess a legújabb munkaerőpiaci trendekről!', '')
         article_text = article_text.replace('Kövess minket a Facebook-on is, ahol mindig friss cikkekkel információkkal várunk!', '')
         article_text = article_text.replace('Kövess minket a Facebookon!', '')
+        article_text = article_text.replace('Ide kattintva eléri a Nyüzsi további cikkeit, azonnali véleményeket, érdekességeket, szórakoztató mémeket, gifeket, videókat.', '')
 
 
         return article_text.strip()
@@ -156,5 +154,7 @@ class HvgParser(ParserBase):
         to_remove.extend(soup.find_all('blockquote', class_='twitter-tweet'))
         to_remove.extend(soup.find_all('blockquote', class_='tiktok-embed'))
         to_remove.extend(soup.find_all('div', class_='embedly-card'))
+
+        to_remove.extend(soup.find_all('div', class_='embed-container'))
 
         return to_remove
