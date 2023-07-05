@@ -3,12 +3,20 @@ from typing import Optional, Set, List
 
 from bs4 import Tag
 
+from summarization.errors.invalid_page_error import InvalidPageError
 from summarization.html_parsers.parser_base import ParserBase
 from summarization.utils.assertion import assert_has_article, assert_has_title
 from summarization.utils.dateparser import DateParser
 
 
 class MetropolParser(ParserBase):
+    def check_page_is_valid(self, url, soup):
+        tags = set(tag.lower() for tag in self.get_tags(soup))
+        if {'nyerőszámok', 'hatoslottó', 'hatos lottó', 'ötöslottó', 'lottó'}.intersection(tags):
+            raise InvalidPageError(url, 'Lotto')
+        if 'horoszkóp' in tags:
+            raise InvalidPageError(url, 'Horoscope')
+
     def get_title(self, url: str, soup) -> str:
         title = soup.find('h1', class_="postTitle")
         if title is None:
