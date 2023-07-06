@@ -2,3 +2,5 @@ __pycache__/
 .idea/
 /summarization/models/*-local.yaml
 /summarization/models/*_local.yaml
+/summarization/preprocess/*-local.yaml
+/summarization/preprocess/*_local.yaml

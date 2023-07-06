@@ -9,8 +9,9 @@ from lsh.cache import Cache
 from lsh.minhash import MinHasher
 from pandarallel import pandarallel
 
-from summarization.entrypoints.run_parse_warc_pages import make_dir_if_not_exists
 from summarization.utils.config_reader import get_config_from_yaml
+from summarization.utils.data_helpers import get_domain_of_df_site
+from summarization.utils.data_helpers import make_dir_if_not_exists
 from summarization.utils.dateparser import DateParser
 from summarization.utils.logger import get_logger
 
@@ -72,9 +73,6 @@ class Deduplicator:
         test.to_json(f'{self.config.dedup_out_dir}/test/{domain}_test.jsonl.gz', orient='records',
                      lines=True, compression='gzip')
 
-    def _get_domain_of_site(self, df):
-        return df.iloc[0].domain.split('.')[0]
-
     def _get_duplicates_to_drop(self, site_domains):
         drops = {f'{domain}': [] for domain in site_domains}
         article_duplicates = self.article_lsh.get_all_duplicates(min_jaccard=self.config.article_min_jaccard)
@@ -103,7 +101,7 @@ class Deduplicator:
         return drops
 
     def _add_fingerprints_to_lsh(self, df):
-        domain = self._get_domain_of_site(df)
+        domain = get_domain_of_df_site(df)
         for i in range(len(df)):
             row = df.iloc[i]
             has_lead = True if df.iloc[i].lead != '' else False
