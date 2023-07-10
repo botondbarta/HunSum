@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='summarization',
-    version='0.1',
+    version='0.2',
     description='',
     url='',
     packages=['summarization'],
@@ -10,7 +10,7 @@ setup(
     author='Dorina Lakatos, Botond Barta',
     python_requires='',
     install_requires=[
-        'setuptools~=61.2.0',
+        'setuptools~=68.0.0',
         'datasets~=2.5.1',
         'dateparser~=1.1.1',
         'dotmap~=1.3.30',
@@ -22,11 +22,10 @@ setup(
         'tqdm~=4.64.0',
         'tldextract~=3.3.1',
         'beautifulsoup4~=4.11.1',
-        'pandas~=1.4.3',
+        'pandas~=2.0.3',
         'pypandoc~=1.8.1',
         'PyYAML~=6.0',
-        # 'warc @ https://github.com/erroneousboat/warc3/archive/master.zip',
-        'warc3-wet',
+        'warc-knot>=0.2.5',
         'quntoken~=3.1.8',
         'Cython',
         'fasttext',

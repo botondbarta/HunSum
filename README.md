@@ -48,7 +48,15 @@ Arguments:
 The cleaned articles will be in the config.clean_out_dir 
 ```bash
 cd summarization
-python entrypoints/run_parse_warc_pages.py ../../CommonCrawl ../../articles preprocess.yaml
+python entrypoints/parse_warc_pages.py ../../CommonCrawl ../../articles preprocess.yaml
+```
+
+### Calculate document embeddings for leads and articles for cleaning
+Arguments:
+* config file
+```bash
+cd summarization
+python entrypoints/calc_doc_similarities.py preprocess.yaml
 ```
 
 ### Clean articles

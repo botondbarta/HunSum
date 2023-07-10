@@ -7,12 +7,14 @@ import click
 from multiprocessing_logging import install_mp_handler
 from tqdm import tqdm
 
-from summarization.errors.page_error import PageError
-from summarization.html_parsers.parser_factory import HtmlParserFactory
 from summarization.data_models.article import Article
 from summarization.data_models.page import Page
+from summarization.errors.page_error import PageError
+from summarization.html_parsers.parser_factory import HtmlParserFactory
 from summarization.preprocess.article_cleaner import ArticleCleaner
+from summarization.preprocess.document_embedder import DocumentEmbedder
 from summarization.serializers.article_serializer import ArticleSerializer
+from summarization.utils.config_reader import get_config_from_yaml
 from summarization.utils.data_helpers import make_dir_if_not_exists
 from summarization.utils.logger import get_logger
 from summarization.warc_parser.warc_parser import WarcParser
@@ -73,6 +75,10 @@ def main(src_directory, out_directory, config_path, num_process, sites):
                 pbar.close()
             ArticleSerializer.serialize_articles(file_to_save_to, articles)
             logger.info(f'Parsed file: {file_name}')
+
+        logger.info('Creating embeddings for articles and leads')
+        doc_embedder = DocumentEmbedder(config_path)
+        doc_embedder.calculate_doc_similarity_for_sites(sites)
 
         logger.info('Cleaning parsed articles')
         cleaner = ArticleCleaner(config_path)
