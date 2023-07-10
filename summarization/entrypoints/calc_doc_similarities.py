@@ -4,12 +4,11 @@ from summarization.preprocess.document_embedder import DocumentEmbedder
 
 
 @click.command()
-@click.argument('input_dir')
-@click.argument('output_dir')
+@click.argument('config_path')
 @click.option('--sites', default='all', help='Sites to clean, separated by commas')
-def main(input_dir, output_dir, sites):
-    doc_embedder = DocumentEmbedder(input_dir, output_dir)
-    doc_embedder.create_doc_embeddings_for_sites(sites)
+def main(config_path, sites):
+    doc_embedder = DocumentEmbedder(config_path)
+    doc_embedder.calculate_doc_similarity_for_sites(sites)
 
 
 if __name__ == '__main__':

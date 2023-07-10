@@ -1,4 +1,8 @@
-clean_src_dir: '/dir/data'
+calc_sim_src_dir: '/dir/data'
+calc_sim_out_dir: '/dir/data/sim'
+sim_model_name: 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'
+
+clean_src_dir: '/dir/data/sim'
 clean_out_dir: '/dir/data/clean'
 lead_art_sim_threshold: 0.0
 min_lead_tokens: 6

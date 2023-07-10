@@ -53,11 +53,10 @@ python entrypoints/parse_warc_pages.py ../../CommonCrawl ../../articles preproce
 
 ### Calculate document embeddings for leads and articles for cleaning
 Arguments:
-* input_dir
-* output_dir
+* config file
 ```bash
 cd summarization
-python entrypoints/create_doc_embeddings.py ../../articles ../../articles_with_embeddings
+python entrypoints/calc_doc_similarities.py preprocess.yaml
 ```
 
 ### Clean articles

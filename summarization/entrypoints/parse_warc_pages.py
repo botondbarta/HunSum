@@ -77,9 +77,8 @@ def main(src_directory, out_directory, config_path, num_process, sites):
             logger.info(f'Parsed file: {file_name}')
 
         logger.info('Creating embeddings for articles and leads')
-        config = get_config_from_yaml(config_path)
-        doc_embedder = DocumentEmbedder(out_directory, config.clean_src_dir)
-        doc_embedder.create_doc_embeddings_for_sites(sites)
+        doc_embedder = DocumentEmbedder(config_path)
+        doc_embedder.calculate_doc_similarity_for_sites(sites)
 
         logger.info('Cleaning parsed articles')
         cleaner = ArticleCleaner(config_path)
