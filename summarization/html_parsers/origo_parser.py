@@ -70,9 +70,13 @@ class OrigoParser(ParserBase):
                 article.select('div.article-lead')[0].decompose()
 
         article_text = self.get_text(article, remove_img=True)
-        article_text = article_text.replace('Kapcsolódó cikkek:', '')
         assert_has_article(article_text, url)
+
         return article_text
+
+    def remove_unnecessary_text_from_article(self, article):
+        article = article.replace('Kapcsolódó cikkek:', '')
+        return article
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('span', class_='cikk-datum')

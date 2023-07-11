@@ -25,6 +25,7 @@ class ParserBase(ABC):
         date_of_creation = self.get_date_of_creation(html_soup)
         tags = self.get_tags(html_soup)
         article = self.get_article_text(page.url, html_soup)
+        article = self.remove_unnecessary_text_from_article(article)
 
         # check if article contains lead
         if article.startswith(lead):
@@ -81,3 +82,6 @@ class ParserBase(ABC):
         for tag in tags:
             tag.decompose()
         return soup
+
+    def remove_unnecessary_text_from_article(self, article):
+        return article

@@ -68,8 +68,9 @@ class IndexParser(ParserBase):
             article = soup.find('div', class_="szoveg")
 
         article_text = self.get_text(article, remove_img=True)
-        article_text = article_text.replace('Kövesse az Indexet Facebookon is!', '')
         assert_has_article(article_text, url)
+
+        article_text = article_text.replace('Kövesse az Indexet Facebookon is!', '')
         return article_text
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:

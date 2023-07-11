@@ -72,6 +72,7 @@ class DelmagyarParser(ParserBase):
 
         article_text = self.get_text(article)
         assert_has_article(article_text, url)
+
         article_text = article_text.replace('Írásunkat keresse szombaton a Szieszta mellékletben!', '')
         article_text = article_text.replace('Fizessen elõ a napilapra!', '')
         return article_text.strip()
