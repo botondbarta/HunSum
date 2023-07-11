@@ -73,7 +73,6 @@ class DelmagyarParser(ParserBase):
         article_text = self.get_text(article)
         assert_has_article(article_text, url)
 
-
         return article_text.strip()
 
     def remove_unnecessary_text_from_article(self, article):
