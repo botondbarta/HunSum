@@ -29,7 +29,6 @@ class PortfolioParser(ParserBase):
         assert_has_title(title, url)
         return self.get_text(title)
 
-
     def get_lead(self, soup) -> Optional[str]:
         lead = soup.find('section', class_='pfarticle-section-lead')
 
@@ -40,7 +39,6 @@ class PortfolioParser(ParserBase):
 
         return self.get_text(lead, '')
 
-
     def get_article_text(self, url, soup) -> str:
         article = soup.find('section', class_='section-content')
         article_text = self.get_text(article)
@@ -49,13 +47,15 @@ class PortfolioParser(ParserBase):
             precedent = next(iter(soup.select('section > ul.tags')), None)
             if precedent:
                 precedent = precedent.parent
-                article_text = '\n'.join(reversed([self.get_text(article) for article in precedent.find_previous_siblings('p')]))
+                article_text = '\n'.join(
+                    reversed([self.get_text(article) for article in precedent.find_previous_siblings('p')]))
 
         if not article_text:
             content = soup.find('ul', class_='tags')
             if content:
                 content.decompose()
-            article_text = '\n'.join([self.get_text(article) for article in soup.select("div.pfarticle-section-content")])
+            article_text = '\n'.join(
+                [self.get_text(article) for article in soup.select("div.pfarticle-section-content")])
 
         if not article_text:
             article = soup.find('div', class_='smscontent')
@@ -63,7 +63,6 @@ class PortfolioParser(ParserBase):
 
         assert_has_article(article_text, url)
         return article_text
-
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = next(iter(soup.select('div.overlay-content > time')), None)
@@ -76,7 +75,6 @@ class PortfolioParser(ParserBase):
 
         return DateParser.parse(self.get_text(date, ''))
 
-
     def get_tags(self, soup) -> Set[str]:
         tags = [self.get_text(tag) for tag in soup.select('section > ul.tags > li')][1:]
 
@@ -84,7 +82,6 @@ class PortfolioParser(ParserBase):
             tags = [self.get_text(tag) for tag in soup.select('span > a')]
 
         return set(tags)
-
 
     def get_html_tags_to_remove(self, soup) -> List[Tag]:
         to_remove = []

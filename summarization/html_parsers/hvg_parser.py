@@ -116,13 +116,14 @@ class HvgParser(ParserBase):
 
         assert_has_article(article_text, url)
         
-        article_text = article_text.replace('Regisztrálj a Jobline-on, hogy megtaláld álmaid állását és első kézből értesülhess a legújabb munkaerőpiaci trendekről!', '')
-        article_text = article_text.replace('Kövess minket a Facebook-on is, ahol mindig friss cikkekkel információkkal várunk!', '')
-        article_text = article_text.replace('Kövess minket a Facebookon!', '')
-        article_text = article_text.replace('Ide kattintva eléri a Nyüzsi további cikkeit, azonnali véleményeket, érdekességeket, szórakoztató mémeket, gifeket, videókat.', '')
-
-
         return article_text.strip()
+
+    def remove_unnecessary_text_from_article(self, article):
+        article = article.replace('Regisztrálj a Jobline-on, hogy megtaláld álmaid állását és első kézből értesülhess a legújabb munkaerőpiaci trendekről!', '')
+        article = article.replace('Kövess minket a Facebook-on is, ahol mindig friss cikkekkel információkkal várunk!', '')
+        article = article.replace('Kövess minket a Facebookon!', '')
+        article = article.replace('Ide kattintva eléri a Nyüzsi további cikkeit, azonnali véleményeket, érdekességeket, szórakoztató mémeket, gifeket, videókat.', '')
+        return article
 
     def get_tags(self, soup) -> Set[str]:
         # new css

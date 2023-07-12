@@ -49,10 +49,14 @@ class TelexParser(ParserBase):
         article = soup.find('div', class_="article-html-content")
 
         article_text = self.get_text(article, remove_img=True)
-        article_text = article_text.replace('A Telex legfrissebb koronavírussal kapcsolatos híreiért kattintson ide>>>', '')
-        article_text = article_text.replace('A Telex legfrissebb híreiért kattintson ide>>>', '')
         assert_has_article(article_text, url)
+
         return article_text
+
+    def remove_unnecessary_text_from_article(self, article):
+        article = article.replace('A Telex legfrissebb koronavírussal kapcsolatos híreiért kattintson ide>>>', '')
+        article = article.replace('A Telex legfrissebb híreiért kattintson ide>>>', '')
+        return article
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('p', class_='history--original')
