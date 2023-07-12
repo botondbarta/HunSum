@@ -70,8 +70,11 @@ class IndexParser(ParserBase):
         article_text = self.get_text(article, remove_img=True)
         assert_has_article(article_text, url)
 
-        article_text = article_text.replace('Kövesse az Indexet Facebookon is!', '')
         return article_text
+
+    def remove_unnecessary_text_from_article(self, article):
+        article = article.replace('Kövesse az Indexet Facebookon is!', '')
+        return article
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('div', class_='datum')
