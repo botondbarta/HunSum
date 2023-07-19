@@ -76,13 +76,14 @@ def main(src_directory, out_directory, config_path, num_process, sites):
             ArticleSerializer.serialize_articles(file_to_save_to, articles)
             logger.info(f'Parsed file: {file_name}')
 
+        config = get_config_from_yaml(config_path)
         logger.info('Creating embeddings for articles and leads')
         doc_embedder = DocumentEmbedder(config_path)
-        doc_embedder.calculate_doc_similarity_for_sites(sites)
+        doc_embedder.calculate_doc_similarity_for_site(file_to_save_to, logger)
 
         logger.info('Cleaning parsed articles')
         cleaner = ArticleCleaner(config_path)
-        cleaner.clean(file_to_save_to, logger)
+        cleaner.clean(path.join(config.calc_sim_out_dir, f'{site}.jsonl.gz'), logger)
 
 
 def get_next_log_file(out_directory, site):

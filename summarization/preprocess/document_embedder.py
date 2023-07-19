@@ -33,12 +33,15 @@ class DocumentEmbedder:
             else [x for x in all_jsonl_files if is_site_in_sites(Path(x).name, sites.split(','))]
 
         for site in sites_to_create_embedding_for:
-            df_site = pd.read_json(site, lines=True)
-            logger.info(f'Processing {site} {datetime.now().strftime("%Y_%m_%d %H:%M")}')
-            self.calculate_doc_similarities(df_site)
-            logger.info(f'Processing finished at {datetime.now().strftime("%Y_%m_%d %H:%M")}')
+            self.calculate_doc_similarity_for_site(site, logger)
 
-            df_site.to_json(f'{self.out_dir}/{get_domain_of_df_site(df_site)}.jsonl.gz', orient='records', lines=True)
+    def calculate_doc_similarity_for_site(self, site, logger):
+        df_site = pd.read_json(site, lines=True)
+        logger.info(f'Processing {site} {datetime.now().strftime("%Y_%m_%d %H:%M")}')
+        self.calculate_doc_similarities(df_site)
+        logger.info(f'Processing finished at {datetime.now().strftime("%Y_%m_%d %H:%M")}')
+
+        df_site.to_json(f'{self.out_dir}/{get_domain_of_df_site(df_site)}.jsonl.gz', orient='records', lines=True)
 
     def calculate_doc_similarities(self, df_site: DataFrame):
         df_site['doc_similarity'] = df_site.apply(

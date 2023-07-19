@@ -28,7 +28,7 @@ class ArticleCleaner:
             self.clean(site, logger)
 
     def clean(self, site, logger):
-        df_site = pd.read_json(f'{site}', lines=True)
+        df_site = pd.read_json(site, lines=True)
         df_site = df_site[df_site['lead'] != '']
         logger.info(f'Cleaning {site}, size: {len(df_site)}')
 
