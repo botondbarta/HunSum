@@ -1,3 +1,4 @@
+import copy
 from datetime import datetime
 from typing import Optional, Set, List
 
@@ -11,6 +12,8 @@ from summarization.utils.dateparser import DateParser
 
 class PortfolioParser(ParserBase):
     def check_page_is_valid(self, url, soup):
+        if self.get_text(soup.find('b')) == 'hírarchívumához':
+            raise InvalidPageError(url, 'Paywall')
         if soup.select('section.paywall'):
             raise InvalidPageError(url, 'Paywall')
 
@@ -33,9 +36,13 @@ class PortfolioParser(ParserBase):
         lead = soup.find('section', class_='pfarticle-section-lead')
 
         if not lead:
-            tag = soup.find('div', class_='smscontent')
+            tag = copy.copy(soup.find('div', class_='smscontent'))
             if tag:
-                lead = tag.b
+                for br_tag in tag.find_all('br'):
+                    br_tag.extract()
+                first_under_tag = tag.find()
+                if first_under_tag and first_under_tag.name == 'b':
+                    lead = tag.b
 
         return self.get_text(lead, '')
 
@@ -87,6 +94,7 @@ class PortfolioParser(ParserBase):
         to_remove = []
         to_remove.extend(soup.find_all('iframe'))
         to_remove.extend(soup.find_all('figure'))
+        to_remove.extend(soup.find_all('div', class_='kapcs-box'))
         to_remove.extend(soup.find_all('span', class_='title-bar'))
         to_remove.extend(soup.select('div.smscontent > b'))
         to_remove.extend(soup.select('div.traderhirdetes'))
