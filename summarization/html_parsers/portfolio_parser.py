@@ -1,7 +1,8 @@
+import copy
 from datetime import datetime
 from typing import Optional, Set, List
-import copy
-from bs4 import Tag, Comment
+
+from bs4 import Tag
 
 from summarization.errors.invalid_page_error import InvalidPageError
 from summarization.html_parsers.parser_base import ParserBase
