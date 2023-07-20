@@ -11,6 +11,7 @@ from sentence_transformers import SentenceTransformer, util
 from summarization.utils.config_reader import get_config_from_yaml
 from summarization.utils.data_helpers import is_site_in_sites, get_domain_of_df_site, make_dir_if_not_exists
 from summarization.utils.logger import get_logger
+from summarization.utils.tokenizer import Tokenizer
 
 
 class DocumentEmbedder:
@@ -51,3 +52,9 @@ class DocumentEmbedder:
         return util.cos_sim(
             self.model.encode(lead),
             self.model.encode(article)).item()
+
+    @staticmethod
+    def calculate_sent_similarity(model, text1: str, text2: str):
+        return util.cos_sim(
+            model.encode(Tokenizer.sentence_tokenize(text1), convert_to_tensor=True),
+            model.encode(Tokenizer.sentence_tokenize(text2), convert_to_tensor=True))

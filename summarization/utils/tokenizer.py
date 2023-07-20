@@ -3,6 +3,11 @@ from quntoken import tokenize
 
 class Tokenizer:
     @staticmethod
+    def sentence_tokenize(text: str):
+        doc = tokenize(text, form='spl')
+        return [sent.replace('\n', '') for sent in doc if sent != '\n']
+
+    @staticmethod
     def count_sentences(text: str) -> int:
         doc = tokenize(text, mode='sentence')
         return len([sentence for sentence in doc if sentence != '\n'])
