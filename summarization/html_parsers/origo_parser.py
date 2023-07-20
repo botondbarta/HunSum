@@ -76,6 +76,7 @@ class OrigoParser(ParserBase):
 
     def remove_unnecessary_text_from_article(self, article):
         article = article.replace('Kapcsolódó cikkek:', '')
+        article = article.replace('Ha szeretne még több érdekes techhírt olvasni, akkor kövesse az Origo Techbázis Facebook-oldalát, kattintson ide!', '')
         return article
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
@@ -130,7 +131,9 @@ class OrigoParser(ParserBase):
         # instagram and maybe more
         to_remove.extend(soup.find_all('div', class_='cikk-obj'))
         to_remove.extend(soup.find_all('div', id='article-related'))
+        to_remove.extend(soup.find_all('div', id='comments'))
         to_remove.extend(soup.find_all('div', class_='img-holder'))
+        to_remove.extend(soup.find_all('div', class_='newpic'))
         to_remove.extend(soup.find_all('figure', class_='newpic'))
         # pics
         to_remove.extend([img.parent for img in soup.select('p[align=center] img')])

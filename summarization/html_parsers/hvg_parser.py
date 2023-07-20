@@ -123,6 +123,7 @@ class HvgParser(ParserBase):
         article = article.replace('Kövess minket a Facebook-on is, ahol mindig friss cikkekkel információkkal várunk!', '')
         article = article.replace('Kövess minket a Facebookon!', '')
         article = article.replace('Ide kattintva eléri a Nyüzsi további cikkeit, azonnali véleményeket, érdekességeket, szórakoztató mémeket, gifeket, videókat.', '')
+        article = article.replace('Még több Élet + Stílus a Facebook-oldalunkon, kövessen minket:', '')
         return article
 
     def get_tags(self, soup) -> Set[str]:
