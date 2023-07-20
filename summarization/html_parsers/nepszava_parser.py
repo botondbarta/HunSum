@@ -51,14 +51,12 @@ class NepszavaParser(ParserBase):
             lead = soup.find('h2', itemprop='lead')
 
         if not lead:
-            lead = soup.select_one('div.p.strong')
+            article_tag = soup.select_one('section.single-article__main-content--left')
+            if article_tag:
+                lead = article_tag.select_one('div.p.strong')
 
         if not lead:
             lead = next(iter(soup.select('span.big_text')), None)
-
-        if not lead:
-            lead_find = soup.find('meta', property='og:description')
-            lead = lead_find["content"] if lead_find else None
 
         return self.get_text(lead, '')
 
@@ -149,7 +147,9 @@ class NepszavaParser(ParserBase):
         to_remove = []
         to_remove.extend(soup.find_all('iframe'))
         to_remove.extend(soup.find_all('div', class_='swiper-slide'))
+        to_remove.extend(soup.find_all('div', class_='article-pager'))
         to_remove.extend(soup.find_all('div', class_='swiper-slide-active'))
+        to_remove.extend(soup.find_all('figure', class_='single-article__image-holder'))
         to_remove.extend(soup.find_all('div', class_='ad'))
         to_remove.extend(soup.select('div#content > div.gallery'))
         to_remove.extend(soup.select('div.goAdverticum'))

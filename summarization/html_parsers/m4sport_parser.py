@@ -1,9 +1,11 @@
-from summarization.utils.assertion import assert_has_article, assert_has_title
-from summarization.html_parsers.parser_base import ParserBase
-from summarization.utils.dateparser import DateParser
-from typing import Optional, Set, List
 from datetime import datetime
+from typing import Optional, Set, List
+
 from bs4 import Tag
+
+from summarization.html_parsers.parser_base import ParserBase
+from summarization.utils.assertion import assert_has_article, assert_has_title
+from summarization.utils.dateparser import DateParser
 
 
 class M4SportParser(ParserBase):
@@ -106,7 +108,7 @@ class M4SportParser(ParserBase):
     def get_html_tags_to_remove(self, soup) -> List[Tag]:
         to_remove = []
         to_remove.extend(soup.find_all('div', class_='twitter-tweet'))
+        to_remove.extend(soup.find_all('div', class_='articleImage'))
         to_remove.extend(soup.find_all('iframe', class_='instagram-media'))
         to_remove.extend(soup.find_all('blockquote', class_='tiktok-embed'))
         return to_remove
-
