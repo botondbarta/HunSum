@@ -22,6 +22,7 @@ index.hu/szerzo/.*
 index.hu/.*/cimkek/
 index.hu/napirajz/.*
 index.hu/.*/napinapi/.*
+index.hu/napinapi/.*
 index.hu/.*/igazamiigaz/.*
 index.hu/.*/napi_osszefoglalo/
 index.hu/.*/hetilapszemle/
