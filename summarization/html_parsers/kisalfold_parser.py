@@ -100,6 +100,7 @@ class KisalfoldParser(ParserBase):
         to_remove.extend(soup.find_all('div', class_='comments_button_a'))
         to_remove.extend(soup.find_all('div', class_='et_pb_wanted_ad'))
         to_remove.extend(soup.find_all('blockquote', class_='instagram-media'))
+        to_remove.extend(soup.find_all('figcaption'))
         to_remove.extend(soup.select('div#article_text > div#kapcsolodo_cikk'))
         to_remove.extend(soup.select('div#article_text > div#article_data_2'))
         to_remove.extend(soup.select('div#article_text > div.lapcomallas'))
