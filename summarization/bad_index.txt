@@ -65,6 +65,7 @@ origo.hu/.*/galeria/.*
 origo.hu/foto/multimedia/.*
 origo.hu/auto/.*ajanlo.html
 origo.hu/itthon/.*-indul-a-nap-az-origoval-.*.html
+cimkezes.origo.hu/cimke.*
 m4sport.hu/videok/.*
 m4sport.hu/?.*/video/.*
 m4sport.hu/?.*/galeria/.*
