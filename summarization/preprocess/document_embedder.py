@@ -58,3 +58,15 @@ class DocumentEmbedder:
         return util.cos_sim(
             model.encode(Tokenizer.sentence_tokenize(text1), convert_to_tensor=True),
             model.encode(Tokenizer.sentence_tokenize(text2), convert_to_tensor=True))
+
+    @staticmethod
+    def calculate_sent_embedding(model, text: str):
+        return model.encode(Tokenizer.sentence_tokenize(text), convert_to_tensor=True)
+
+    @staticmethod
+    def calculate_embedding_similarity(embedding1, embedding2):
+        return util.cos_sim(embedding1, embedding2)
+
+    @staticmethod
+    def calculate_embedding(model, text: str):
+        return model.encode(text, convert_to_tensor=True)
