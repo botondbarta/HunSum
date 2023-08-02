@@ -9,6 +9,7 @@ from torch.cuda import is_available as is_cuda_available
 
 from summarization.preprocess.document_embedder import DocumentEmbedder
 from summarization.utils.data_helpers import is_site_in_sites, make_dir_if_not_exists
+from summarization.utils.logger import get_logger
 
 os.environ['TOKENIZERS_PARALLELISM'] = 'False'
 
@@ -18,13 +19,18 @@ os.environ['TOKENIZERS_PARALLELISM'] = 'False'
 @click.argument('output_dir')
 @click.option('--sites', default='all', help='Sites to calculate sentence similarities for')
 def main(input_dir, output_dir, sites):
-    make_dir_if_not_exists(output_dir)
-
     models = {
         'minilm': SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'),
         'labse': SentenceTransformer('sentence-transformers/LaBSE'),
     }
     device = 'cuda' if is_cuda_available() else 'cpu'
+
+    make_dir_if_not_exists(output_dir)
+    for name, model in models.items():
+        make_dir_if_not_exists(os.path.join(output_dir, name))
+
+    log_file = os.path.join(output_dir, 'log.txt')
+    logger = get_logger('preprocess', log_file)
 
     all_sites = glob.glob(f'{input_dir}/*.jsonl.gz')
     sites = all_sites if sites == 'all' else [x for x in all_sites if is_site_in_sites(Path(x).name, sites.split(','))]
@@ -32,16 +38,21 @@ def main(input_dir, output_dir, sites):
 
     for name, model in models.items():
         model.to(device)
+        logger.info(f'Loaded model {name}')
 
         for site, domain in zip(sites, site_domains):
+            logger.info(f'Processing site {domain}')
             df_site = pd.read_json(f'{site}', lines=True)
 
+            logger.info(f'Calculating lead embeddings')
             df_site[f'lead_emb_{name}'] = df_site.apply(
                 lambda x: DocumentEmbedder.calculate_embedding(model, x['lead']).tolist(), axis=1)
 
+            logger.info(f'Calculating lead sentence embeddings')
             df_site[f'lead_sent_emb_{name}'] = df_site.apply(
                 lambda x: DocumentEmbedder.calculate_sent_embedding(model, x['lead']).tolist(), axis=1)
 
+            logger.info(f'Calculating article sentence embeddings')
             df_site[f'article_sent_emb_{name}'] = df_site.apply(
                 lambda x: DocumentEmbedder.calculate_sent_embedding(model, x['article']).tolist(), axis=1)
 
