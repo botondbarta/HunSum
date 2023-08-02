@@ -44,15 +44,15 @@ def main(input_dir, output_dir, sites):
             logger.info(f'Processing site {domain}')
             df_site = pd.read_json(f'{site}', lines=True)
 
-            logger.info(f'Calculating lead embeddings')
+            logger.info(f'Calculating lead embeddings for {domain}')
             df_site[f'lead_emb_{name}'] = df_site.apply(
                 lambda x: DocumentEmbedder.calculate_embedding(model, x['lead']).tolist(), axis=1)
 
-            logger.info(f'Calculating lead sentence embeddings')
+            logger.info(f'Calculating lead sentence embeddings for {domain}')
             df_site[f'lead_sent_emb_{name}'] = df_site.apply(
                 lambda x: DocumentEmbedder.calculate_sent_embedding(model, x['lead']).tolist(), axis=1)
 
-            logger.info(f'Calculating article sentence embeddings')
+            logger.info(f'Calculating article sentence embeddings for {domain}')
             df_site[f'article_sent_emb_{name}'] = df_site.apply(
                 lambda x: DocumentEmbedder.calculate_sent_embedding(model, x['article']).tolist(), axis=1)
 
@@ -65,9 +65,9 @@ def main(input_dir, output_dir, sites):
                 lambda x: DocumentEmbedder.calculate_embedding_similarity(x[f'lead_emb_{name}'],
                                                                           x[f'article_sent_emb_{name}']).tolist(),
                 axis=1)
-            model.to('cpu')
 
             df_site.to_json(f'{output_dir}/{name}/{domain}.jsonl.gz', orient='records', lines=True, compression='gzip')
+        model.to('cpu')
 
 
 if __name__ == '__main__':
