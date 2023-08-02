@@ -20,19 +20,22 @@ os.environ['TOKENIZERS_PARALLELISM'] = 'False'
 def main(input_dir, output_dir, sites):
     make_dir_if_not_exists(output_dir)
 
-    models = {'minilm': SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'),
-              'labse': SentenceTransformer('sentence-transformers/LaBSE')}
+    models = {
+        'minilm': SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'),
+        'labse': SentenceTransformer('sentence-transformers/LaBSE'),
+    }
     device = 'cuda' if is_cuda_available() else 'cpu'
 
     all_sites = glob.glob(f'{input_dir}/*.jsonl.gz')
     sites = all_sites if sites == 'all' else [x for x in all_sites if is_site_in_sites(Path(x).name, sites.split(','))]
     site_domains = [site.replace('.jsonl.gz', '').replace(f'{input_dir}/', '') for site in sites]
 
-    for site, domain in zip(sites, site_domains):
-        df_site = pd.read_json(f'{site}', lines=True)
+    for name, model in models.items():
+        model.to(device)
 
-        for name, model in models.items():
-            model.to(device)
+        for site, domain in zip(sites, site_domains):
+            df_site = pd.read_json(f'{site}', lines=True)
+
             df_site[f'lead_emb_{name}'] = df_site.apply(
                 lambda x: DocumentEmbedder.calculate_embedding(model, x['lead']).tolist(), axis=1)
 
@@ -53,7 +56,7 @@ def main(input_dir, output_dir, sites):
                 axis=1)
             model.to('cpu')
 
-        df_site.to_json(f'{output_dir}/{domain}.jsonl.gz', orient='records', lines=True, compression='gzip')
+            df_site.to_json(f'{output_dir}/{name}/{domain}.jsonl.gz', orient='records', lines=True, compression='gzip')
 
 
 if __name__ == '__main__':
