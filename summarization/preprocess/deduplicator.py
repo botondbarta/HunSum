@@ -1,9 +1,7 @@
 import glob
-import os
 from distutils.util import strtobool
 from os import path
 
-import numpy as np
 import pandas as pd
 from lsh.cache import Cache
 from lsh.minhash import MinHasher
@@ -36,7 +34,8 @@ class Deduplicator:
         site_domains = [site.replace('.jsonl.gz', '').replace(f'{self.config.dedup_src_dir}/', '') for site in sites]
 
         for site in sites:
-            df_site = pd.read_json(f'{site}', lines=True)
+            df_site = pd.read_json(site, lines=True)
+            df_site = df_site.drop_duplicates(subset=['article', 'lead'])
 
             logger.info(f'\nCreating article fingerprints for {site}, size: {len(df_site)}')
             df_site['article_fingerprint'] = df_site.parallel_apply(
@@ -56,22 +55,8 @@ class Deduplicator:
             logger.info(f'Dropping {len(drops)} duplicates from {domain}')
             df_site = df_site[~df_site.uuid.isin(drops)]
 
-            self._split_and_save_site(df_site, domain)
-
-    def _split_and_save_site(self, df_site, domain):
-        train, validate, test = np.split(df_site.sample(frac=1, random_state=123),
-                                         [int(self.config.train_size * len(df_site)),
-                                          int((self.config.train_size + self.config.valid_size) * len(df_site))])
-
-        make_dir_if_not_exists(os.path.join(self.config.dedup_out_dir, 'train'))
-        make_dir_if_not_exists(os.path.join(self.config.dedup_out_dir, 'valid'))
-        make_dir_if_not_exists(os.path.join(self.config.dedup_out_dir, 'test'))
-        train.to_json(f'{self.config.dedup_out_dir}/train/{domain}_train.jsonl.gz', orient='records',
-                      lines=True, compression='gzip')
-        validate.to_json(f'{self.config.dedup_out_dir}/valid/{domain}_valid.jsonl.gz', orient='records',
-                         lines=True, compression='gzip')
-        test.to_json(f'{self.config.dedup_out_dir}/test/{domain}_test.jsonl.gz', orient='records',
-                     lines=True, compression='gzip')
+            df_site.to_json(f'{self.config.dedup_out_dir}/{domain}.jsonl.gz', orient='records',
+                            lines=True, compression='gzip')
 
     def _get_duplicates_to_drop(self, site_domains):
         drops = {f'{domain}': [] for domain in site_domains}
