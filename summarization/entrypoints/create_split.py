@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 
 from summarization.utils.data_helpers import make_dir_if_not_exists, get_domain_of_df_site
-from summarization.utils.logger import get_logger
 
 
 @click.command()
