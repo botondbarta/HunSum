@@ -35,7 +35,6 @@ class Deduplicator:
 
         for site in sites:
             df_site = pd.read_json(site, lines=True)
-            df_site = df_site.drop_duplicates(subset=['article', 'lead'])
 
             logger.info(f'\nCreating article fingerprints for {site}, size: {len(df_site)}')
             df_site['article_fingerprint'] = df_site.parallel_apply(
