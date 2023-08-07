@@ -6,12 +6,14 @@ import click
 import pandas as pd
 from sentence_transformers import SentenceTransformer
 from torch.cuda import is_available as is_cuda_available
+from tqdm import tqdm
 
 from summarization.preprocess.document_embedder import DocumentEmbedder
 from summarization.utils.data_helpers import is_site_in_sites, make_dir_if_not_exists
 from summarization.utils.logger import get_logger
 
 os.environ['TOKENIZERS_PARALLELISM'] = 'False'
+tqdm.pandas()
 
 
 @click.command()
