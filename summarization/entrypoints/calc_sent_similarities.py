@@ -45,23 +45,23 @@ def main(input_dir, output_dir, sites):
             df_site = pd.read_json(f'{site}', lines=True)
 
             logger.info(f'Calculating lead embeddings for {domain}')
-            df_site[f'lead_emb_{name}'] = df_site.apply(
+            df_site[f'lead_emb_{name}'] = df_site.progress_apply(
                 lambda x: DocumentEmbedder.calculate_embedding(model, x['lead']).tolist(), axis=1)
 
             logger.info(f'Calculating lead sentence embeddings for {domain}')
-            df_site[f'lead_sent_emb_{name}'] = df_site.apply(
+            df_site[f'lead_sent_emb_{name}'] = df_site.progress_apply(
                 lambda x: DocumentEmbedder.calculate_sent_embedding(model, x['lead']).tolist(), axis=1)
 
             logger.info(f'Calculating article sentence embeddings for {domain}')
-            df_site[f'article_sent_emb_{name}'] = df_site.apply(
+            df_site[f'article_sent_emb_{name}'] = df_site.progress_apply(
                 lambda x: DocumentEmbedder.calculate_sent_embedding(model, x['article']).tolist(), axis=1)
 
-            df_site[f'most_similar_sent_{name}'] = df_site.apply(
+            df_site[f'most_similar_sent_{name}'] = df_site.progress_apply(
                 lambda x: DocumentEmbedder.calculate_embedding_similarity(x[f'lead_sent_emb_{name}'],
                                                                           x[f'article_sent_emb_{name}']).tolist(),
                 axis=1)
 
-            df_site[f'most_similar_{name}'] = df_site.apply(
+            df_site[f'most_similar_{name}'] = df_site.progress_apply(
                 lambda x: DocumentEmbedder.calculate_embedding_similarity(x[f'lead_emb_{name}'],
                                                                           x[f'article_sent_emb_{name}']).tolist(),
                 axis=1)
