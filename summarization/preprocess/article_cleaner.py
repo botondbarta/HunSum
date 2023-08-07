@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 from pandarallel import pandarallel
+from url_parser import get_url
 
 from summarization.preprocess.language_detector import LanguageDetector
 from summarization.utils.config_reader import get_config_from_yaml
@@ -70,9 +71,9 @@ class ArticleCleaner:
                         lines=True, compression='gzip')
 
     def _dedup_by_url_lead_and_article(self, df, logger):
-        df['url_end'] = df.apply(lambda row: row['url'].partition('://')[2], axis=1)
-        df = df.drop_duplicates(subset=['url_end'])
-        logger.info(f'Deduplicated by url, size: {len(df)}')
+        df['url_path'] = df.apply(lambda row: get_url(row.url).path, axis=1)
+        df = df.drop_duplicates(subset=['url_path'])
+        logger.info(f'Deduplicated by url path, size: {len(df)}')
         df = df.drop_duplicates(subset=['article', 'lead'])
         logger.info(f'Deduplicated by article and lead, size: {len(df)}')
         df = df.drop('url_end', axis=1)
