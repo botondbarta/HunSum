@@ -2,7 +2,7 @@ import copy
 from datetime import datetime
 from typing import Optional, Set, List
 
-from bs4 import Tag
+from bs4 import Tag, BeautifulSoup
 
 from summarization.errors.invalid_page_error import InvalidPageError
 from summarization.html_parsers.parser_base import ParserBase
@@ -30,13 +30,17 @@ class IndexParser(ParserBase):
         assert_has_title(title, url)
         return self.get_text(title)
 
-    def get_lead(self, soup) -> Optional[str]:
+    def get_lead(self, soup: BeautifulSoup) -> Optional[str]:
         lead = soup.find('div', class_="lead")
 
         if not lead:
-            lead_content = next(iter(soup.select('div.cikk-torzs > p')), None)
-            if lead_content is not None:
-                lead = lead_content.find('strong')
+           lead = soup.find('p', class_='ctl05_lbLead')
+
+        if not lead:
+            first_p = soup.select_one('div.cikk-torzs > p')
+            lead = first_p.find(
+                # the p tag starts with <strong> tag instead of text
+                lambda t: t.name == 'strong' and (not t.previous_sibling or str(t.previous_sibling).isspace()))
 
         return self.get_text(lead, '')
 
@@ -44,11 +48,12 @@ class IndexParser(ParserBase):
         article = copy.copy(soup.find('div', class_="cikk-torzs"))
         # remove lead if exists
         if article:
-            lead_content = next(iter(article.select('div.cikk-torzs > p')), None)
-            if lead_content is not None:
-                lead = lead_content.find('strong')
-                if lead:
-                    lead.decompose()
+            first_p = soup.select_one('div.cikk-torzs > p')
+            lead = first_p.find(
+                # the p tag starts with <strong> tag instead of text
+                lambda t: t.name == 'strong' and (not t.previous_sibling or str(t.previous_sibling).isspace()))
+            if lead:
+                lead.decompose()
 
             to_decompose = []
             to_decompose += article.select('div.cikk-torzs > div > ul.m-tag-list')
@@ -122,5 +127,11 @@ class IndexParser(ParserBase):
         to_remove.extend(soup.find_all('div', class_='nm_mini__wrapper'))
         to_remove.extend(soup.find_all('div', class_='table_container'))
         to_remove.extend(soup.find_all('div', class_='szoveg_spec_container'))
+
+        to_remove.extend(soup.find_all('div', class_='index_kep_gal_ala'))
+        to_remove.extend(soup.find_all('div', class_='hirverseny'))
+        to_remove.extend(soup.find_all('p', class_='meta-twitter__copy'))
+        to_remove.extend(soup.find_all('div', class_='meta-twitter__btns'))
+        to_remove.extend(soup.find_all('div', class_='szelsojobb'))
 
         return to_remove

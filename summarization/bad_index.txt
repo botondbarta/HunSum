@@ -22,6 +22,7 @@ index.hu/szerzo/.*
 index.hu/.*/cimkek/
 index.hu/napirajz/.*
 index.hu/.*/napinapi/.*
+index.hu/napinapi/.*
 index.hu/.*/igazamiigaz/.*
 index.hu/.*/napi_osszefoglalo/
 index.hu/.*/hetilapszemle/
@@ -64,6 +65,7 @@ origo.hu/.*/galeria/.*
 origo.hu/foto/multimedia/.*
 origo.hu/auto/.*ajanlo.html
 origo.hu/itthon/.*-indul-a-nap-az-origoval-.*.html
+cimkezes.origo.hu/cimke.*
 m4sport.hu/videok/.*
 m4sport.hu/?.*/video/.*
 m4sport.hu/?.*/galeria/.*

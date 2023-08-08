@@ -23,14 +23,16 @@ setup(
         'tldextract~=3.3.1',
         'beautifulsoup4~=4.11.1',
         'pandas~=2.0.3',
+        'pandarallel==1.6.4',
+        'protobuf==3.19.6',
         'pypandoc~=1.8.1',
         'PyYAML~=6.0',
+        'url_parser~=3.0.3',
         'warc-knot>=0.2.5',
         'quntoken~=3.1.8',
         'Cython',
         'fasttext',
         'nltk',
         'sentencepiece',
-        'protobuf==3.19.6'
     ]
 )

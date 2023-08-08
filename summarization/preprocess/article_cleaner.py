@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 from pandarallel import pandarallel
+from url_parser import get_url
 
 from summarization.preprocess.language_detector import LanguageDetector
 from summarization.utils.config_reader import get_config_from_yaml
@@ -32,7 +33,8 @@ class ArticleCleaner:
         df_site = df_site[df_site['lead'] != '']
         logger.info(f'Cleaning {site}, size: {len(df_site)}')
 
-        # drop articles where lead is longer than article
+        df_site = self._dedup_by_url_lead_and_article(df_site, logger)
+
         df_site = df_site[df_site['article'].str.len() > df_site['lead'].str.len()]
         logger.info(f'Dropped articles where lead is longer than article, size: {len(df_site)}')
 
@@ -67,6 +69,15 @@ class ArticleCleaner:
         domain = get_domain_of_df_site(df_site)
         df_site.to_json(f'{self.config.clean_out_dir}/{domain}.jsonl.gz', orient='records',
                         lines=True, compression='gzip')
+
+    def _dedup_by_url_lead_and_article(self, df, logger):
+        df['url_path'] = df.apply(lambda row: get_url(row.url).path, axis=1)
+        df = df.drop_duplicates(subset=['url_path'])
+        logger.info(f'Deduplicated by url path, size: {len(df)}')
+        df = df.drop_duplicates(subset=['article', 'lead'])
+        logger.info(f'Deduplicated by article and lead, size: {len(df)}')
+        df = df.drop('url_end', axis=1)
+        return df
 
     def _drop_non_hungarian_sentences(self, df):
         return df[df['article']
