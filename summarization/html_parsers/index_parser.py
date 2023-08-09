@@ -38,9 +38,10 @@ class IndexParser(ParserBase):
 
         if not lead:
             first_p = soup.select_one('div.cikk-torzs > p')
-            lead = first_p.find(
-                # the p tag starts with <strong> tag instead of text
-                lambda t: t.name == 'strong' and (not t.previous_sibling or str(t.previous_sibling).isspace()))
+            if first_p:
+                lead = first_p.find(
+                    # the p tag starts with <strong> tag instead of text
+                    lambda t: t.name == 'strong' and (not t.previous_sibling or str(t.previous_sibling).isspace()))
 
         return self.get_text(lead, '')
 
@@ -53,8 +54,8 @@ class IndexParser(ParserBase):
                 lead = first_p.find(
                     # the p tag starts with <strong> tag instead of text
                     lambda t: t.name == 'strong' and (not t.previous_sibling or str(t.previous_sibling).isspace()))
-            if lead:
-                lead.decompose()
+                if lead:
+                    lead.decompose()
 
             to_decompose = []
             to_decompose += article.select('div.cikk-torzs > div > ul.m-tag-list')
