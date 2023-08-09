@@ -34,7 +34,7 @@ class IndexParser(ParserBase):
         lead = soup.find('div', class_="lead")
 
         if not lead:
-           lead = soup.find('p', class_='ctl05_lbLead')
+            lead = soup.find('p', class_='ctl05_lbLead')
 
         if not lead:
             first_p = soup.select_one('div.cikk-torzs > p')
@@ -49,9 +49,10 @@ class IndexParser(ParserBase):
         # remove lead if exists
         if article:
             first_p = soup.select_one('div.cikk-torzs > p')
-            lead = first_p.find(
-                # the p tag starts with <strong> tag instead of text
-                lambda t: t.name == 'strong' and (not t.previous_sibling or str(t.previous_sibling).isspace()))
+            if first_p:
+                lead = first_p.find(
+                    # the p tag starts with <strong> tag instead of text
+                    lambda t: t.name == 'strong' and (not t.previous_sibling or str(t.previous_sibling).isspace()))
             if lead:
                 lead.decompose()
 
