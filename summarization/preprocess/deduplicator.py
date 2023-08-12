@@ -82,6 +82,8 @@ class Deduplicator:
                 else (right_domain, right_uuid)
             drops[drop[0]].append(drop[1])
 
+        for site in drops:
+            drops[site] = list(set(drops[site]))
         return drops
 
     def _add_fingerprints_to_lsh(self, df):
