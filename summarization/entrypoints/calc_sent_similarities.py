@@ -37,6 +37,7 @@ def main(input_dir, output_dir, sites):
     all_sites = glob.glob(f'{input_dir}/*.jsonl.gz')
     sites = all_sites if sites == 'all' else [x for x in all_sites if is_site_in_sites(Path(x).name, sites.split(','))]
     site_domains = [site.replace('.jsonl.gz', '').replace(f'{input_dir}/', '') for site in sites]
+    chunk_size = 10000
 
     for name, model in models.items():
         model.to(device)
@@ -44,7 +45,8 @@ def main(input_dir, output_dir, sites):
 
         for site, domain in zip(sites, site_domains):
             logger.info(f'Processing site {domain}')
-            for df_chunk in pd.read_json(site, lines=True, chunksize=10):
+            for chunk, df_chunk in enumerate(pd.read_json(site, lines=True, chunksize=chunk_size)):
+                logger.info(f'{domain} current chunk: {chunk*chunk_size}')
                 logger.info(f'{domain}: Calculating lead embeddings')
                 df_chunk[f'lead_emb_{name}'] = df_chunk.progress_apply(
                     lambda x: DocumentEmbedder.calculate_embedding(model, x['lead']).tolist(), axis=1)
