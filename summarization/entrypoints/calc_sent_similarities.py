@@ -44,16 +44,16 @@ def main(input_dir, output_dir, sites):
 
         for site, domain in zip(sites, site_domains):
             logger.info(f'Processing site {domain}')
-            for df_chunk in pd.read_json(site, lines=True, chunksize=10000):
-                logger.info(f'Calculating lead embeddings for {domain}')
+            for df_chunk in pd.read_json(site, lines=True, chunksize=10):
+                logger.info(f'{domain}: Calculating lead embeddings')
                 df_chunk[f'lead_emb_{name}'] = df_chunk.progress_apply(
                     lambda x: DocumentEmbedder.calculate_embedding(model, x['lead']).tolist(), axis=1)
 
-                logger.info(f'Calculating lead sentence embeddings for {domain}')
+                logger.info(f'{domain}: Calculating lead sentence embeddings')
                 df_chunk[f'lead_sent_emb_{name}'] = df_chunk.progress_apply(
                     lambda x: DocumentEmbedder.calculate_sent_embedding(model, x['lead']).tolist(), axis=1)
 
-                logger.info(f'Calculating article sentence embeddings for {domain}')
+                logger.info(f'{domain}: Calculating article sentence embeddings')
                 df_chunk[f'article_sent_emb_{name}'] = df_chunk.progress_apply(
                     lambda x: DocumentEmbedder.calculate_sent_embedding(model, x['article']).tolist(), axis=1)
 
