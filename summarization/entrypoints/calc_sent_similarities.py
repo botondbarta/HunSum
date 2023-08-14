@@ -44,31 +44,31 @@ def main(input_dir, output_dir, sites):
 
         for site, domain in zip(sites, site_domains):
             logger.info(f'Processing site {domain}')
-            df_site = pd.read_json(f'{site}', lines=True)
+            for df_chunk in pd.read_json(site, lines=True, chunksize=10000):
+                logger.info(f'Calculating lead embeddings for {domain}')
+                df_chunk[f'lead_emb_{name}'] = df_chunk.progress_apply(
+                    lambda x: DocumentEmbedder.calculate_embedding(model, x['lead']).tolist(), axis=1)
 
-            logger.info(f'Calculating lead embeddings for {domain}')
-            df_site[f'lead_emb_{name}'] = df_site.progress_apply(
-                lambda x: DocumentEmbedder.calculate_embedding(model, x['lead']).tolist(), axis=1)
+                logger.info(f'Calculating lead sentence embeddings for {domain}')
+                df_chunk[f'lead_sent_emb_{name}'] = df_chunk.progress_apply(
+                    lambda x: DocumentEmbedder.calculate_sent_embedding(model, x['lead']).tolist(), axis=1)
 
-            logger.info(f'Calculating lead sentence embeddings for {domain}')
-            df_site[f'lead_sent_emb_{name}'] = df_site.progress_apply(
-                lambda x: DocumentEmbedder.calculate_sent_embedding(model, x['lead']).tolist(), axis=1)
+                logger.info(f'Calculating article sentence embeddings for {domain}')
+                df_chunk[f'article_sent_emb_{name}'] = df_chunk.progress_apply(
+                    lambda x: DocumentEmbedder.calculate_sent_embedding(model, x['article']).tolist(), axis=1)
 
-            logger.info(f'Calculating article sentence embeddings for {domain}')
-            df_site[f'article_sent_emb_{name}'] = df_site.progress_apply(
-                lambda x: DocumentEmbedder.calculate_sent_embedding(model, x['article']).tolist(), axis=1)
+                df_chunk[f'most_similar_sent_{name}'] = df_chunk.progress_apply(
+                    lambda x: DocumentEmbedder.calculate_embedding_similarity(x[f'lead_sent_emb_{name}'],
+                                                                              x[f'article_sent_emb_{name}']).tolist(),
+                    axis=1)
 
-            df_site[f'most_similar_sent_{name}'] = df_site.progress_apply(
-                lambda x: DocumentEmbedder.calculate_embedding_similarity(x[f'lead_sent_emb_{name}'],
-                                                                          x[f'article_sent_emb_{name}']).tolist(),
-                axis=1)
+                df_chunk[f'most_similar_{name}'] = df_chunk.progress_apply(
+                    lambda x: DocumentEmbedder.calculate_embedding_similarity(x[f'lead_emb_{name}'],
+                                                                              x[f'article_sent_emb_{name}']).tolist(),
+                    axis=1)
 
-            df_site[f'most_similar_{name}'] = df_site.progress_apply(
-                lambda x: DocumentEmbedder.calculate_embedding_similarity(x[f'lead_emb_{name}'],
-                                                                          x[f'article_sent_emb_{name}']).tolist(),
-                axis=1)
-
-            df_site.to_json(f'{output_dir}/{name}/{domain}.jsonl.gz', orient='records', lines=True, compression='gzip')
+                df_chunk.to_json(f'{output_dir}/{name}/{domain}.jsonl.gz', orient='records', lines=True,
+                                 compression='gzip', mode='a')
         model.to('cpu')
 
 
