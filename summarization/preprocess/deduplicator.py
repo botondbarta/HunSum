@@ -5,10 +5,9 @@ from os import path
 import pandas as pd
 from lsh.cache import Cache
 from lsh.minhash import MinHasher
-from pandarallel import pandarallel
 
 from summarization.utils.config_reader import get_config_from_yaml
-from summarization.utils.data_helpers import get_domain_of_df_site
+from summarization.utils.data_helpers import get_domain_of_df_site, parallelize_df_processing_progress_bar
 from summarization.utils.data_helpers import make_dir_if_not_exists
 from summarization.utils.dateparser import DateParser
 from summarization.utils.logger import get_logger
@@ -17,7 +16,7 @@ from summarization.utils.logger import get_logger
 class Deduplicator:
     def __init__(self, config_path):
         self.config = get_config_from_yaml(config_path)
-        pandarallel.initialize(progress_bar=True, nb_workers=self.config.num_process)
+        self.num_process = self.config.num_process
         self.hasher = MinHasher(seeds=self.config.num_of_permutations,
                                 char_ngram=self.config.char_ngram,
                                 hashbytes=8,
@@ -36,13 +35,8 @@ class Deduplicator:
         for site in sites:
             df_site = pd.read_json(site, lines=True)
 
-            logger.info(f'\nCreating article fingerprints for {site}, size: {len(df_site)}')
-            df_site['article_fingerprint'] = df_site.parallel_apply(
-                lambda row: self.hasher.fingerprint(row['article'].encode('utf8')), axis=1)
-
-            logger.info(f'\nCreating lead fingerprints for {site}, size: {len(df_site)}')
-            df_site['lead_fingerprint'] = df_site.parallel_apply(
-                lambda row: self.hasher.fingerprint(row['lead'].encode('utf8')) if row['lead'] != "" else None, axis=1)
+            logger.info(f'\nCreating article and lead fingerprints for {site}, size: {len(df_site)}')
+            df_site = parallelize_df_processing_progress_bar(df_site, self._create_fingerprints, self.num_process, 100)
 
             self._add_fingerprints_to_lsh(df_site)
 
@@ -94,3 +88,10 @@ class Deduplicator:
             self.article_lsh.add_fingerprint(row.article_fingerprint, f'{domain}_{row.uuid}_{row.cc_date}_{has_lead}')
             if row.lead_fingerprint is not None:
                 self.lead_lsh.add_fingerprint(row.lead_fingerprint, f'{domain}_{row.uuid}_{row.cc_date}')
+
+    def _create_fingerprints(self, df):
+        df['article_fingerprint'] = df.apply(
+            lambda row: self.hasher.fingerprint(row['article'].encode('utf8')), axis=1)
+        df['lead_fingerprint'] = df.apply(
+            lambda row: self.hasher.fingerprint(row['lead'].encode('utf8')) if row['lead'] != "" else None, axis=1)
+        return df
