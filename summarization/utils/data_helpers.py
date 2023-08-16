@@ -1,11 +1,11 @@
-from multiprocessing import Pool
+from multiprocessing import Pool, cpu_count
+from multiprocessing.pool import ThreadPool
 from os import path, mkdir
 from typing import List
 
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-
 
 def parallelize_df_processing(df, func, num_cores=4, num_partitions=20):
     df_split = np.array_split(df, num_partitions)
@@ -14,11 +14,14 @@ def parallelize_df_processing(df, func, num_cores=4, num_partitions=20):
     return df
 
 
-def parallelize_df_processing_progress_bar(df, func, num_cores=4, num_partitions=20):
+def parallelize_df_processing_progress_bar(df, func, num_partitions=None):
+    if num_partitions is None:
+        num_partitions = cpu_count()
+
     partitions = np.array_split(df, num_partitions)
     processed_partitions = []
 
-    with Pool(num_cores) as pool:
+    with ThreadPool(num_partitions) as pool:
         for processed_partition in tqdm(pool.imap_unordered(func, partitions), total=num_partitions):
             processed_partitions.append(processed_partition)
     return pd.concat(processed_partitions)
