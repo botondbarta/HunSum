@@ -5,10 +5,10 @@ from os import path
 import pandas as pd
 from lsh.cache import Cache
 from lsh.minhash import MinHasher
-from pandarallel import pandarallel
+from tqdm import tqdm
 
 from summarization.utils.config_reader import get_config_from_yaml
-from summarization.utils.data_helpers import get_domain_of_df_site
+from summarization.utils.data_helpers import get_domain_of_df_site, parallelize_df_processing_progress_bar
 from summarization.utils.data_helpers import make_dir_if_not_exists
 from summarization.utils.dateparser import DateParser
 from summarization.utils.logger import get_logger
@@ -17,32 +17,35 @@ from summarization.utils.logger import get_logger
 class Deduplicator:
     def __init__(self, config_path):
         self.config = get_config_from_yaml(config_path)
-        pandarallel.initialize(progress_bar=True, nb_workers=self.config.num_process)
+        self.num_process = self.config.num_process
         self.hasher = MinHasher(seeds=self.config.num_of_permutations,
                                 char_ngram=self.config.char_ngram,
                                 hashbytes=8,
                                 random_state=3)
-        self.article_lsh = Cache(self.hasher, num_bands=self.config.num_bands)
-        self.lead_lsh = Cache(self.hasher, num_bands=self.config.num_bands)
+        self.article_lsh = Cache(self.hasher, num_bands=self.config.article_num_bands)
+        self.lead_lsh = Cache(self.hasher, num_bands=self.config.lead_num_bands)
 
     def deduplicate(self):
         make_dir_if_not_exists(self.config.dedup_out_dir)
+        make_dir_if_not_exists(self.config.fingerprint_dir)
+
         log_file = path.join(self.config.dedup_out_dir, 'log.txt')
         logger = get_logger('preprocess', log_file)
 
         sites = glob.glob(f'{self.config.dedup_src_dir}/*.jsonl.gz')
         site_domains = [site.replace('.jsonl.gz', '').replace(f'{self.config.dedup_src_dir}/', '') for site in sites]
 
-        for site in sites:
-            df_site = pd.read_json(site, lines=True)
+        for (site, domain) in zip(sites, site_domains):
+            fingerprint_path = f'{self.config.fingerprint_dir}/{domain}.jsonl.gz'
 
-            logger.info(f'\nCreating article fingerprints for {site}, size: {len(df_site)}')
-            df_site['article_fingerprint'] = df_site.parallel_apply(
-                lambda row: self.hasher.fingerprint(row['article'].encode('utf8')), axis=1)
-
-            logger.info(f'\nCreating lead fingerprints for {site}, size: {len(df_site)}')
-            df_site['lead_fingerprint'] = df_site.parallel_apply(
-                lambda row: self.hasher.fingerprint(row['lead'].encode('utf8')) if row['lead'] != "" else None, axis=1)
+            # check if site not in fingerprint_dir
+            if not path.exists(fingerprint_path):
+                logger.info(f'Creating fingerprints for {site}')
+                df_site = self._create_and_save_fingerprints_for_site(site, domain)
+            else:
+                logger.info(f'Loading fingerprints for {site}')
+                df_site = pd.read_json(fingerprint_path, lines=True)
+                assert 'article_fingerprint' in df_site.columns and 'lead_fingerprint' in df_site.columns
 
             self._add_fingerprints_to_lsh(df_site)
 
@@ -82,13 +85,30 @@ class Deduplicator:
                 else (right_domain, right_uuid)
             drops[drop[0]].append(drop[1])
 
+        for site in drops:
+            drops[site] = list(set(drops[site]))
         return drops
 
     def _add_fingerprints_to_lsh(self, df):
         domain = get_domain_of_df_site(df)
-        for i in range(len(df)):
+        for i in tqdm(range(len(df))):
             row = df.iloc[i]
             has_lead = True if df.iloc[i].lead != '' else False
             self.article_lsh.add_fingerprint(row.article_fingerprint, f'{domain}_{row.uuid}_{row.cc_date}_{has_lead}')
             if row.lead_fingerprint is not None:
                 self.lead_lsh.add_fingerprint(row.lead_fingerprint, f'{domain}_{row.uuid}_{row.cc_date}')
+
+    def _create_and_save_fingerprints_for_site(self, site, domain):
+        df_site = pd.read_json(site, lines=True)
+
+        df_site = parallelize_df_processing_progress_bar(df_site, self._create_fingerprints, self.num_process)
+        df_site.to_json(f'{self.config.fingerprint_dir}/{domain}.jsonl.gz', orient='records', lines=True,
+                        compression='gzip')
+        return df_site
+
+    def _create_fingerprints(self, df):
+        df['article_fingerprint'] = df.apply(
+            lambda row: self.hasher.fingerprint(row['article'].encode('utf8')), axis=1)
+        df['lead_fingerprint'] = df.apply(
+            lambda row: self.hasher.fingerprint(row['lead'].encode('utf8')) if row['lead'] != "" else None, axis=1)
+        return df

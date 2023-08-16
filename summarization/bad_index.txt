@@ -12,6 +12,8 @@ telex.hu/legfontosabb.*
 telex.hu/vesezo/.*
 telex.hu/english/.*
 telex.hu/english\?.*
+galeria.index.hu/.*
+forum.index.hu/.*
 index.hu/wanted/.*
 index.hu/24ora/\?cimke=.*
 index.hu/kultur/musor/.*

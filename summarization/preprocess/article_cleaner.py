@@ -76,7 +76,7 @@ class ArticleCleaner:
         logger.info(f'Deduplicated by url path, size: {len(df)}')
         df = df.drop_duplicates(subset=['article', 'lead'])
         logger.info(f'Deduplicated by article and lead, size: {len(df)}')
-        df = df.drop('url_end', axis=1)
+        df = df.drop('url_path', axis=1)
         return df
 
     def _drop_non_hungarian_sentences(self, df):

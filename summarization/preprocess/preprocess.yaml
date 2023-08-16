@@ -15,11 +15,13 @@ num_process: 4
 
 # deduplication configs
 dedup_src_dir: '/dir/data/clean'
+fingerprint_dir: '/dir/data/fingerprints'
 dedup_out_dir: '/dir/data/dedup'
 char_ngram: 9
 num_of_permutations: 200
-num_bands: 10
+article_num_bands: 10
+lead_num_bands: 20
 article_min_jaccard: 0.35
-lead_min_jaccard: 0.70
+lead_min_jaccard: 0.35
 train_size: 0.8
 valid_size: 0.1
