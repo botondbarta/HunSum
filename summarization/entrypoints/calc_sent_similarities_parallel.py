@@ -1,9 +1,10 @@
 import glob
 import os
-from concurrent.futures import ThreadPoolExecutor
+from multiprocessing.pool import ThreadPool
 from pathlib import Path
 
 import click
+import numpy as np
 import pandas as pd
 from sentence_transformers import SentenceTransformer
 from torch.cuda import is_available as is_cuda_available
@@ -20,10 +21,10 @@ tqdm.pandas()
 @click.command()
 @click.argument('input_dir')
 @click.argument('output_dir')
+@click.option('--num_partitions', default=3, type=click.INT)
+@click.option('--chunk_size', default=10000, type=click.INT)
 @click.option('--sites', default='all', help='Sites to calculate sentence similarities for')
-def main(input_dir, output_dir, sites):
-    num_partitions = 3
-    chunk_size = 10000
+def main(input_dir, output_dir, num_partitions, chunk_size, sites):
     models = {
         'minilm': [SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
                    for i in range(num_partitions)],
@@ -51,16 +52,14 @@ def main(input_dir, output_dir, sites):
             for chunk, df_chunk in enumerate(pd.read_json(site, lines=True, chunksize=chunk_size)):
                 logger.info(f'{domain} current chunk: {chunk * chunk_size}')
 
-                partitions = [df_chunk[i::num_partitions] for i in range(num_partitions)]
-                with ThreadPoolExecutor(max_workers=num_partitions) as executor:
-                    processed_partitions = []
-                    for i, partition in enumerate(partitions):
-                        future = executor.submit(process_partition, (name, model[i], partition, logger))
-                        processed_partitions.append(future)
-                processed_dataframes = [future.result() for future in processed_partitions]
+                partitions = np.array_split(df_chunk, num_partitions)
+
+                arg_list = [(name, mod, partition, logger) for mod, partition in zip(model, partitions)]
+                with ThreadPool(num_partitions) as pool:
+                    processed_partitions = pool.map(process_partition, arg_list)
 
                 # Concatenate the processed DataFrames from different partitions
-                merged_dataframe = pd.concat(processed_dataframes, ignore_index=True)
+                merged_dataframe = pd.concat(processed_partitions)
 
                 # Save the merged DataFrame to a JSON file
                 merged_dataframe.to_json(f'{output_dir}/{name}/{domain}.jsonl.gz', orient='records', lines=True,
@@ -73,8 +72,6 @@ def main(input_dir, output_dir, sites):
 
 def process_partition(args):
     name, model, partition, logger = args
-
-    logger.info(f'Loaded model {name}')
 
     partition[f'lead_emb_{name}'] = partition.progress_apply(
         lambda x: DocumentEmbedder.calculate_embedding(model, x['lead']).tolist(), axis=1)
