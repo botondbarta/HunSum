@@ -120,6 +120,7 @@ class DelmagyarParser(ParserBase):
         to_remove.extend(soup.find_all('div', class_='related'))
         to_remove.extend(soup.find_all('div', class_='raw-html-embed'))
         to_remove.extend(soup.find_all('blockquote', class_='instagram-media'))
+        to_remove.extend(soup.find_all('blockquote', class_='twitter-tweet'))
         to_remove.extend(soup.find_all('figcaption'))
         to_remove.extend(soup.find_all('figure', class_='image'))
         to_remove.extend(soup.find_all('div', class_='comment_box'))
