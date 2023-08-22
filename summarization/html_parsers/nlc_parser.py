@@ -74,6 +74,8 @@ class NLCParser(ParserBase):
         to_remove.extend(soup.find_all('div', class_='m-embed'))
         # pinterest
         to_remove.extend(soup.find_all('blockquote', class_='embedly-card'))
+        to_remove.extend(soup.find_all('blockquote', class_='twitter-tweet'))
+        to_remove.extend(soup.find_all('blockquote', class_='tiktok-embed'))
         # drop recipe parts
         to_remove.extend(soup.find_all('div', class_='recipe-wrapper'))
 
