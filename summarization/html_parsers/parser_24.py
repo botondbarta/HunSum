@@ -88,6 +88,8 @@ class Parser24(ParserBase):
         to_remove = []
         to_remove.extend(soup.find_all('blockquote', class_='instagram-media'))
         to_remove.extend(soup.find_all('blockquote', class_='twitter-tweet'))
+        to_remove.extend(soup.find_all('blockquote', class_='twitter-video'))
+        to_remove.extend(soup.find_all('blockquote', class_='tiktok-embed'))
         to_remove.extend(soup.find_all('div', class_='fb-post'))
         to_remove.extend(soup.find_all('div', class_='sidebar'))
         to_remove.extend(soup.find_all('span', class_='a-imgSource'))

@@ -110,5 +110,7 @@ class M4SportParser(ParserBase):
         to_remove.extend(soup.find_all('div', class_='twitter-tweet'))
         to_remove.extend(soup.find_all('div', class_='articleImage'))
         to_remove.extend(soup.find_all('iframe', class_='instagram-media'))
+        to_remove.extend(soup.find_all('blockquote', class_='instagram-media'))
         to_remove.extend(soup.find_all('blockquote', class_='tiktok-embed'))
+        to_remove.extend(soup.find_all('blockquote', class_='twitter-tweet'))
         return to_remove
