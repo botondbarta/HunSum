@@ -1,6 +1,6 @@
 import glob
+import multiprocessing as mp
 import os
-from multiprocessing.pool import ThreadPool
 from pathlib import Path
 
 import click
@@ -55,7 +55,7 @@ def main(input_dir, output_dir, num_partitions, chunk_size, sites):
                 partitions = np.array_split(df_chunk, num_partitions)
 
                 arg_list = [(name, mod, partition, logger) for mod, partition in zip(model, partitions)]
-                with ThreadPool(num_partitions) as pool:
+                with mp.get_context('spawn').Pool(num_partitions) as pool:
                     processed_partitions = pool.map(process_partition, arg_list)
 
                 # Concatenate the processed DataFrames from different partitions
