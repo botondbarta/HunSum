@@ -62,7 +62,7 @@ class ArticleCleaner:
             logger.info(f'Dropped articles where article is not at least {self.config.min_article_sentences} '
                         f'sentence, size: {len(df_site)}')
 
-        df_site = self._drop_non_hungarian_sentences(df_site)
+        df_site = self._drop_non_hungarian_articles(df_site)
         logger.info(f'Dropped non-Hungarian sentences, size: {len(df_site)}')
 
         make_dir_if_not_exists(self.config.clean_out_dir)
@@ -79,7 +79,9 @@ class ArticleCleaner:
         df = df.drop('url_path', axis=1)
         return df
 
-    def _drop_non_hungarian_sentences(self, df):
+    def _drop_non_hungarian_articles(self, df):
+        df = df[df['lead']
+                .map(self.language_detector.predict) == 'hu']
         return df[df['article']
                   .parallel_apply(lambda x: x.replace('\n', ' '))
                   .map(self.language_detector.predict) == 'hu']
