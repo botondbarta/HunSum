@@ -81,7 +81,8 @@ class ArticleCleaner:
 
     def _drop_non_hungarian_articles(self, df):
         df = df[df['lead']
-           .map(self.language_detector.predict) == 'hu']
+                .parallel_apply(lambda x: x.replace('\n', ' '))
+                .map(self.language_detector.predict) == 'hu']
         return df[df['article']
                   .parallel_apply(lambda x: x.replace('\n', ' '))
                   .map(self.language_detector.predict) == 'hu']
