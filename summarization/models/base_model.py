@@ -5,7 +5,7 @@ from abc import abstractmethod, ABC
 import datasets
 import pandas as pd
 from datasets import DatasetDict, Dataset
-from transformers import IntervalStrategy, Seq2SeqTrainingArguments, Seq2SeqTrainer, pipeline
+from transformers import IntervalStrategy, Seq2SeqTrainingArguments, Seq2SeqTrainer, pipeline, EarlyStoppingCallback
 
 from summarization.utils.config_reader import get_config_from_yaml
 
@@ -13,7 +13,9 @@ from summarization.utils.config_reader import get_config_from_yaml
 class BaseModel(ABC):
     def __init__(self, config_path):
         self.config = get_config_from_yaml(config_path)
-        self.rouge = datasets.load_metric("rouge")
+        if self.config.predict_with_generate:
+            self.rouge = datasets.load_metric("rouge")
+            self.bert_score = datasets.load_metric("bertscore")
 
     @abstractmethod
     def process_data_to_model_inputs(self, batch):
@@ -52,12 +54,13 @@ class BaseModel(ABC):
             save_total_limit=self.config.save_total_limit,
             eval_steps=self.config.valid_steps,
             save_steps=self.config.valid_steps,
-            predict_with_generate=True,
+            predict_with_generate=self.config.predict_with_generate,
             generation_max_length=self.config.max_predict_length,
             generation_num_beams=self.config.num_beams,
             warmup_steps=self.config.warmup_steps,
             load_best_model_at_end=True,
             fp16=self.config.fp16,
+            metric_for_best_model=self.config.metric_for_best_model if self.config.predict_with_generate else 'loss',
         )
 
     def _load_tokenized_dataset(self, load_train: bool = True, load_test: bool = True):
@@ -79,7 +82,9 @@ class BaseModel(ABC):
         tokenized_datasets = self._load_tokenized_dataset(load_train=True, load_test=True)
 
         trainer = self.get_seq2seq_trainer(tokenized_datasets, load_train_data=True)
-        trainer.compute_metrics = self.compute_metrics
+        if self.config.predict_with_generate:
+            trainer.compute_metrics = self.compute_metrics
+        trainer.add_callback(EarlyStoppingCallback(early_stopping_patience=self.config.patience))
 
         # Training
         checkpoint = self.config.resume_from_checkpoint if self.config.resume_from_checkpoint else None
@@ -166,6 +171,9 @@ class BaseModel(ABC):
             predictions=pred_str, references=label_str, rouge_types=["rouge1", "rouge2", "rougeL"]
         )
 
+        bert_scores = self.bert_score.compute(predictions=pred_str, references=label_str,
+                                              model_type="SZTAKI-HLT/hubert-base-cc", num_layers=8)
+
         rouge1 = rouge_output["rouge1"].mid
         rouge2 = rouge_output["rouge2"].mid
         rougeL = rouge_output["rougeL"].mid
@@ -180,4 +188,7 @@ class BaseModel(ABC):
             "rougeL_precision": round(rougeL.precision, 4),
             "rougeL_recall": round(rougeL.recall, 4),
             "rougeL_fmeasure": round(rougeL.fmeasure, 4),
+            "bert_score_precision": round(bert_scores['precision'], 4),
+            "bert_score_recall": round(bert_scores['recall'], 4),
+            "bert_score_f1": round(bert_scores['f1'], 4),
         }

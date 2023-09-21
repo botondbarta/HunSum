@@ -31,6 +31,10 @@ valid_steps: 5000 # same as save_checkpoint_steps
 batch_size: 16
 warmup_steps: 3000
 fp16: False
+patience: 6
+predict_with_generate: False
+# used if predict_with_generate is True
+metric_for_best_model: eval_loss # bert_score_recall
 
 # predict
 prediction_file: None
