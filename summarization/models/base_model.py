@@ -195,12 +195,3 @@ class BaseModel(ABC):
             "bert_score_recall": round(avg(bert_scores['recall']), 4),
             "bert_score_f1": round(avg(bert_scores['f1']), 4),
         }
-
-
-if __name__ == '__main__':
-    bert_score = datasets.load_metric("bertscore")
-    result = bert_score.compute(predictions=["ez egy mondat", "ez egy mondat"],
-                                references=["ez egy másik mondat", "ez egy másik mondat"],
-                                model_type="SZTAKI-HLT/hubert-base-cc", num_layers=8)
-    print(result)
-    a = 3
