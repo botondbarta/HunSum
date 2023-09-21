@@ -15,6 +15,7 @@ import pandas as pd
 @click.option('--use_stemming', is_flag=True, default=False)
 def main(references, predicted, results_file, use_stemming):
     rouge = datasets.load_metric("rouge")
+    bert_score = datasets.load_metric("bertscore")
     # rouge = evaluate.load("rouge")
 
     files = [references] if os.path.isfile(references) else sorted(glob.glob(f'{references}/*.jsonl.gz'))
@@ -40,11 +41,15 @@ def main(references, predicted, results_file, use_stemming):
     rouge_output = rouge.compute(
         predictions=gen, references=ref, rouge_types=["rouge1", "rouge2", "rougeL"]
     )
+
+    bert_scores = bert_score.compute(predictions=gen, references=ref, model_type="SZTAKI-HLT/hubert-base-cc",
+                                     num_layers=8)
+
     rouge1 = rouge_output["rouge1"].mid
     rouge2 = rouge_output["rouge2"].mid
     rougeL = rouge_output["rougeL"].mid
 
-    rouge_scores = {
+    scores = {
         "rouge1_precision": round(rouge1.precision, 4),
         "rouge1_recall": round(rouge1.recall, 4),
         "rouge1_fmeasure": round(rouge1.fmeasure, 4),
@@ -54,9 +59,13 @@ def main(references, predicted, results_file, use_stemming):
         "rougeL_precision": round(rougeL.precision, 4),
         "rougeL_recall": round(rougeL.recall, 4),
         "rougeL_fmeasure": round(rougeL.fmeasure, 4),
+        "bert_score_precision": round(bert_scores['precision'], 4),
+        "bert_score_recall": round(bert_scores['recall'], 4),
+        "bert_score_f1": round(bert_scores['f1'], 4),
     }
+
     with open(results_file, 'w') as fp:
-        json.dump(rouge_scores, fp)
+        json.dump(scores, fp)
 
 
 if __name__ == '__main__':

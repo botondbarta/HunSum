@@ -34,5 +34,6 @@ setup(
         'fasttext',
         'nltk',
         'sentencepiece',
+        'bert_score'
     ]
 )
