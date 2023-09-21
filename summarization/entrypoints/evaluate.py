@@ -42,8 +42,8 @@ def main(references, predicted, results_file, use_stemming):
         predictions=gen, references=ref, rouge_types=["rouge1", "rouge2", "rougeL"]
     )
 
-    bert_scores = bert_score.compute(predictions=gen, references=ref,
-                                          model_type="SZTAKI-HLT/hubert-base-cc")
+    bert_scores = bert_score.compute(predictions=gen, references=ref, model_type="SZTAKI-HLT/hubert-base-cc",
+                                     num_layers=8)
 
     rouge1 = rouge_output["rouge1"].mid
     rouge2 = rouge_output["rouge2"].mid

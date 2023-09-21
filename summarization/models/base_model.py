@@ -172,7 +172,7 @@ class BaseModel(ABC):
         )
 
         bert_scores = self.bert_score.compute(predictions=pred_str, references=label_str,
-                                              model_type="SZTAKI-HLT/hubert-base-cc")
+                                              model_type="SZTAKI-HLT/hubert-base-cc", num_layers=8)
 
         rouge1 = rouge_output["rouge1"].mid
         rouge2 = rouge_output["rouge2"].mid
