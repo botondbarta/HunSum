@@ -54,7 +54,7 @@ class BaseModel(ABC):
             save_total_limit=self.config.save_total_limit,
             eval_steps=self.config.valid_steps,
             save_steps=self.config.valid_steps,
-            predict_with_generate=self.config.predict_with_generate,
+            predict_with_generate=True,
             generation_max_length=self.config.max_predict_length,
             generation_num_beams=self.config.num_beams,
             warmup_steps=self.config.warmup_steps,
@@ -106,6 +106,7 @@ class BaseModel(ABC):
         trainer.save_metrics("eval", metrics)
 
         # Prediction
+
         self._generate_and_save(trainer, tokenized_datasets)
 
     def generate(self):
@@ -117,7 +118,7 @@ class BaseModel(ABC):
         trainer.compute_metrics = self.compute_metrics
         self._generate_and_save(trainer, tokenized_datasets)
 
-    def _generate_and_save(self, trainer, tokenized_datasets):
+    def _generate_and_save(self, trainer: Seq2SeqTrainer, tokenized_datasets):
         test_output = trainer.predict(
             test_dataset=tokenized_datasets["test"],
             metric_key_prefix="test",
@@ -178,6 +179,8 @@ class BaseModel(ABC):
         rouge2 = rouge_output["rouge2"].mid
         rougeL = rouge_output["rougeL"].mid
 
+        avg = lambda x: sum(x) / len(x)
+
         return {
             "rouge1_precision": round(rouge1.precision, 4),
             "rouge1_recall": round(rouge1.recall, 4),
@@ -188,7 +191,16 @@ class BaseModel(ABC):
             "rougeL_precision": round(rougeL.precision, 4),
             "rougeL_recall": round(rougeL.recall, 4),
             "rougeL_fmeasure": round(rougeL.fmeasure, 4),
-            "bert_score_precision": round(bert_scores['precision'], 4),
-            "bert_score_recall": round(bert_scores['recall'], 4),
-            "bert_score_f1": round(bert_scores['f1'], 4),
+            "bert_score_precision": round(avg(bert_scores['precision']), 4),
+            "bert_score_recall": round(avg(bert_scores['recall']), 4),
+            "bert_score_f1": round(avg(bert_scores['f1']), 4),
         }
+
+
+if __name__ == '__main__':
+    bert_score = datasets.load_metric("bertscore")
+    result = bert_score.compute(predictions=["ez egy mondat", "ez egy mondat"],
+                                references=["ez egy másik mondat", "ez egy másik mondat"],
+                                model_type="SZTAKI-HLT/hubert-base-cc", num_layers=8)
+    print(result)
+    a = 3
