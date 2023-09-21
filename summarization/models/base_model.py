@@ -13,7 +13,7 @@ from summarization.utils.config_reader import get_config_from_yaml
 class BaseModel(ABC):
     def __init__(self, config_path):
         self.config = get_config_from_yaml(config_path)
-        if self.config.predict_with_generate:
+        if self.config.compute_training_metrics:
             self.rouge = datasets.load_metric("rouge")
             self.bert_score = datasets.load_metric("bertscore")
 
@@ -60,7 +60,7 @@ class BaseModel(ABC):
             warmup_steps=self.config.warmup_steps,
             load_best_model_at_end=True,
             fp16=self.config.fp16,
-            metric_for_best_model=self.config.metric_for_best_model if self.config.predict_with_generate else 'loss',
+            metric_for_best_model=self.config.metric_for_best_model if self.config.compute_training_metrics else 'loss',
         )
 
     def _load_tokenized_dataset(self, load_train: bool = True, load_test: bool = True):
@@ -82,7 +82,7 @@ class BaseModel(ABC):
         tokenized_datasets = self._load_tokenized_dataset(load_train=True, load_test=True)
 
         trainer = self.get_seq2seq_trainer(tokenized_datasets, load_train_data=True)
-        if self.config.predict_with_generate:
+        if self.config.compute_training_metrics:
             trainer.compute_metrics = self.compute_metrics
         trainer.add_callback(EarlyStoppingCallback(early_stopping_patience=self.config.patience))
 

@@ -32,8 +32,8 @@ batch_size: 16
 warmup_steps: 3000
 fp16: False
 patience: 6
-predict_with_generate: False
-# used if predict_with_generate is True
+compute_training_metrics: False
+# used if compute_training_metrics is True
 metric_for_best_model: eval_loss # bert_score_recall
 
 # predict
