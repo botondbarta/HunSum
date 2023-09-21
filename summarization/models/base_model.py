@@ -13,7 +13,7 @@ from summarization.utils.config_reader import get_config_from_yaml
 class BaseModel(ABC):
     def __init__(self, config_path):
         self.config = get_config_from_yaml(config_path)
-        if self.config.predict_with_generate:
+        if self.config.compute_training_metrics:
             self.rouge = datasets.load_metric("rouge")
             self.bert_score = datasets.load_metric("bertscore")
 
@@ -54,13 +54,13 @@ class BaseModel(ABC):
             save_total_limit=self.config.save_total_limit,
             eval_steps=self.config.valid_steps,
             save_steps=self.config.valid_steps,
-            predict_with_generate=self.config.predict_with_generate,
+            predict_with_generate=True,
             generation_max_length=self.config.max_predict_length,
             generation_num_beams=self.config.num_beams,
             warmup_steps=self.config.warmup_steps,
             load_best_model_at_end=True,
             fp16=self.config.fp16,
-            metric_for_best_model=self.config.metric_for_best_model if self.config.predict_with_generate else 'loss',
+            metric_for_best_model=self.config.metric_for_best_model if self.config.compute_training_metrics else 'loss',
         )
 
     def _load_tokenized_dataset(self, load_train: bool = True, load_test: bool = True):
@@ -82,7 +82,7 @@ class BaseModel(ABC):
         tokenized_datasets = self._load_tokenized_dataset(load_train=True, load_test=True)
 
         trainer = self.get_seq2seq_trainer(tokenized_datasets, load_train_data=True)
-        if self.config.predict_with_generate:
+        if self.config.compute_training_metrics:
             trainer.compute_metrics = self.compute_metrics
         trainer.add_callback(EarlyStoppingCallback(early_stopping_patience=self.config.patience))
 
@@ -106,6 +106,7 @@ class BaseModel(ABC):
         trainer.save_metrics("eval", metrics)
 
         # Prediction
+
         self._generate_and_save(trainer, tokenized_datasets)
 
     def generate(self):
@@ -117,7 +118,7 @@ class BaseModel(ABC):
         trainer.compute_metrics = self.compute_metrics
         self._generate_and_save(trainer, tokenized_datasets)
 
-    def _generate_and_save(self, trainer, tokenized_datasets):
+    def _generate_and_save(self, trainer: Seq2SeqTrainer, tokenized_datasets):
         test_output = trainer.predict(
             test_dataset=tokenized_datasets["test"],
             metric_key_prefix="test",
@@ -178,6 +179,8 @@ class BaseModel(ABC):
         rouge2 = rouge_output["rouge2"].mid
         rougeL = rouge_output["rougeL"].mid
 
+        avg = lambda x: sum(x) / len(x)
+
         return {
             "rouge1_precision": round(rouge1.precision, 4),
             "rouge1_recall": round(rouge1.recall, 4),
@@ -188,7 +191,7 @@ class BaseModel(ABC):
             "rougeL_precision": round(rougeL.precision, 4),
             "rougeL_recall": round(rougeL.recall, 4),
             "rougeL_fmeasure": round(rougeL.fmeasure, 4),
-            "bert_score_precision": round(bert_scores['precision'], 4),
-            "bert_score_recall": round(bert_scores['recall'], 4),
-            "bert_score_f1": round(bert_scores['f1'], 4),
+            "bert_score_precision": round(avg(bert_scores['precision']), 4),
+            "bert_score_recall": round(avg(bert_scores['recall']), 4),
+            "bert_score_f1": round(avg(bert_scores['f1']), 4),
         }
