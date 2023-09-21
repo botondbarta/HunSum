@@ -33,6 +33,10 @@ class ArticleCleaner:
         df_site = df_site[df_site['lead'] != '']
         logger.info(f'Cleaning {site}, size: {len(df_site)}')
 
+        df_site = df_site[~df_site['article'].str.contains('Ã¡|Ã©|Ã³|Ã¶|Å‘|Ãº|Ã1⁄4')]
+        df_site = df_site[~df_site['lead'].str.contains('Ã¡|Ã©|Ã³|Ã¶|Å‘|Ãº|Ã1⁄4')]
+        logger.info(f'Dropped articles where the lead and the article had different char coding, size: {len(df_site)}')
+
         df_site = self._dedup_by_url_lead_and_article(df_site, logger)
 
         df_site = df_site[df_site['article'].str.len() > df_site['lead'].str.len()]
