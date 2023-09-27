@@ -94,6 +94,9 @@ def process_partition(args):
     partition[f'lead_emb_{name}'] = partition.progress_apply(
         lambda x: DocumentEmbedder.calculate_embedding(model, x['lead']).tolist(), axis=1)
 
+    partition[f'article_emb_{name}'] = partition.progress_apply(
+        lambda x: DocumentEmbedder.calculate_embedding(model, x['article']).tolist(), axis=1)
+
     partition[f'lead_sent_emb_{name}'] = partition.progress_apply(
         lambda x: DocumentEmbedder.calculate_embedding(model, x['tokenized_lead']).tolist(), axis=1)
 
