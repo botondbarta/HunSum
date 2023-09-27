@@ -6,6 +6,8 @@ from pathlib import Path
 import click
 import numpy as np
 import pandas as pd
+import torch
+from scipy.optimize import linear_sum_assignment
 from sentence_transformers import SentenceTransformer
 from torch.cuda import is_available as is_cuda_available
 from tqdm import tqdm
@@ -13,6 +15,7 @@ from tqdm import tqdm
 from summarization.preprocess.document_embedder import DocumentEmbedder
 from summarization.utils.data_helpers import is_site_in_sites, make_dir_if_not_exists
 from summarization.utils.logger import get_logger
+from summarization.utils.tokenizer import Tokenizer
 
 os.environ['TOKENIZERS_PARALLELISM'] = 'False'
 tqdm.pandas()
@@ -21,7 +24,7 @@ tqdm.pandas()
 @click.command()
 @click.argument('input_dir')
 @click.argument('output_dir')
-@click.option('--num_partitions', default=3, type=click.INT)
+@click.option('--num_partitions', default=1, type=click.INT)
 @click.option('--chunk_size', default=10000, type=click.INT)
 @click.option('--sites', default='all', help='Sites to calculate sentence similarities for')
 def main(input_dir, output_dir, num_partitions, chunk_size, sites):
@@ -70,17 +73,32 @@ def main(input_dir, output_dir, num_partitions, chunk_size, sites):
         [model[i].to('cpu') for i in range(num_partitions)]
 
 
+def multi_hot_encode(similarity_scores):
+    vector_length = len(similarity_scores[0])
+    label_values = linear_sum_assignment(similarity_scores, maximize=True)[1]
+    return [1 if i in label_values else 0 for i in range(vector_length)]
+
+
+def multi_hot_encode_top_k(similarity_scores, k):
+    vector_length = len(similarity_scores[0])
+    label_values = torch.Tensor(similarity_scores).topk(k).indices[0]
+    return [1 if i in label_values else 0 for i in range(vector_length)]
+
+
 def process_partition(args):
     name, model, partition, logger = args
+
+    partition['tokenized_lead'] = partition['lead'].progress_apply(Tokenizer.sentence_tokenize)
+    partition['tokenized_article'] = partition['article'].progress_apply(Tokenizer.sentence_tokenize)
 
     partition[f'lead_emb_{name}'] = partition.progress_apply(
         lambda x: DocumentEmbedder.calculate_embedding(model, x['lead']).tolist(), axis=1)
 
     partition[f'lead_sent_emb_{name}'] = partition.progress_apply(
-        lambda x: DocumentEmbedder.calculate_sent_embedding(model, x['lead']).tolist(), axis=1)
+        lambda x: DocumentEmbedder.calculate_embedding(model, x['tokenized_lead']).tolist(), axis=1)
 
     partition[f'article_sent_emb_{name}'] = partition.progress_apply(
-        lambda x: DocumentEmbedder.calculate_sent_embedding(model, x['article']).tolist(), axis=1)
+        lambda x: DocumentEmbedder.calculate_embedding(model, x['tokenized_article']).tolist(), axis=1)
 
     partition[f'most_similar_sent_{name}'] = partition.progress_apply(
         lambda x: DocumentEmbedder.calculate_embedding_similarity(x[f'lead_sent_emb_{name}'],
@@ -91,6 +109,10 @@ def process_partition(args):
         lambda x: DocumentEmbedder.calculate_embedding_similarity(x[f'lead_emb_{name}'],
                                                                   x[f'article_sent_emb_{name}']).tolist(),
         axis=1)
+
+    partition['labels'] = partition.progress_apply(
+        lambda x: multi_hot_encode_top_k(x[f'most_similar_{name}'], len(x['tokenized_lead'])), axis=1)
+    partition['sent-labels'] = partition[f'most_similar_sent_{name}'].progress_apply(multi_hot_encode)
 
     return partition
 
