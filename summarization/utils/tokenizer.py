@@ -4,7 +4,7 @@ from quntoken import tokenize
 class Tokenizer:
     @staticmethod
     def sentence_tokenize(text: str):
-        doc = tokenize(text, form='spl')
+        doc = tokenize(text, mode='sentence')
         return [sent.replace('\n', '') for sent in doc if sent != '\n']
 
     @staticmethod
