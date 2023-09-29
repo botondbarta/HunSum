@@ -5,9 +5,12 @@ from pathlib import Path
 import click
 import numpy as np
 import pandas as pd
+from torch.cuda import is_available as is_cuda_available
 from transformers import AutoModel, AutoTokenizer
 
 from summarization.utils.data_helpers import is_site_in_sites
+
+device = 'cuda' if is_cuda_available() else 'cpu'
 
 
 @click.command()
@@ -22,7 +25,7 @@ def main(input_dir, output_dir, num_partitions, chunk_size, sites):
     site_domains = [site.replace('.jsonl.gz', '').replace(f'{input_dir}/', '') for site in sites]
 
     tokenizers = [AutoTokenizer.from_pretrained('SZTAKI-HLT/hubert-base-cc') for _ in range(num_partitions)]
-    models = [AutoModel.from_pretrained('SZTAKI-HLT/hubert-base-cc') for _ in range(num_partitions)]
+    models = [AutoModel.from_pretrained('SZTAKI-HLT/hubert-base-cc').to(device) for _ in range(num_partitions)]
 
     for site, domain in zip(sites, site_domains):
         print(f'Processing site {domain}')
@@ -70,7 +73,7 @@ def prepare_data_for_extractive(args):
     partition['remaining_labels'] = partition.apply(lambda x: x['labels'][:x['num_of_cls']], axis=1)
     partition['remaining_sent_labels'] = partition.apply(lambda x: x['sent-labels'][:x['num_of_cls']], axis=1)
 
-    outputs = model(**inputs)
+    outputs = model(**inputs.to(device))
 
     cls_vectors = outputs.last_hidden_state[cls_mask]
 
