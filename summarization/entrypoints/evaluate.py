@@ -51,7 +51,7 @@ def main(references, predicted, results_file, use_stemming):
 
     avg = lambda x: sum(x) / len(x)
 
-    return {
+    scores = {
         "rouge1_precision": round(rouge1.precision, 4),
         "rouge1_recall": round(rouge1.recall, 4),
         "rouge1_fmeasure": round(rouge1.fmeasure, 4),
