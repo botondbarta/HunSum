@@ -21,7 +21,6 @@ class ExtractiveDataset(Dataset):
                 chunk = chunk[['vectors', label_column]]
                 chunk.rename(columns={label_column: 'label'}, inplace=True)
                 self.data.extend(chunk.to_dict('records'))
-                break
 
     def __len__(self):
         return len(self.data)
