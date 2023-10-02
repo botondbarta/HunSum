@@ -3,13 +3,10 @@ from pathlib import Path
 
 import click
 import pandas as pd
-from torch.cuda import is_available as is_cuda_available
 from tqdm import tqdm
 from transformers import AutoTokenizer
 
 from summarization.utils.data_helpers import is_site_in_sites
-
-device = 'cuda' if is_cuda_available() else 'cpu'
 
 
 @click.command()
