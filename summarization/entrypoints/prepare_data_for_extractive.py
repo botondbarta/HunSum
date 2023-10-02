@@ -4,7 +4,8 @@ from pathlib import Path
 import click
 import pandas as pd
 from torch.cuda import is_available as is_cuda_available
-from transformers import AutoModel, AutoTokenizer
+from tqdm import tqdm
+from transformers import AutoTokenizer
 
 from summarization.utils.data_helpers import is_site_in_sites
 
@@ -14,7 +15,7 @@ device = 'cuda' if is_cuda_available() else 'cpu'
 @click.command()
 @click.argument('input_dir')
 @click.argument('output_dir')
-@click.option('--chunk_size', default=10000, type=click.INT)
+@click.option('--chunk_size', default=100, type=click.INT)
 @click.option('--sites', default='all', help='Help')
 def main(input_dir, output_dir, chunk_size, sites):
     all_sites = glob.glob(f'{input_dir}/*.jsonl.gz')
@@ -22,20 +23,19 @@ def main(input_dir, output_dir, chunk_size, sites):
     site_domains = [site.replace('.jsonl.gz', '').replace(f'{input_dir}/', '') for site in sites]
 
     tokenizer = AutoTokenizer.from_pretrained('SZTAKI-HLT/hubert-base-cc')
-    model = AutoModel.from_pretrained('SZTAKI-HLT/hubert-base-cc')
 
     for site, domain in zip(sites, site_domains):
         print(f'Processing site {domain}')
-        for chunk, df_chunk in enumerate(pd.read_json(site, lines=True, chunksize=chunk_size)):
-            processed_partition = prepare_data_for_extractive(df_chunk, model, tokenizer)
+        for chunk, df_chunk in tqdm(enumerate(pd.read_json(site, lines=True, chunksize=chunk_size))):
+            processed_partition = prepare_data_for_extractive(df_chunk, tokenizer)
             processed_partition.to_json(f'{output_dir}/{domain}.jsonl.gz', orient='records', lines=True,
                                         compression='gzip', mode='a')
 
 
-def prepare_data_for_extractive(df_chunk, model, tokenizer):
-    model.to(device)
+def prepare_data_for_extractive(df_chunk, tokenizer):
     cls_token = tokenizer.cls_token_id
     sep_token = tokenizer.sep_token_id
+
     df_chunk['tokenizer_input'] = df_chunk['tokenized_article'].apply(
         lambda x: '[CLS]' + '[SEP][CLS]'.join(x) + '[SEP]')
     inputs = tokenizer(df_chunk['tokenizer_input'].tolist(),
@@ -48,28 +48,27 @@ def prepare_data_for_extractive(df_chunk, model, tokenizer):
     num_of_seps = sep_mask.sum(1)
 
     # remove the last cls token if there are more cls tokens than sep tokens
-    for row, seps in zip(cls_mask, num_of_seps):
-        true_indices = row.nonzero().squeeze()
+    for row, seps, input_id in zip(cls_mask, num_of_seps, inputs['input_ids']):
+        true_indices = row.nonzero().squeeze(dim=1)
 
-        if len(true_indices) > seps:
+        if len(true_indices) > seps and len(true_indices) > 1:
             last_true_index = true_indices[-1].item()
             row[last_true_index] = False
+            input_id[last_true_index:] = tokenizer.pad_token_id
 
     num_of_clss = cls_mask.sum(1)
     df_chunk['num_of_cls'] = num_of_clss.tolist()
 
     df_chunk['remaining_labels'] = df_chunk.apply(lambda x: x['labels'][:x['num_of_cls']], axis=1)
+    df_chunk['remaining_labels-top-3'] = df_chunk.apply(lambda x: x['labels-top-3'][:x['num_of_cls']], axis=1)
     df_chunk['remaining_sent_labels'] = df_chunk.apply(lambda x: x['sent-labels'][:x['num_of_cls']], axis=1)
 
-    outputs = model(**inputs.to(device))
-
-    cls_vectors = outputs.last_hidden_state[cls_mask]
-
-    return pd.DataFrame({'vectors': cls_vectors.detach().cpu().tolist(),
-                         'labels': [item for sublist in df_chunk['remaining_labels'].tolist() for item in sublist],
-                         'sent_labels': [item for sublist in df_chunk['remaining_sent_labels'].tolist() for item in
-                                         sublist]
-                         })
+    return pd.DataFrame(
+        {'tokenizer_input': tokenizer.batch_decode(inputs['input_ids'], clean_up_tokenization_spaces=True),
+         'labels': df_chunk['remaining_labels'],
+         'labels_top_3': df_chunk['remaining_labels-top-3'],
+         'sent_labels': df_chunk['remaining_sent_labels']
+         })
 
 
 if __name__ == '__main__':
