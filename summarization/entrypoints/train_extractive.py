@@ -7,18 +7,24 @@ from torch.utils.data import DataLoader
 import torch.nn.functional as F
 from torch.utils.data import Dataset
 import os
-from summarization.models.classifier import Classifier
+
+from transformers import AutoTokenizer
+
+from summarization.models.classifier import BertSummarizer
 from pathlib import Path
+
+global_tokenizer = AutoTokenizer.from_pretrained('SZTAKI-HLT/hubert-base-cc')
 
 
 class ExtractiveDataset(Dataset):
     def __init__(self, dir_path, label_column):
         self.data = []
+        self.tokenizer = AutoTokenizer.from_pretrained('SZTAKI-HLT/hubert-base-cc')
         dir_path = Path(dir_path)
 
         for file in os.listdir(dir_path):
-            for chunk in pd.read_json(dir_path / file, lines=True, chunksize=1000):
-                chunk = chunk[['vectors', label_column]]
+            for chunk in pd.read_json(dir_path / file, lines=True, chunksize=200):
+                chunk = chunk[['tokenizer_input', label_column]]
                 chunk.rename(columns={label_column: 'label'}, inplace=True)
                 self.data.extend(chunk.to_dict('records'))
 
@@ -27,28 +33,35 @@ class ExtractiveDataset(Dataset):
 
     def __getitem__(self, idx):
         sample = self.data[idx]
-        x = torch.tensor(sample['vectors'], dtype=torch.float32)
+
         y = torch.tensor(sample['label'], dtype=torch.float32)
-        return x, y
+        return sample['tokenizer_input'], y
+
+
+def collate(list_of_samples):
+    src_sentences = [x[0] for x in list_of_samples]
+    inputs = global_tokenizer(src_sentences,
+                     padding=True, truncation=True, max_length=512,
+                     add_special_tokens=False, return_tensors="pt")
+    return inputs, torch.tensor([i for x in list_of_samples for i in x[1]], dtype=torch.float32)
 
 
 @click.command()
 @click.argument('train_dir')
 @click.argument('valid_dir')
 @click.argument('label_column')
-@click.option('--batch_size', default=512, type=click.INT)
+@click.option('--batch_size', default=16, type=click.INT)
 def main(train_dir, valid_dir, label_column, batch_size):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     trainset = ExtractiveDataset(train_dir, label_column)
     validset = ExtractiveDataset(valid_dir, label_column)
 
-    trainloader = DataLoader(dataset=trainset, batch_size=batch_size, shuffle=True, pin_memory=True)
-    validloader = DataLoader(dataset=validset, batch_size=batch_size, shuffle=True, pin_memory=True)
+    trainloader = DataLoader(dataset=trainset, batch_size=batch_size, shuffle=True, pin_memory=True, collate_fn=collate)
+    validloader = DataLoader(dataset=validset, batch_size=batch_size, shuffle=True, pin_memory=True, collate_fn=collate)
 
-    model = Classifier(768, 50, 0.1)
+    model = BertSummarizer()
     model.to(device)
 
-    # criterion = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), lr=5e-5)
     num_epochs = 10000
 
@@ -58,12 +71,14 @@ def main(train_dir, valid_dir, label_column, batch_size):
         print(f'Epoch {epoch}')
 
         train_loss = []
-        for i, (train_x, train_y) in enumerate(trainloader):
-            train_x = train_x.to(device)
+        for i, (train_inputs, train_y) in enumerate(trainloader):
+            input_ids = train_inputs['input_ids'].to(device)
+            token_type_ids = train_inputs['token_type_ids'].to(device)
+            attention_mask = train_inputs['attention_mask'].to(device)
             train_y = train_y.to(device)
 
             optimizer.zero_grad()
-            outputs = model(train_x)
+            outputs = model(input_ids, token_type_ids, attention_mask)
 
             loss = F.binary_cross_entropy(outputs.flatten(), train_y)
             loss.backward()
@@ -74,11 +89,13 @@ def main(train_dir, valid_dir, label_column, batch_size):
             model.eval()
             valid_loss = []
             tp, tn, fp, fn = 0, 0, 0, 0
-            for i, (valid_x, valid_y) in enumerate(validloader):
-                valid_x = valid_x.to(device)
+            for i, (valid_inputs, valid_y) in enumerate(validloader):
+                input_ids = valid_inputs['input_ids'].to(device)
+                token_type_ids = valid_inputs['token_type_ids'].to(device)
+                attention_mask = valid_inputs['attention_mask'].to(device)
                 valid_y = valid_y.to(device)
 
-                outputs = model(valid_x)
+                outputs = model(input_ids, token_type_ids, attention_mask)
                 outputs = outputs.flatten()
 
                 loss = F.binary_cross_entropy(outputs, valid_y)
