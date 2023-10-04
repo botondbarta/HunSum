@@ -1,17 +1,16 @@
+import os
+from pathlib import Path
+
 import click
 import pandas as pd
 import torch
-import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
-import torch.nn.functional as F
 from torch.utils.data import Dataset
-import os
-
 from transformers import AutoTokenizer
 
 from summarization.models.classifier import BertSummarizer
-from pathlib import Path
 
 global_tokenizer = AutoTokenizer.from_pretrained('SZTAKI-HLT/hubert-base-cc')
 
@@ -19,7 +18,6 @@ global_tokenizer = AutoTokenizer.from_pretrained('SZTAKI-HLT/hubert-base-cc')
 class ExtractiveDataset(Dataset):
     def __init__(self, dir_path, label_column):
         self.data = []
-        self.tokenizer = AutoTokenizer.from_pretrained('SZTAKI-HLT/hubert-base-cc')
         dir_path = Path(dir_path)
 
         for file in os.listdir(dir_path):
@@ -33,7 +31,6 @@ class ExtractiveDataset(Dataset):
 
     def __getitem__(self, idx):
         sample = self.data[idx]
-
         y = torch.tensor(sample['label'], dtype=torch.float32)
         return sample['tokenizer_input'], y
 
@@ -41,8 +38,8 @@ class ExtractiveDataset(Dataset):
 def collate(list_of_samples):
     src_sentences = [x[0] for x in list_of_samples]
     inputs = global_tokenizer(src_sentences,
-                     padding=True, truncation=True, max_length=512,
-                     add_special_tokens=False, return_tensors="pt")
+                              padding=True, truncation=True, max_length=512,
+                              add_special_tokens=False, return_tensors="pt")
     return inputs, torch.tensor([i for x in list_of_samples for i in x[1]], dtype=torch.float32)
 
 
@@ -51,7 +48,9 @@ def collate(list_of_samples):
 @click.argument('valid_dir')
 @click.argument('label_column')
 @click.option('--batch_size', default=16, type=click.INT)
-def main(train_dir, valid_dir, label_column, batch_size):
+@click.option('--num_epochs', default=100, type=click.INT)
+@click.option('--lr', default=5e-5, type=click.FLOAT)
+def main(train_dir, valid_dir, label_column, batch_size, num_epochs, lr):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     trainset = ExtractiveDataset(train_dir, label_column)
     validset = ExtractiveDataset(valid_dir, label_column)
@@ -62,8 +61,7 @@ def main(train_dir, valid_dir, label_column, batch_size):
     model = BertSummarizer()
     model.to(device)
 
-    optimizer = optim.Adam(model.parameters(), lr=5e-5)
-    num_epochs = 10000
+    optimizer = optim.Adam(model.parameters(), lr=lr)
 
     # Training loop
     for epoch in range(num_epochs):
