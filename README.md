@@ -56,7 +56,7 @@ Arguments:
 * config file
 ```bash
 cd summarization
-python entrypoints/calc_doc_similarities.py preprocess.yaml
+python entrypoints/calc_lead_article_similarities.py preprocess.yaml
 ```
 
 ### Clean articles
