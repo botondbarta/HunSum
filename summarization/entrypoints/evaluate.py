@@ -49,6 +49,8 @@ def main(references, predicted, results_file, use_stemming):
     rouge2 = rouge_output["rouge2"].mid
     rougeL = rouge_output["rougeL"].mid
 
+    avg = lambda x: sum(x) / len(x)
+
     scores = {
         "rouge1_precision": round(rouge1.precision, 4),
         "rouge1_recall": round(rouge1.recall, 4),
@@ -59,9 +61,9 @@ def main(references, predicted, results_file, use_stemming):
         "rougeL_precision": round(rougeL.precision, 4),
         "rougeL_recall": round(rougeL.recall, 4),
         "rougeL_fmeasure": round(rougeL.fmeasure, 4),
-        "bert_score_precision": round(bert_scores['precision'], 4),
-        "bert_score_recall": round(bert_scores['recall'], 4),
-        "bert_score_f1": round(bert_scores['f1'], 4),
+        "bert_score_precision": round(avg(bert_scores['precision']), 4),
+        "bert_score_recall": round(avg(bert_scores['recall']), 4),
+        "bert_score_f1": round(avg(bert_scores['f1']), 4),
     }
 
     with open(results_file, 'w') as fp:
