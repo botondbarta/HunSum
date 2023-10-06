@@ -18,14 +18,19 @@ global_tokenizer = AutoTokenizer.from_pretrained('SZTAKI-HLT/hubert-base-cc')
 
 
 class ExtractiveDataset(Dataset):
-    def __init__(self, dir_path, label_column):
+    def __init__(self, dir_path, label_column, drop=False):
         self.data = []
         dir_path = Path(dir_path)
 
         for file in os.listdir(dir_path):
             for chunk in pd.read_json(dir_path / file, lines=True, chunksize=10000):
-                chunk = chunk[['tokenizer_input', label_column]]
                 chunk.rename(columns={label_column: 'label'}, inplace=True)
+
+                if drop:
+                    chunk['sum'] = chunk['label'].apply(lambda x: sum(x))
+                    chunk = chunk[chunk['sum'] > 0]
+
+                chunk = chunk[['tokenizer_input', 'label']]
                 self.data.extend(chunk.to_dict('records'))
 
     def __len__(self):
@@ -39,7 +44,7 @@ class ExtractiveDataset(Dataset):
 
 def collate(list_of_samples):
     src_sentences = [x[0] for x in list_of_samples]
-    inputs = global_tokenizer(src_sentences,
+    inputs = global_tokenizer([sent.replace('[PAD]', '').strip() for sent in src_sentences],
                               padding=True, truncation=True, max_length=512,
                               add_special_tokens=False, return_tensors="pt")
     return inputs, torch.tensor([i for x in list_of_samples for i in x[1]], dtype=torch.float32)
@@ -86,7 +91,7 @@ def main(train_dir, valid_dir, model_dir, label_column, batch_size, num_epochs, 
     early_stop = False
     logger = get_logger('logger', Path(model_dir) / 'log.txt')
 
-    trainset = ExtractiveDataset(train_dir, label_column)
+    trainset = ExtractiveDataset(train_dir, label_column, drop=True)
     validset = ExtractiveDataset(valid_dir, label_column)
 
     trainloader = DataLoader(dataset=trainset, batch_size=batch_size, shuffle=True, pin_memory=True, collate_fn=collate)
