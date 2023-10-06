@@ -61,7 +61,9 @@ def prepare_data_for_extractive(df_chunk, tokenizer):
     df_chunk['remaining_sent_labels'] = df_chunk.apply(lambda x: x['sent-labels'][:x['num_of_cls']], axis=1)
 
     return pd.DataFrame(
-        {'tokenizer_input': tokenizer.batch_decode(inputs['input_ids'], clean_up_tokenization_spaces=True),
+        {'uuid': df_chunk['uuid'],
+         'tokenized_article': df_chunk['tokenized_article'],
+         'tokenizer_input': tokenizer.batch_decode(inputs['input_ids'], clean_up_tokenization_spaces=True),
          'labels': df_chunk['remaining_labels'],
          'labels_top_3': df_chunk['remaining_labels-top-3'],
          'sent_labels': df_chunk['remaining_sent_labels']
