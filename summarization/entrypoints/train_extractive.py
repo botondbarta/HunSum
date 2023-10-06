@@ -8,9 +8,11 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
+from tqdm import tqdm
 from transformers import AutoTokenizer
 
 from summarization.models.classifier import BertSummarizer
+from summarization.utils.logger import get_logger
 
 global_tokenizer = AutoTokenizer.from_pretrained('SZTAKI-HLT/hubert-base-cc')
 
@@ -43,20 +45,52 @@ def collate(list_of_samples):
     return inputs, torch.tensor([i for x in list_of_samples for i in x[1]], dtype=torch.float32)
 
 
+def validate(model, device, validloader):
+    with torch.no_grad():
+        model.eval()
+
+        tp, tn, fp, fn = 0, 0, 0, 0
+        for i, (valid_inputs, valid_y) in enumerate(validloader):
+            input_ids = valid_inputs['input_ids'].to(device)
+            token_type_ids = valid_inputs['token_type_ids'].to(device)
+            attention_mask = valid_inputs['attention_mask'].to(device)
+            valid_y = valid_y.to(device)
+
+            outputs = model(input_ids, token_type_ids, attention_mask)
+            outputs = outputs.flatten()
+
+            loss = F.binary_cross_entropy(outputs, valid_y)
+
+            top_k = int(sum(valid_y).item())
+            outputs[outputs.topk(top_k).indices] = 1
+            outputs[outputs.topk(len(outputs) - top_k, largest=False).indices] = 0
+
+            tp += torch.sum(outputs * valid_y)
+            tn += torch.sum((1 - outputs) * (1 - valid_y))
+            fp += torch.sum(outputs * (1 - valid_y))
+            fn += torch.sum((1 - outputs) * valid_y)
+        return loss.item(), tp, tn, fp, fn
+
+
 @click.command()
 @click.argument('train_dir')
 @click.argument('valid_dir')
+@click.argument('model_dir')
 @click.argument('label_column')
 @click.option('--batch_size', default=16, type=click.INT)
 @click.option('--num_epochs', default=100, type=click.INT)
 @click.option('--lr', default=5e-5, type=click.FLOAT)
-def main(train_dir, valid_dir, label_column, batch_size, num_epochs, lr):
+@click.option('--patience', default=5, type=click.INT)
+@click.option('--validation_step', default=1, type=click.INT)
+def main(train_dir, valid_dir, model_dir, label_column, batch_size, num_epochs, lr, patience, validation_step):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    logger = get_logger('logger', Path(model_dir) / 'log.txt')
+
     trainset = ExtractiveDataset(train_dir, label_column)
     validset = ExtractiveDataset(valid_dir, label_column)
 
     trainloader = DataLoader(dataset=trainset, batch_size=batch_size, shuffle=True, pin_memory=True, collate_fn=collate)
-    validloader = DataLoader(dataset=validset, batch_size=batch_size, shuffle=True, pin_memory=True, collate_fn=collate)
+    validloader = DataLoader(dataset=validset, batch_size=1, pin_memory=True, collate_fn=collate)
 
     model = BertSummarizer()
     model.to(device)
@@ -66,10 +100,12 @@ def main(train_dir, valid_dir, label_column, batch_size, num_epochs, lr):
     # Training loop
     for epoch in range(num_epochs):
         model.train()
-        print(f'Epoch {epoch}')
+        logger.info(f'Epoch {epoch}')
 
         train_loss = []
-        for i, (train_inputs, train_y) in enumerate(trainloader):
+        valid_loss = []
+        recalls = []
+        for i, (train_inputs, train_y) in tqdm(enumerate(trainloader)):
             input_ids = train_inputs['input_ids'].to(device)
             token_type_ids = train_inputs['token_type_ids'].to(device)
             attention_mask = train_inputs['attention_mask'].to(device)
@@ -83,36 +119,23 @@ def main(train_dir, valid_dir, label_column, batch_size, num_epochs, lr):
             train_loss.append(loss.item())
             optimizer.step()
 
-        with torch.no_grad():
-            model.eval()
-            valid_loss = []
-            tp, tn, fp, fn = 0, 0, 0, 0
-            for i, (valid_inputs, valid_y) in enumerate(validloader):
-                input_ids = valid_inputs['input_ids'].to(device)
-                token_type_ids = valid_inputs['token_type_ids'].to(device)
-                attention_mask = valid_inputs['attention_mask'].to(device)
-                valid_y = valid_y.to(device)
-
-                outputs = model(input_ids, token_type_ids, attention_mask)
-                outputs = outputs.flatten()
-
-                loss = F.binary_cross_entropy(outputs, valid_y)
-                valid_loss.append(loss.item())
-
-                outputs = torch.round(outputs)
-
-                tp += torch.sum(outputs * valid_y)
-                tn += torch.sum((1 - outputs) * (1 - valid_y))
-                fp += torch.sum(outputs * (1 - valid_y))
-                fn += torch.sum((1 - outputs) * valid_y)
-
-        print(f'Train loss:\t{sum(train_loss) / len(train_loss)}')
-        print(f'Valid loss:\t{sum(valid_loss) / len(valid_loss)}')
-        print(f'TP: {tp}, TN: {tn}, FP: {fp}, FN: {fn}')
-        precision = tp / (tp + fp)
-        recall = tp / (tp + fn)
-        f1 = 2 * precision * recall / (precision + recall)
-        print(f'Precision: {precision}, Recall: {recall}, F1: {f1}')
+            if i % validation_step == 0:
+                loss, tp, tn, fp, fn = validate(model, device, validloader)
+                valid_loss.append(loss)
+                logger.info(f'Train loss:\t{sum(train_loss) / len(train_loss)}')
+                logger.info(f'Valid loss:\t{sum(valid_loss) / len(valid_loss)}')
+                logger.info(f'TP: {tp}, TN: {tn}, FP: {fp}, FN: {fn}')
+                precision = tp / (tp + fp)
+                recall = tp / (tp + fn)
+                f1 = 2 * precision * recall / (precision + recall)
+                logger.info(f'Precision: {precision}, Recall: {recall}, F1: {f1}')
+                recalls.append(recall)
+                if len(recalls) > patience and recall < max(recalls[-patience:]):
+                    logger.info('Early stopping')
+                    break
+                if len(recalls) == 1 or recall > max(recalls[:-1]):
+                    torch.save(model.state_dict(), Path(model_dir) / 'model.pt')
+                model.train()
 
 
 if __name__ == '__main__':
