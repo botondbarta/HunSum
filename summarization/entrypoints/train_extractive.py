@@ -23,7 +23,7 @@ class ExtractiveDataset(Dataset):
         dir_path = Path(dir_path)
 
         for file in os.listdir(dir_path):
-            for chunk in pd.read_json(dir_path / file, lines=True, chunksize=200):
+            for chunk in pd.read_json(dir_path / file, lines=True, chunksize=10000):
                 chunk = chunk[['tokenizer_input', label_column]]
                 chunk.rename(columns={label_column: 'label'}, inplace=True)
                 self.data.extend(chunk.to_dict('records'))
@@ -46,9 +46,8 @@ def collate(list_of_samples):
 
 
 def validate(model, device, validloader):
+    model.eval()
     with torch.no_grad():
-        model.eval()
-
         tp, tn, fp, fn = 0, 0, 0, 0
         for i, (valid_inputs, valid_y) in enumerate(validloader):
             input_ids = valid_inputs['input_ids'].to(device)
@@ -84,6 +83,7 @@ def validate(model, device, validloader):
 @click.option('--validation_step', default=1, type=click.INT)
 def main(train_dir, valid_dir, model_dir, label_column, batch_size, num_epochs, lr, patience, validation_step):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    early_stop = False
     logger = get_logger('logger', Path(model_dir) / 'log.txt')
 
     trainset = ExtractiveDataset(train_dir, label_column)
@@ -97,8 +97,9 @@ def main(train_dir, valid_dir, model_dir, label_column, batch_size, num_epochs, 
 
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
-    # Training loop
     for epoch in range(num_epochs):
+        if early_stop:
+            break
         model.train()
         logger.info(f'Epoch {epoch}')
 
@@ -132,6 +133,7 @@ def main(train_dir, valid_dir, model_dir, label_column, batch_size, num_epochs, 
                 recalls.append(recall)
                 if len(recalls) > patience and recall < max(recalls[-patience:]):
                     logger.info('Early stopping')
+                    early_stop = True
                     break
                 if len(recalls) == 1 or recall > max(recalls[:-1]):
                     torch.save(model.state_dict(), Path(model_dir) / 'model.pt')
