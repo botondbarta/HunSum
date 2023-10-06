@@ -20,7 +20,6 @@ class Classifier(nn.Module):
 class BertSummarizer(nn.Module):
     def __init__(self):
         super().__init__()
-        self.tokenizer = AutoTokenizer.from_pretrained('SZTAKI-HLT/hubert-base-cc')
         self.bert = AutoModel.from_pretrained('SZTAKI-HLT/hubert-base-cc')
         self.classifier = Classifier(self.bert.config.hidden_size, 50, 0.1, 1)
 
