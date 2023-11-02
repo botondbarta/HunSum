@@ -78,6 +78,13 @@ class DelmagyarParser(ParserBase):
     def remove_unnecessary_text_from_article(self, article):
         article = article.replace('Írásunkat keresse szombaton a Szieszta mellékletben!', '')
         article = article.replace('Fizessen elõ a napilapra!', '')
+        article = article.replace('Borítókép: Shutterstock', '')
+        article = article.replace('Borítókép: illusztráció', '')
+        article = article.replace('Borítókép: Szerényi Márk/MTI', '')
+        article = article.replace('Borítókép: Fekete-Győr András, a Momentum elnöke', '')
+        article = article.replace('Borítókép: Wikimedia Commons', '')
+        article = article.replace('Borítókép: Hadházy Ákos (MTI/Illyés Tibor)', '')
+        article = article.replace('Borítóképünk illusztráció (Shutterstock)', '')
         return article
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:
