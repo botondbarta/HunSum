@@ -11,7 +11,7 @@ from torch.utils.data import Dataset
 from tqdm import tqdm
 from transformers import AutoTokenizer
 
-from summarization.models.classifier import BertSummarizer
+from summarization.models.bertsum import BertSum
 from summarization.utils.logger import get_logger
 
 global_tokenizer = AutoTokenizer.from_pretrained('SZTAKI-HLT/hubert-base-cc')
@@ -55,12 +55,12 @@ def validate(model, device, validloader):
     with torch.no_grad():
         tp, tn, fp, fn = 0, 0, 0, 0
         for i, (valid_inputs, valid_y) in enumerate(validloader):
-            input_ids = valid_inputs['input_ids'].to(device)
-            token_type_ids = valid_inputs['token_type_ids'].to(device)
-            attention_mask = valid_inputs['attention_mask'].to(device)
-            valid_y = valid_y.to(device)
+            input_ids = valid_inputs['input_ids'].to(f'cuda:{model.device_ids[0]}')
+            token_type_ids = valid_inputs['token_type_ids'].to(f'cuda:{model.device_ids[0]}')
+            attention_mask = valid_inputs['attention_mask'].to(f'cuda:{model.device_ids[0]}')
+            valid_y = valid_y.to(f'cuda:{model.device_ids[0]}')
 
-            outputs = model(input_ids, token_type_ids, attention_mask)
+            outputs = model(input_ids, token_type_ids, attention_mask, global_tokenizer.cls_token_id)
             outputs = outputs.flatten()
 
             loss = F.binary_cross_entropy(outputs, valid_y)
@@ -97,28 +97,36 @@ def main(train_dir, valid_dir, model_dir, label_column, batch_size, num_epochs, 
     trainloader = DataLoader(dataset=trainset, batch_size=batch_size, shuffle=True, pin_memory=True, collate_fn=collate)
     validloader = DataLoader(dataset=validset, batch_size=1, pin_memory=True, collate_fn=collate)
 
-    model = BertSummarizer()
-    model.to(device)
+    model = BertSum()
+    model = torch.nn.DataParallel(model, device_ids=[4, 5, 6, 7])
+    model.to(f'cuda:{model.device_ids[0]}')
 
     optimizer = optim.Adam(model.parameters(), lr=lr)
+    train_loss = []
+    valid_loss = []
+    recalls = []
+    curr_patience = 0
 
     for epoch in range(num_epochs):
+        if curr_patience == patience:
+            break
         if early_stop:
             break
         model.train()
         logger.info(f'Epoch {epoch}')
 
-        train_loss = []
-        valid_loss = []
-        recalls = []
         for i, (train_inputs, train_y) in tqdm(enumerate(trainloader)):
-            input_ids = train_inputs['input_ids'].to(device)
-            token_type_ids = train_inputs['token_type_ids'].to(device)
-            attention_mask = train_inputs['attention_mask'].to(device)
-            train_y = train_y.to(device)
+            if curr_patience == patience:
+                break
+            if early_stop:
+                break
+            input_ids = train_inputs['input_ids'].to(f'cuda:{model.device_ids[0]}')
+            token_type_ids = train_inputs['token_type_ids'].to(f'cuda:{model.device_ids[0]}')
+            attention_mask = train_inputs['attention_mask'].to(f'cuda:{model.device_ids[0]}')
+            train_y = train_y.to(f'cuda:{model.device_ids[0]}')
 
             optimizer.zero_grad()
-            outputs = model(input_ids, token_type_ids, attention_mask)
+            outputs = model(input_ids, token_type_ids, attention_mask, global_tokenizer.cls_token_id)
 
             loss = F.binary_cross_entropy(outputs.flatten(), train_y)
             loss.backward()
@@ -128,20 +136,21 @@ def main(train_dir, valid_dir, model_dir, label_column, batch_size, num_epochs, 
             if i % validation_step == 0:
                 loss, tp, tn, fp, fn = validate(model, device, validloader)
                 valid_loss.append(loss)
-                logger.info(f'Train loss:\t{sum(train_loss) / len(train_loss)}')
-                logger.info(f'Valid loss:\t{sum(valid_loss) / len(valid_loss)}')
+                logger.info(f'Train loss:\t{sum(train_loss[-1000:]) / 1000}')
+                logger.info(f'Valid loss:\t{loss}')
                 logger.info(f'TP: {tp}, TN: {tn}, FP: {fp}, FN: {fn}')
                 precision = tp / (tp + fp)
                 recall = tp / (tp + fn)
                 f1 = 2 * precision * recall / (precision + recall)
                 logger.info(f'Precision: {precision}, Recall: {recall}, F1: {f1}')
                 recalls.append(recall)
-                if len(recalls) > patience and recall < max(recalls[-patience:]):
-                    logger.info('Early stopping')
-                    early_stop = True
-                    break
-                if len(recalls) == 1 or recall > max(recalls[:-1]):
-                    torch.save(model.state_dict(), Path(model_dir) / 'model.pt')
+
+                if len(valid_loss) == 1 or loss < min(valid_loss[:-1]):
+                    logger.info('improved, saving')
+                    torch.save(model.module.state_dict(), Path(model_dir) / 'model.pt')
+                    curr_patience = 0
+                else:
+                    curr_patience += 1
                 model.train()
 
 
