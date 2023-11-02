@@ -20,7 +20,3 @@ class Tokenizer:
     def count_tokens(text: str) -> int:
         doc = tokenize(text)
         return len([token for token in doc if token != '\n'])
-
-
-if __name__ == '__main__':
-    i = 5
