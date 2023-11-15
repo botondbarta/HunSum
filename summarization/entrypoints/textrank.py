@@ -40,17 +40,22 @@ def main(input_dir, output_dir, num_partitions, chunk_size, sites):
         for chunk, df_chunk in enumerate(pd.read_json(site, lines=True, chunksize=chunk_size)):
             logger.info(f'{domain} current chunk: {chunk * chunk_size}')
 
-            partitions = np.array_split(df_chunk, num_partitions)
+            if num_partitions == 1:
+                processed_partition = process_partition(df_chunk)
+                processed_partition.to_json(f'{output_dir}/{domain}.jsonl.gz', orient='records', lines=True,
+                                            compression='gzip', mode='a')
+            else:
+                partitions = np.array_split(df_chunk, num_partitions)
 
-            with mp.get_context('spawn').Pool(num_partitions) as pool:
-                processed_partitions = pool.map(process_partition, partitions)
+                with mp.get_context('spawn').Pool(num_partitions) as pool:
+                    processed_partitions = pool.map(process_partition, partitions)
 
-            merged_dataframe = pd.concat(processed_partitions)
+                merged_dataframe = pd.concat(processed_partitions)
 
-            merged_dataframe.to_json(f'{output_dir}/{domain}.jsonl.gz', orient='records', lines=True,
-                                     compression='gzip', mode='a')
+                merged_dataframe.to_json(f'{output_dir}/{domain}.jsonl.gz', orient='records', lines=True,
+                                         compression='gzip', mode='a')
 
-            print("All partitions have been processed and merged.")
+                print("All partitions have been processed and merged.")
 
 
 def multi_hot_encode_top_k(similarity_scores, k):
