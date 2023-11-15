@@ -14,7 +14,6 @@ from tqdm import tqdm
 from summarization.utils.data_helpers import is_site_in_sites, make_dir_if_not_exists
 from summarization.utils.logger import get_logger
 
-os.environ['TOKENIZERS_PARALLELISM'] = 'False'
 tqdm.pandas()
 
 
@@ -64,11 +63,11 @@ def multi_hot_encode_top_k(similarity_scores, k):
     return [1 if i in label_values else 0 for i in range(vector_length)]
 
 
-def pagerank(nx_graph, max_iter=100):
+def pagerank(nx_graph, max_iter=100, tol=1e-6):
     try:
-        return nx.pagerank(nx_graph, max_iter)
+        return nx.pagerank(nx_graph, max_iter=max_iter, tol=tol)
     except nx.exception.PowerIterationFailedConvergence:
-        return pagerank(nx_graph, max_iter * 2)
+        return pagerank(nx_graph, max_iter * 2, tol * 1.1)
 
 
 def textrank(sent_embeddings):
