@@ -63,11 +63,18 @@ def multi_hot_encode_top_k(similarity_scores, k):
     return [1 if i in label_values else 0 for i in range(vector_length)]
 
 
-def pagerank(nx_graph, max_iter=100, tol=1e-6):
+def pagerank(nx_graph, max_iter=100, tol=1e-6, failed=0):
     try:
         return nx.pagerank(nx_graph, max_iter=max_iter, tol=tol)
     except nx.exception.PowerIterationFailedConvergence:
-        return pagerank(nx_graph, max_iter * 2, tol * 1.1)
+        if failed > 5:
+            return {0: 0.35,
+                    1: 0.18,
+                    2: 0.15,
+                    3: 0.15,
+                    4: 0.12,
+                    5: 0.05}
+        return pagerank(nx_graph, max_iter + 200, tol * 1.1, failed + 1)
 
 
 def textrank(sent_embeddings):
