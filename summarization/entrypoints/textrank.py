@@ -64,6 +64,13 @@ def multi_hot_encode_top_k(similarity_scores, k):
     return [1 if i in label_values else 0 for i in range(vector_length)]
 
 
+def pagerank(nx_graph, max_iter=100):
+    try:
+        return nx.pagerank(nx_graph, max_iter)
+    except nx.exception.PowerIterationFailedConvergence:
+        return pagerank(nx_graph, max_iter * 2)
+
+
 def textrank(sent_embeddings):
     sim_mat = np.zeros([len(sent_embeddings), len(sent_embeddings)])
     for i in range(len(sent_embeddings)):
@@ -71,7 +78,7 @@ def textrank(sent_embeddings):
             if i != j:
                 sim_mat[i][j] = util.cos_sim(sent_embeddings[i], sent_embeddings[j])
     nx_graph = nx.from_numpy_array(sim_mat)
-    scores = nx.pagerank(nx_graph)
+    scores = pagerank(nx_graph)
     return [v for k, v in scores.items()]
 
 
@@ -85,6 +92,8 @@ def process_partition(partition):
     partition['labels'] = partition.progress_apply(
         lambda x: multi_hot_encode_top_k(x['textrank-score'], len(x['tokenized_lead'])), axis=1)
 
+    # keep tokenized_article, textrank-score, labels, labels-top-3
+    partition = partition[['uuid', 'tokenized_article', 'textrank-score', 'labels', 'labels-top-3']]
     return partition
 
 
