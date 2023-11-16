@@ -24,31 +24,23 @@ def get_files(folder):
 def main(data_folder, out_folder, num_partitions):
     files = get_files(data_folder)
 
-    nlps = [
-        huspacy.load('hu_core_news_lg', disable=["tok2vec", "tagger", "parser", "attribute_ruler", ])
-        for _ in
-        range(num_partitions)
-    ]
-
     for file in files:
         df = pd.read_json(file, lines=True)
         domain = Path(file).name.replace('.jsonl.gz', '')
         partitions = np.array_split(df, num_partitions)
 
-        arg_list = [(partition, nlp) for nlp, partition in zip(nlps, partitions)]
         with mp.get_context('spawn').Pool(num_partitions) as pool:
-            processed_partitions = pool.map(process_partition, arg_list)
+            processed_partitions = pool.map(process_partition, partitions)
 
         merged_dataframe = pd.concat(processed_partitions)
-
         merged_dataframe.to_json(f'{out_folder}/{domain}.jsonl.gz', orient='records', lines=True,
                                  compression='gzip', mode='a')
 
         df.to_json(os.path.join(out_folder, Path(file).name), orient='records', lines=True, compression='gzip')
 
 
-def process_partition(args):
-    partition, nlp = args
+def process_partition(partition):
+    nlp = huspacy.load('hu_core_news_lg', disable=["tok2vec", "tagger", "parser", "attribute_ruler", ])
     partition['entities'] = partition['article'].progress_apply(lambda x: [ent.lemma_ for ent in nlp(x).ents])
     return partition
 
