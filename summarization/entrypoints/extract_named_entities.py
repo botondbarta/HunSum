@@ -5,8 +5,10 @@ import huspacy
 import numpy as np
 import pandas as pd
 import click
+from tqdm import tqdm
 import multiprocessing as mp
 
+tqdm.pandas()
 
 def get_files(folder):
     files = []
@@ -35,7 +37,7 @@ def main(data_folder, out_folder, num_partitions):
 
         arg_list = [(partition, nlp) for nlp, partition in zip(nlps, partitions)]
         with mp.get_context('spawn').Pool(num_partitions) as pool:
-            processed_partitions = pool.map(arg_list)
+            processed_partitions = pool.map(process_partition, arg_list)
 
         merged_dataframe = pd.concat(processed_partitions)
 
@@ -47,7 +49,7 @@ def main(data_folder, out_folder, num_partitions):
 
 def process_partition(args):
     partition, nlp = args
-    partition['entities'] = partition['article'].apply(lambda x: [ent.lemma_ for ent in nlp(x).ents])
+    partition['entities'] = partition['article'].progress_apply(lambda x: [ent.lemma_ for ent in nlp(x).ents])
     return partition
 
 
