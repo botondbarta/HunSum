@@ -41,7 +41,7 @@ def main(data_folder, out_folder, num_partitions):
 
 def process_partition(partition):
     nlp = huspacy.load('hu_core_news_lg', disable=["tok2vec", "tagger", "parser", "attribute_ruler", ])
-    partition['entities'] = partition['article'].progress_apply(lambda x: [ent.lemma_ for ent in nlp(x).ents])
+    partition['entities'] = partition.progress_apply(lambda x: [ent.lemma_ for ent in nlp(x.article).ents], axis=1)
     return partition
 
 
