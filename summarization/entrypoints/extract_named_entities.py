@@ -10,6 +10,7 @@ import multiprocessing as mp
 
 tqdm.pandas()
 
+
 def get_files(folder):
     files = []
     for file in os.listdir(folder):
@@ -36,12 +37,10 @@ def main(data_folder, out_folder, num_partitions):
         merged_dataframe.to_json(f'{out_folder}/{domain}.jsonl.gz', orient='records', lines=True,
                                  compression='gzip', mode='a')
 
-        df.to_json(os.path.join(out_folder, Path(file).name), orient='records', lines=True, compression='gzip')
-
 
 def process_partition(partition):
     nlp = huspacy.load('hu_core_news_lg', disable=["tok2vec", "tagger", "parser", "attribute_ruler", ])
-    partition['entities'] = partition.progress_apply(lambda x: [ent.lemma_ for ent in nlp(x.article).ents], axis=1)
+    partition['entities'] = partition['article'].progress_apply(lambda x: [ent.lemma_ for ent in nlp(x).ents])
     return partition
 
 
