@@ -14,6 +14,12 @@ class MT5(BaseModel):
         self.model_checkpoint = self.config.mt5.model_checkpoint
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_checkpoint)
+        # Adding control codes as special tokens in the tokenizer
+        self.tokenizer.add_special_tokens({"additional_special_tokens":
+                                               ["[GOOD]", "[BAD]", "[MIXED_UP_ENTITY]", "[RANDOM_INCORRECT_ENTITY]",
+                                                "[EXTRINSIC_HALLUCINATION]", "[MISTRANSLATED]",
+                                                "[OUT_OF_CONTEXT_SENTENCE]"]})
+
         self.model = AutoModelForSeq2SeqLM.from_pretrained(self.model_checkpoint)
 
     def process_data_to_model_inputs(self, batch):
