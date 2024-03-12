@@ -117,7 +117,7 @@ def process_partition(args):
         lambda x: multi_hot_encode_top_k(x[f'most_similar_{name}'], len(x['tokenized_lead'])), axis=1)
     partition['labels-top-3'] = partition.apply(
         lambda x: multi_hot_encode_top_k(x[f'most_similar_{name}'], 3), axis=1)
-    partition['sent-labels'] = partition[f'most_similar_sent_{name}'].progress_apply(multi_hot_encode)
+    partition['sent-labels'] = partition[f'most_similar_sent_most_similar_sent_{name}'].progress_apply(multi_hot_encode)
 
     return partition
 
