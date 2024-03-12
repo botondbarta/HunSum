@@ -1,4 +1,4 @@
-from summarization.html_parsers.delmagyar_parser import DelmagyarParser
+from summarization.html_parsers.delmagyar_parser import RegionalParser
 from summarization.html_parsers.hvg_parser import HvgParser
 from summarization.html_parsers.index_parser import IndexParser
 from summarization.html_parsers.kisalfold_parser import KisalfoldParser
@@ -26,22 +26,22 @@ class HtmlParserFactory:
         'nepszava': NepszavaParser,
         'portfolio': PortfolioParser,
         'kisalfold': KisalfoldParser,
-        'delmagyar': DelmagyarParser,
-        'szon': DelmagyarParser,
-        'vaol': DelmagyarParser,
-        'zaol': DelmagyarParser,
-        'duol': DelmagyarParser,
-        'feol': DelmagyarParser,
-        'heol': DelmagyarParser,
-        'veol': DelmagyarParser,
-        'teol': DelmagyarParser,
-        'beol': DelmagyarParser,
-        'haon': DelmagyarParser,
-        'baon': DelmagyarParser,
-        'boon': DelmagyarParser,
-        'nool': DelmagyarParser,
-        'bama': DelmagyarParser,
-        'kemma': DelmagyarParser,
+        'delmagyar': RegionalParser,
+        'szon': RegionalParser,
+        'vaol': RegionalParser,
+        'zaol': RegionalParser,
+        'duol': RegionalParser,
+        'feol': RegionalParser,
+        'heol': RegionalParser,
+        'veol': RegionalParser,
+        'teol': RegionalParser,
+        'beol': RegionalParser,
+        'haon': RegionalParser,
+        'baon': RegionalParser,
+        'boon': RegionalParser,
+        'nool': RegionalParser,
+        'bama': RegionalParser,
+        'kemma': RegionalParser,
     }
 
     @classmethod

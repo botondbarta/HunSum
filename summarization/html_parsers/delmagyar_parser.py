@@ -9,7 +9,8 @@ from summarization.utils.assertion import assert_has_article, assert_has_title
 from summarization.utils.dateparser import DateParser
 
 
-class DelmagyarParser(ParserBase):
+# Originally made for delmagyar.hu
+class RegionalParser(ParserBase):
 
     def get_title(self, url: str, soup) -> str:
         title = soup.find('h2', class_='single-article__title')
