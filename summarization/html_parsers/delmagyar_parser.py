@@ -9,7 +9,8 @@ from summarization.utils.assertion import assert_has_article, assert_has_title
 from summarization.utils.dateparser import DateParser
 
 
-class DelmagyarParser(ParserBase):
+# Originally made for delmagyar.hu
+class RegionalParser(ParserBase):
 
     def get_title(self, url: str, soup) -> str:
         title = soup.find('h2', class_='single-article__title')
@@ -78,6 +79,13 @@ class DelmagyarParser(ParserBase):
     def remove_unnecessary_text_from_article(self, article):
         article = article.replace('Írásunkat keresse szombaton a Szieszta mellékletben!', '')
         article = article.replace('Fizessen elõ a napilapra!', '')
+        article = article.replace('Borítókép: Shutterstock', '')
+        article = article.replace('Borítókép: illusztráció', '')
+        article = article.replace('Borítókép: Szerényi Márk/MTI', '')
+        article = article.replace('Borítókép: Fekete-Győr András, a Momentum elnöke', '')
+        article = article.replace('Borítókép: Wikimedia Commons', '')
+        article = article.replace('Borítókép: Hadházy Ákos (MTI/Illyés Tibor)', '')
+        article = article.replace('Borítóképünk illusztráció (Shutterstock)', '')
         return article
 
     def get_date_of_creation(self, soup) -> Optional[datetime]:

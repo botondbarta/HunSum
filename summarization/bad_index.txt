@@ -46,6 +46,10 @@ nlc.hu/forum/.*
 nlc.hu/ujhozzaszolas/.*
 nlc.hu/szerzo/.*
 nlc.hu/nyeremenyjatekok/.*
+nlc.hu/.*gasztro.*
+nlc.hu/.*ezoteria.*
+nlc.hu/.*szerk.*
+nlc.hu/.*szurd_ki_cikkek.*
 hvg.hu/360/.*
 hvg.hu/cimke/.*
 hvg.hu/hetilap/.*
@@ -114,7 +118,6 @@ kisalfold.hu/aprohirdetes/.*
 kisalfold.hu/nap-kepe/.*
 kisalfold.hu/kereses/*
 kisalfold.hu/roluk-irtuk/.*
-kisalfold.hu/horoszkop/.*
 delmagyar.hu/idojaras/\?varos=.*
 delmagyar.hu/kepek/.*
 delmagyar.hu/blog/.*
@@ -127,7 +130,6 @@ delmagyar.hu/roluk-irtuk/.*/.*/
 delmagyar.hu/tv/\?act=.*
 delmagyar.hu/\?openkepgaleria=.*
 delmagyar.hu/_rss.php.*
-delmagyar.hu/horoszkop.*
 delmagyar.hu/koncert/\?select_.*
 delmagyar.hu/rendezvenyek/\?select_.*
 delmagyar.hu/ftp/delm/Uzleti_feltetelek.*
@@ -155,3 +157,4 @@ delmagyar.hu/gyaszkozlemenyek/.*
 delmagyar.hu/allas/.*
 delmagyar.hu/jatek/.*
 delmagyar.hu/belfold_hirek/a_mai_program_/.*
+.*horoszkop.*

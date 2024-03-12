@@ -39,6 +39,10 @@ class NLCParser(ParserBase):
         assert_has_article(article_text, url)
         return article_text
 
+    def remove_unnecessary_text_from_article(self, article):
+        article = article.replace('NYERNI SZERETNÉK', '')
+        return article
+
     def get_date_of_creation(self, soup) -> Optional[datetime]:
         date = soup.find('div', class_='o-post__date')
 

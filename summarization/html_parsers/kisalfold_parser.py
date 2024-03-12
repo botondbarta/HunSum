@@ -53,7 +53,7 @@ class KisalfoldParser(ParserBase):
 
         if not article_text:
             article = soup.select('div.block-content')
-            article_text = "\n".join([self.get_text(text, remove_img=True) for text in article])
+            article_text = "\n".join([self.get_text(text, remove_img=True) for text in article if 'onload' not in self.get_text(text, remove_img=True)])
 
         assert_has_article(article_text, url)
         return article_text
