@@ -1,5 +1,5 @@
 # Abstractive and extractive summarization for Hungarian
-Links to the HunSum-1 dataset and our baseline models:
+Links to the HunSum-2 dataset and our baseline models:
 - [HunSum-2-abstractive](https://huggingface.co/datasets/SZTAKI-HLT/HunSum-2-abstractive)
 - [HunSum-2-extractive](https://huggingface.co/datasets/SZTAKI-HLT/HunSum-2-extractive)
 - [mt5-base](https://huggingface.co/SZTAKI-HLT/mT5-base-HunSum-2)
