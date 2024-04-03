@@ -98,7 +98,6 @@ def process_partition(partition):
     partition['labels'] = partition.progress_apply(
         lambda x: multi_hot_encode_top_k(x['textrank-score'], len(x['tokenized_lead'])), axis=1)
 
-    # keep tokenized_article, textrank-score, labels, labels-top-3
     partition = partition[['uuid', 'lead', 'tokenized_article', 'textrank-score', 'labels', 'labels-top-3']]
     return partition
 

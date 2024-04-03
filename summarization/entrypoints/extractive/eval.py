@@ -15,7 +15,7 @@ from summarization.models.bertsum import BertSum
 global_tokenizer = AutoTokenizer.from_pretrained('SZTAKI-HLT/hubert-base-cc')
 
 
-class ExtractiveDataset3(Dataset):
+class ExtractiveDataset2(Dataset):
     def __init__(self, dir_path, label_column):
         self.data = []
         dir_path = Path(dir_path)
@@ -59,7 +59,7 @@ def main(model_dir, test_dir, output_dir, label_column):
     model.to(f'cuda:{model.device_ids[0]}')
     model.eval()
 
-    testset = ExtractiveDataset3(test_dir, label_column)
+    testset = ExtractiveDataset2(test_dir, label_column)
     testloader = DataLoader(dataset=testset, batch_size=1, pin_memory=True, collate_fn=collate2)
 
     lead_file = os.path.join(Path(output_dir) / 'generated_leads.jsonl')

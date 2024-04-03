@@ -24,12 +24,12 @@ def main(input_dir, output_dir, chunk_size, sites):
     for site, domain in zip(sites, site_domains):
         print(f'Processing site {domain}')
         for chunk, df_chunk in tqdm(enumerate(pd.read_json(site, lines=True, chunksize=chunk_size))):
-            processed_partition = prepare_data_for_extractive(df_chunk, tokenizer)
+            processed_partition = prepare_data_for_extractive_training(df_chunk, tokenizer)
             processed_partition.to_json(f'{output_dir}/{domain}.jsonl.gz', orient='records', lines=True,
                                         compression='gzip', mode='a')
 
 
-def prepare_data_for_extractive(df_chunk, tokenizer):
+def prepare_data_for_extractive_training(df_chunk, tokenizer):
     cls_token = tokenizer.cls_token_id
     sep_token = tokenizer.sep_token_id
 

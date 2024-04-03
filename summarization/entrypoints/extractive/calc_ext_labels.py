@@ -26,12 +26,12 @@ tqdm.pandas()
 @click.argument('output_dir')
 @click.option('--num_partitions', default=1, type=click.INT)
 @click.option('--chunk_size', default=10000, type=click.INT)
-@click.option('--sites', default='all', help='Sites to calculate sentence similarities for')
+@click.option('--sites', default='all', help='Sites to calculate extractive sentence labels for')
 def main(input_dir, output_dir, num_partitions, chunk_size, sites):
     models = {
         'minilm': [SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
-                   for i in range(num_partitions)],
-        'labse': [SentenceTransformer('sentence-transformers/LaBSE') for i in range(num_partitions)],
+                   for _ in range(num_partitions)],
+        'labse': [SentenceTransformer('sentence-transformers/LaBSE') for _ in range(num_partitions)],
     }
     device = 'cuda' if is_cuda_available() else 'cpu'
 
@@ -61,10 +61,8 @@ def main(input_dir, output_dir, num_partitions, chunk_size, sites):
                 with mp.get_context('spawn').Pool(num_partitions) as pool:
                     processed_partitions = pool.map(process_partition, arg_list)
 
-                # Concatenate the processed DataFrames from different partitions
                 merged_dataframe = pd.concat(processed_partitions)
 
-                # Save the merged DataFrame to a JSON file
                 merged_dataframe.to_json(f'{output_dir}/{name}/{domain}.jsonl.gz', orient='records', lines=True,
                                          compression='gzip', mode='a')
 
@@ -105,21 +103,19 @@ def process_partition(args):
 
     partition[f'most_similar_sent_{name}'] = partition.progress_apply(
         lambda x: DocumentEmbedder.calculate_embedding_similarity(x[f'lead_sent_emb_{name}'],
-                                                                  x[f'article_sent_emb_{name}']).tolist(),
-        axis=1)
+                                                                  x[f'article_sent_emb_{name}']).tolist(), axis=1)
 
     partition[f'most_similar_{name}'] = partition.progress_apply(
         lambda x: DocumentEmbedder.calculate_embedding_similarity(x[f'lead_emb_{name}'],
-                                                                  x[f'article_sent_emb_{name}']).tolist(),
-        axis=1)
+                                                                  x[f'article_sent_emb_{name}']).tolist(), axis=1)
 
-    # NSFS
+    # N-SentencesForSummary
     partition['labels'] = partition.progress_apply(
         lambda x: multi_hot_encode_top_k(x[f'most_similar_{name}'], len(x['tokenized_lead'])), axis=1)
-    # 3SFS
+    # 3-SentencesForSummary
     partition['labels-top-3'] = partition.apply(
         lambda x: multi_hot_encode_top_k(x[f'most_similar_{name}'], 3), axis=1)
-    # OFES
+    # OneForEachSentences
     partition['sent-labels'] = partition[f'most_similar_sent_{name}'].progress_apply(multi_hot_encode)
 
     return partition
