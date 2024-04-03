@@ -31,12 +31,13 @@ lora_dropout: 0.1
 
 
 
-
 max_seq_length: 4086
+patience: 20
+
 
 # --------
+
 fp16: False
-patience: 6
 compute_training_metrics: False
 # used if compute_training_metrics is True
 metric_for_best_model: eval_loss # bert_score_recall

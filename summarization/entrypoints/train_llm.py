@@ -9,7 +9,7 @@ from transformers import (
     BitsAndBytesConfig,
     AutoTokenizer,
     TrainingArguments,
-    GenerationConfig, IntervalStrategy
+    GenerationConfig, IntervalStrategy, EarlyStoppingCallback
 )
 
 from trl import SFTTrainer
@@ -133,8 +133,8 @@ def main(config_path):
         max_seq_length=config.max_seq_length,
         tokenizer=tokenizer,
         args=get_training_arg(config),
+        callbacks=[EarlyStoppingCallback(early_stopping_patience=config.patience)]
     )
-    
     trainer.train()
 
 
