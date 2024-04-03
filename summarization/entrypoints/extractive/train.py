@@ -50,7 +50,7 @@ def collate(list_of_samples):
     return inputs, torch.tensor([i for x in list_of_samples for i in x[1]], dtype=torch.float32)
 
 
-def validate(model, device, validloader):
+def validate(model, validloader):
     model.eval()
     with torch.no_grad():
         tp, tn, fp, fn = 0, 0, 0, 0
