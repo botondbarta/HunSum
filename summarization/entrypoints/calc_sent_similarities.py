@@ -113,11 +113,14 @@ def process_partition(args):
                                                                   x[f'article_sent_emb_{name}']).tolist(),
         axis=1)
 
+    # NSFS
     partition['labels'] = partition.progress_apply(
         lambda x: multi_hot_encode_top_k(x[f'most_similar_{name}'], len(x['tokenized_lead'])), axis=1)
+    # 3SFS
     partition['labels-top-3'] = partition.apply(
         lambda x: multi_hot_encode_top_k(x[f'most_similar_{name}'], 3), axis=1)
-    partition['sent-labels'] = partition[f'most_similar_sent_most_similar_sent_{name}'].progress_apply(multi_hot_encode)
+    # OFES
+    partition['sent-labels'] = partition[f'most_similar_sent_{name}'].progress_apply(multi_hot_encode)
 
     return partition
 
