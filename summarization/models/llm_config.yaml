@@ -1,0 +1,52 @@
+# model
+model_name: mistralai/Mixtral-8x7B-Instruct-v0.1
+
+# dataset
+dataset: SZTAKI-HLT/HunSum-2-abstractive
+max_lead_length: 1024
+max_article_length: 2048
+
+# training
+num_train_epochs: 1
+output_dir: /home/botondbarta/projects/summarization/adapter_mixtral_4bit
+
+
+learning_rate: 0.0005
+weight_decay: 0.01
+logging_steps: 100
+eval_steps: 5000
+save_steps: 5000 # same as eval_steps
+warmup_ratio: 0.03
+max_grad_norm: 0.3
+save_total_limit: 1
+batch_size: 4
+gradient_accumulation_steps: 4
+group_by_length: True
+
+
+# lora
+lora_rank: 16
+lora_alpha: 32
+lora_dropout: 0.1
+
+
+
+
+max_seq_length: 4086
+
+# --------
+fp16: False
+patience: 6
+compute_training_metrics: False
+# used if compute_training_metrics is True
+metric_for_best_model: eval_loss # bert_score_recall
+
+# predict
+prediction_file: None
+max_predict_length: 128
+num_beams: 5
+length_penalty: 2
+no_repeat_ngram_size: 2
+encoder_no_repeat_ngram_size: 3
+generate_early_stopping: True
+
