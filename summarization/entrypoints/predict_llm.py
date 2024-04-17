@@ -23,7 +23,7 @@ def get_model_and_tokenizer(model_name, adapter_path):
         bnb_4bit_use_double_quant=True,
     )
 
-    model = AutoModelForCausalLM.from_pretrained(model_path, quantization_config=bnb_config, device_map='auto')
+    model = AutoModelForCausalLM.from_pretrained(model_name, quantization_config=bnb_config, device_map='auto')
 
     model.config.pad_token_id = tokenizer.pad_token_id
     model.config.use_cache = False
