@@ -80,8 +80,46 @@ cd summarization
 python entrypoints/deduplicate.py preprocess.yaml
 ```
 
+## How to add your own parser
+To add a new parser for the corpus creation process, follow these steps:
+#### 1. Create a new parser class.
+Place the parser in the html_parsers package. The parser should inherit from the ParserBase class and implement the following methods:
+```python
+class MyNewWebsiteParser(ParserBase):
+    def check_page_is_valid(self, url, soup):
+        # Implement logic to check if the page is valid
+        # raise InvalidPageError(url, 'problem description')
+
+    def get_title(self, url, soup) -> str:
+        # Implement logic to extract title
+
+    def get_lead(self, soup) -> str:
+        # Implement logic to extract lead
+
+    def get_article_text(self, url, soup) -> str:
+        # Implement logic to extract the main article text
+
+    def get_date_of_creation(self, soup) -> Optional[datetime]:
+        # Implement logic to extract the date of creation
+
+    def get_tags(self, soup) -> Set[str]:
+        # Implement logic to extract tags
+
+    def get_html_tags_to_remove(self, soup) -> List[Tag]:
+        # Implement logic to specify which HTML tags to remove
+```
+#### 2. Register your parser in the HtmlParserFactory.
+```python
+class HtmlParserFactory:
+    parsers = {
+        ...
+        'newwebsite': MyNewWebsiteParser  # Register your new parser here
+        ...
+    }
+```
+
 ## Citation
-If you use our dataset or models, please cite the following paper:
+If you use our dataset or models, please cite the following papers:
 
 ```
 @inproceedings {HunSum-1,
@@ -92,5 +130,30 @@ If you use our dataset or models, please cite the following paper:
     address = {Szeged, Magyarország},
     author = {Barta, Botond and Lakatos, Dorina and Nagy, Attila and Nyist, Mil{\'{a}}n Konor and {\'{A}}cs, Judit},
     pages = {231--243}
+}
+```
+
+```
+@inproceedings{barta-etal-2024-news-summaries,
+    title = "From News to Summaries: Building a {H}ungarian Corpus for Extractive and Abstractive Summarization",
+    author = "Barta, Botond  and
+      Lakatos, Dorina  and
+      Nagy, Attila  and
+      Nyist, Mil{\'a}n Konor  and
+      {\'A}cs, Judit",
+    editor = "Calzolari, Nicoletta  and
+      Kan, Min-Yen  and
+      Hoste, Veronique  and
+      Lenci, Alessandro  and
+      Sakti, Sakriani  and
+      Xue, Nianwen",
+    booktitle = "Proceedings of the 2024 Joint International Conference on Computational Linguistics, Language Resources and Evaluation (LREC-COLING 2024)",
+    month = may,
+    year = "2024",
+    address = "Torino, Italia",
+    publisher = "ELRA and ICCL",
+    url = "https://aclanthology.org/2024.lrec-main.662",
+    pages = "7503--7509",
+    abstract = "Training summarization models requires substantial amounts of training data. However for less resourceful languages like Hungarian, openly available models and datasets are notably scarce. To address this gap our paper introduces an open-source Hungarian corpus suitable for training abstractive and extractive summarization models. The dataset is assembled from segments of the Common Crawl corpus undergoing thorough cleaning, preprocessing and deduplication. In addition to abstractive summarization we generate sentence-level labels for extractive summarization using sentence similarity. We train baseline models for both extractive and abstractive summarization using the collected dataset. To demonstrate the effectiveness of the trained models, we perform both quantitative and qualitative evaluation. Our models and dataset will be made publicly available, encouraging replication, further research, and real-world applications across various domains.",
 }
 ```
