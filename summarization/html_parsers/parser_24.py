@@ -68,7 +68,7 @@ class Parser24(ParserBase):
             tag = soup.find('a', class_='tag')
         return set() if tag is None else {self.get_text(tag)}
 
-    def remove_unnecessary_text_from_article(self, article):
+    def remove_unnecessary_text_from_article(self, article) -> str:
         article = article.replace('Ahol a futball esze és szíve találkozik!', '')
         article = article.replace('Válogatott írások a legjobbaktól.', '')
         article = article.replace('Minden hónapban legalább 24 kiemelkedő színvonalú tartalom havi 990 forintért.', '')

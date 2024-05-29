@@ -76,7 +76,7 @@ class RegionalParser(ParserBase):
 
         return article_text.strip()
 
-    def remove_unnecessary_text_from_article(self, article):
+    def remove_unnecessary_text_from_article(self, article) -> str:
         article = article.replace('Írásunkat keresse szombaton a Szieszta mellékletben!', '')
         article = article.replace('Fizessen elõ a napilapra!', '')
         article = article.replace('Borítókép: Shutterstock', '')

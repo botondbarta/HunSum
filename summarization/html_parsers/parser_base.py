@@ -83,5 +83,5 @@ class ParserBase(ABC):
             tag.decompose()
         return soup
 
-    def remove_unnecessary_text_from_article(self, article):
+    def remove_unnecessary_text_from_article(self, article) -> str:
         return article
