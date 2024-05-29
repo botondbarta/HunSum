@@ -83,7 +83,7 @@ python entrypoints/deduplicate.py preprocess.yaml
 ## How to add your own parser
 To add a new parser for the corpus creation process, follow these steps:
 #### 1. Create a new parser class for the specific website.
-Place the parser in the html_parsers package. The parser should inherit from the ParserBase class and implement the following methods:
+Place the parser in the [html_parsers](https://github.com/botondbarta/HunSum/tree/main/summarization/html_parsers) package. The parser should inherit from the ParserBase class and implement the following methods:
 ```python
 class MyNewWebsiteParser(ParserBase):
     def check_page_is_valid(self, url, soup):
@@ -108,8 +108,12 @@ class MyNewWebsiteParser(ParserBase):
 
     def get_html_tags_to_remove(self, soup) -> List[Tag]:
         # Implement logic to specify which HTML tags to remove
+
+    def remove_unnecessary_text_from_article(self, article) -> str:
+        # Implement logic to remove unnecessary text from the article (e.g. ads that cannot be removed by HTML tags)
+        return article
 ```
-#### 2. Register your parser in the HtmlParserFactory.
+#### 2. Register your parser in the [HtmlParserFactory](https://github.com/botondbarta/HunSum/blob/main/summarization/html_parsers/parser_factory.py#L16).
 ```python
 class HtmlParserFactory:
     parsers = {
@@ -118,7 +122,7 @@ class HtmlParserFactory:
         ...
     }
 ```
-You're all set to start parsing your articles with the *parse_warc_pages.py* script. If you only want to parse your new website, just use the `--sites mywebsite` option.
+You're all set to start parsing your articles with the [parse_warc_pages.py](https://github.com/botondbarta/HunSum/blob/main/summarization/entrypoints/parse_warc_pages.py) script. If you only want to parse your new website, just use the `--sites mywebsite` option.
 
 ## Citation
 If you use our dataset or models, please cite the following papers:

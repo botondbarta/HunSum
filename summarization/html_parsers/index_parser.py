@@ -79,7 +79,7 @@ class IndexParser(ParserBase):
 
         return article_text
 
-    def remove_unnecessary_text_from_article(self, article):
+    def remove_unnecessary_text_from_article(self, article) -> str:
         article = article.replace('Kövesse az Indexet Facebookon is!', '')
         return article
 

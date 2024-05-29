@@ -118,7 +118,7 @@ class HvgParser(ParserBase):
         
         return article_text.strip()
 
-    def remove_unnecessary_text_from_article(self, article):
+    def remove_unnecessary_text_from_article(self, article) -> str:
         article = article.replace('Regisztrálj a Jobline-on, hogy megtaláld álmaid állását és első kézből értesülhess a legújabb munkaerőpiaci trendekről!', '')
         article = article.replace('Kövess minket a Facebook-on is, ahol mindig friss cikkekkel információkkal várunk!', '')
         article = article.replace('Kövess minket a Facebookon!', '')

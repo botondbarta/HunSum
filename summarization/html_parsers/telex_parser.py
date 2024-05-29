@@ -53,7 +53,7 @@ class TelexParser(ParserBase):
 
         return article_text
 
-    def remove_unnecessary_text_from_article(self, article):
+    def remove_unnecessary_text_from_article(self, article) -> str:
         article = article.replace('A Telex legfrissebb koronavírussal kapcsolatos híreiért kattintson ide>>>', '')
         article = article.replace('A Telex legfrissebb híreiért kattintson ide>>>', '')
         return article

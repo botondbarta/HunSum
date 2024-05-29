@@ -39,7 +39,7 @@ class NLCParser(ParserBase):
         assert_has_article(article_text, url)
         return article_text
 
-    def remove_unnecessary_text_from_article(self, article):
+    def remove_unnecessary_text_from_article(self, article) -> str:
         article = article.replace('NYERNI SZERETNÉK', '')
         return article
 

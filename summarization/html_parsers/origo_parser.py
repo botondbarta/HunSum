@@ -74,7 +74,7 @@ class OrigoParser(ParserBase):
 
         return article_text
 
-    def remove_unnecessary_text_from_article(self, article):
+    def remove_unnecessary_text_from_article(self, article) -> str:
         article = article.replace('Kapcsolódó cikkek:', '')
         article = article.replace('Ha szeretne még több érdekes techhírt olvasni, akkor kövesse az Origo Techbázis Facebook-oldalát, kattintson ide!', '')
         return article
