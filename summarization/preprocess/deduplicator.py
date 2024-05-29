@@ -1,17 +1,21 @@
 import glob
+import multiprocessing as mp
 from distutils.util import strtobool
 from os import path
 
+import numpy as np
 import pandas as pd
 from lsh.cache import Cache
 from lsh.minhash import MinHasher
 from tqdm import tqdm
 
 from summarization.utils.config_reader import get_config_from_yaml
-from summarization.utils.data_helpers import get_domain_of_df_site, parallelize_df_processing_progress_bar
+from summarization.utils.data_helpers import get_domain_of_df_site
 from summarization.utils.data_helpers import make_dir_if_not_exists
 from summarization.utils.dateparser import DateParser
 from summarization.utils.logger import get_logger
+
+tqdm.pandas()
 
 
 class Deduplicator:
@@ -101,14 +105,23 @@ class Deduplicator:
     def _create_and_save_fingerprints_for_site(self, site, domain):
         df_site = pd.read_json(site, lines=True)
 
-        df_site = parallelize_df_processing_progress_bar(df_site, self._create_fingerprints, self.num_process)
-        df_site.to_json(f'{self.config.fingerprint_dir}/{domain}.jsonl.gz', orient='records', lines=True,
-                        compression='gzip')
-        return df_site
+        partitions = np.array_split(df_site, self.num_process)
+        with mp.get_context('spawn').Pool(self.num_process) as pool:
+            processed_partitions = pool.map(self._create_fingerprints, partitions)
+
+        merged_dataframe = pd.concat(processed_partitions)
+        merged_dataframe.to_json(f'{self.config.fingerprint_dir}/{domain}.jsonl.gz', orient='records', lines=True,
+                                 compression='gzip')
+
+        return merged_dataframe
 
     def _create_fingerprints(self, df):
-        df['article_fingerprint'] = df.apply(
-            lambda row: self.hasher.fingerprint(row['article'].encode('utf8')), axis=1)
-        df['lead_fingerprint'] = df.apply(
-            lambda row: self.hasher.fingerprint(row['lead'].encode('utf8')) if row['lead'] != "" else None, axis=1)
+        hasher = MinHasher(seeds=self.config.num_of_permutations,
+                           char_ngram=self.config.char_ngram,
+                           hashbytes=8,
+                           random_state=3)
+        df['article_fingerprint'] = df.progress_apply(
+            lambda row: hasher.fingerprint(row['article'].encode('utf8')), axis=1)
+        df['lead_fingerprint'] = df.progress_apply(
+            lambda row: hasher.fingerprint(row['lead'].encode('utf8')) if row['lead'] != "" else None, axis=1)
         return df
